@@ -87,6 +87,7 @@ jobs:
         fi
         
     - name: Run Unified Intelligence Scaling Test
+      id: run-test
       run: |
         echo "🧠 Starting HOLOLIFEX6 Unified Intelligence Scaling Test..."
         echo "=========================================================="
@@ -100,21 +101,36 @@ jobs:
         # Run the test with memory monitoring
         julia --project=. --heap-size-hint=6G github_safe_testbed.jl
         
-        echo "✅ Unified intelligence test completed"
+        TEST_EXIT_CODE=$?
+        echo "test-exit-code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
+        
+        if [ $TEST_EXIT_CODE -eq 0 ]; then
+          echo "✅ Unified intelligence test completed successfully"
+        else
+          echo "⚠️ Test exited with code $TEST_EXIT_CODE"
+        fi
         
     - name: Check for results
       id: check-results
       if: always()
       run: |
         echo "📁 Checking for result files..."
+        echo "Current directory: $(pwd)"
+        echo "All files:"
+        ls -lah
+        echo ""
+        
         if ls unified_intelligence_scaling_*.json 1> /dev/null 2>&1; then
           echo "✅ Found result files:"
           ls -lh unified_intelligence_scaling_*.json
+          FILE_COUNT=$(ls -1 unified_intelligence_scaling_*.json | wc -l)
+          echo "📊 Number of files: $FILE_COUNT"
           echo "has-results=true" >> $GITHUB_OUTPUT
         else
-          echo "❌ No result files found"
+          echo "❌ No result files found matching pattern: unified_intelligence_scaling_*.json"
           echo "has-results=false" >> $GITHUB_OUTPUT
         fi
+        echo ""
         echo "📊 Current memory usage:"
         free -h
         
@@ -132,7 +148,7 @@ jobs:
       if: always()
       run: |
         echo "🧹 Cleaning up after test..."
-        rm -f unified_intelligence_scaling_*.json
+        # Only clean up Julia cache, NOT the result files (they're already uploaded)
         julia -e 'GC.gc(true)' 2>/dev/null || true
         echo "✅ Cleanup complete"
 
