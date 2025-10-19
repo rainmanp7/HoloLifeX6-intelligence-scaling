@@ -6,6 +6,9 @@ Real combinatorial creativity and insight generation
 
 using Random
 
+include("utils.jl")
+using .Utils: calculate_phase_coherence
+
 function calculate_action_complexity(action::String)::Int
     complexity_map = Dict(
         "validate" => 1, "check" => 1, "monitor" => 1, "analyze" => 1, "assess" => 1,
