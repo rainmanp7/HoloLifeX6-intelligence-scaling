@@ -6,8 +6,8 @@ Emergent pattern recognition and learning
 
 using Statistics
 
-include("utils.jl")
-using .Utils: safe_divide, calculate_phase_coherence
+# 🎯 ADDED: Safe divide function
+safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
 mutable struct ProtoIntelligence
     pattern_memory::Dict{String, Int}
