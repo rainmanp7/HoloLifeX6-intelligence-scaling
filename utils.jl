@@ -5,6 +5,8 @@ Shared utility functions for all modules
 """
 
 module Utils
+    using Statistics  # 🎯 CRITICAL: Add this import
+    
     export safe_divide, calculate_phase_coherence
     
     function safe_divide(a, b)
@@ -17,7 +19,7 @@ module Utils
         end
         
         complex_phases = exp.(2π * im .* phases)
-        order_parameter = abs(mean(complex_phases))
+        order_parameter = abs(mean(complex_phases))  # 🎯 Now 'mean' is available
         return order_parameter
     end
     
