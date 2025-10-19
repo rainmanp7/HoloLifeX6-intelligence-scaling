@@ -6,7 +6,6 @@ Emergent pattern recognition and learning
 
 using Statistics
 
-# 🎯 ADDED: Safe divide function
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
 mutable struct ProtoIntelligence
