@@ -63,18 +63,20 @@ function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
 end
 
 # 🎯 CRITICAL FIX: Add reasoning capacity update function
-function update_reasoning_capacity!(network::UnifiedNetwork, reasoning_score::Float64)
-    # Only update if we have meaningful reasoning scores
-    if reasoning_score > 0.0
-        for entity in network.entities
-            # Real learning: entities improve reasoning based on network performance
-            entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * reasoning_score
-            # Ensure it stays in valid range
-            entity.reasoning_capacity = max(0.0, min(1.0, entity.reasoning_capacity))
+function update_reasoning_capacity!(network::UnifiedNetwork)
+    # Only update if we have recent reasoning results
+    if !isempty(network.reasoning_engine.reasoning_history)
+        recent_reasoning = network.reasoning_engine.reasoning_history[end]
+        
+        # Only update if we have meaningful reasoning scores
+        if recent_reasoning > 0.0
+            for entity in network.entities
+                # Real learning: entities improve reasoning based on network performance
+                entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * recent_reasoning
+                # Ensure it stays in valid range
+                entity.reasoning_capacity = max(0.0, min(1.0, entity.reasoning_capacity))
+            end
         end
-        println("🧠 REASONING UPDATE: Score=$reasoning_score, Updated $(length(network.entities)) entities")
-    else
-        println("🧠 REASONING UPDATE: Zero score detected ($reasoning_score), skipping update")
     end
 end
 
@@ -90,10 +92,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     
     # 🎯 CRITICAL FIX: Update reasoning capacity with REAL geometric reasoning
     if length(network.coherence_history) % 8 == 0
-        println("🎯 RUNNING GEOMETRIC REASONING TEST...")
         reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12)
-        println("🎯 GEOMETRIC REASONING RESULT: $reasoning_score")
-        update_reasoning_capacity!(network, reasoning_score)
+        update_reasoning_capacity!(network)  # Call the new function
     end
     
     # Update awareness with real phase coherence
@@ -125,14 +125,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     ei = calculate_effective_information(network)
     push!(network.effective_information, ei)
     
-    # 🎯 CRITICAL FIX: Get reasoning accuracy from engine history
-    reasoning_accuracy = 0.0
-    if !isempty(network.reasoning_engine.reasoning_history)
-        reasoning_accuracy = network.reasoning_engine.reasoning_history[end]
-        println("📊 CURRENT REASONING ACCURACY: $reasoning_accuracy")
-    else
-        println("📊 NO REASONING HISTORY AVAILABLE")
-    end
+    reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
+                        0.0 : network.reasoning_engine.reasoning_history[end]
     
     return Dict(
         "insights" => length(insights),
@@ -185,16 +179,8 @@ function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
         insight_quality, cross_domain_ratio, effective_info
     )
     
-    # 🎯 CRITICAL FIX: Get reasoning accuracy from engine
-    reasoning_accuracy = 0.0
-    if !isempty(network.reasoning_engine.reasoning_history)
-        # Use the most recent reasoning score
-        recent_scores = network.reasoning_engine.reasoning_history[max(1, end-4):end]
-        reasoning_accuracy = mean(recent_scores)
-        println("📈 FINAL REASONING ACCURACY CALCULATION: $reasoning_accuracy (from $(length(recent_scores)) samples)")
-    else
-        println("📈 NO REASONING SCORES AVAILABLE FOR FINAL METRICS")
-    end
+    reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
+                        0.0 : mean(network.reasoning_engine.reasoning_history[max(1, end-4):end])
     
     awareness_level = get_awareness_level(network.awareness_monitor)
     awareness_stability = get_awareness_stability(network.awareness_monitor)
@@ -208,7 +194,6 @@ function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
         learning_velocity = recent_coh - earlier_coh
     end
     
-    # 🎯 CRITICAL FIX: Ensure reasoning accuracy contributes to unified score
     unified_intelligence = (
         consciousness["max_phi"] * 0.25 +
         reasoning_accuracy * 0.25 +
@@ -218,15 +203,6 @@ function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
     )
     
     unified_intelligence = isfinite(unified_intelligence) ? unified_intelligence : 0.0
-    
-    # DEBUG: Print component scores
-    println("🧮 UNIFIED INTELLIGENCE COMPONENTS:")
-    println("   - Consciousness Φ: $(consciousness["max_phi"])")
-    println("   - Reasoning Accuracy: $reasoning_accuracy") 
-    println("   - Awareness Level: $awareness_level")
-    println("   - Proto-Intelligence: $proto_iq")
-    println("   - Insight Quality: $insight_quality")
-    println("   - FINAL SCORE: $unified_intelligence")
     
     return Dict(
         "entity_count" => entity_count,
