@@ -7,8 +7,7 @@ Testing framework with memory management and result logging
 using JSON
 using Dates
 
-include("utils.jl")
-using .Utils: safe_divide
+safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
 mutable struct SafeTester
     results::Vector{Dict{String,Any}}
