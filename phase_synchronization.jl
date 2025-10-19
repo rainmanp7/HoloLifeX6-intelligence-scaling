@@ -7,9 +7,6 @@ Real Kuramoto model for entity synchronization
 using LinearAlgebra
 using Random
 
-include("utils.jl")
-using .Utils: calculate_phase_coherence
-
 mutable struct EfficientEntity
     entity_id::String
     domain::String
