@@ -8,20 +8,15 @@ using Statistics
 using LinearAlgebra
 using Random
 
+include("utils.jl")
+using .Utils: safe_divide, safe_log
+
 mutable struct ConsciousnessValidator
     iit_threshold::Float64
     brown_threshold::Float64
     duality_threshold::Float64
     
     ConsciousnessValidator() = new(0.15, 0.12, 0.10)
-end
-
-function safe_divide(a, b)
-    return b == 0 ? 0.0 : a / b
-end
-
-function safe_log(x)
-    return x <= 0 ? 0.0 : log(x + 1.0)
 end
 
 function calculate_iit_phi(cv::ConsciousnessValidator, entity_count::Int, 
