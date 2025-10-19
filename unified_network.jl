@@ -7,8 +7,10 @@ Orchestrates all intelligence components into unified system
 using Statistics
 using LinearAlgebra
 
-include("utils.jl")
-using .Utils: safe_divide, calculate_phase_coherence
+# 🎯 ADDED: Both missing functions
+safe_divide(a, b) = b == 0 ? 0.0 : a / b
+calculate_phase_coherence(phases::Vector{Float64})::Float64 = 
+    isempty(phases) ? 0.0 : abs(mean(exp.(2π * im .* phases)))
 
 mutable struct UnifiedNetwork
     entities::Vector{EfficientEntity}
