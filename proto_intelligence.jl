@@ -6,6 +6,9 @@ Emergent pattern recognition and learning
 
 using Statistics
 
+include("utils.jl")
+using .Utils: safe_divide, calculate_phase_coherence
+
 mutable struct ProtoIntelligence
     pattern_memory::Dict{String, Int}
     discovery_count::Int
