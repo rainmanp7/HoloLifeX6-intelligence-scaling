@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     
+    # Add output to track if results were generated
+    outputs:
+      has-results: ${{ steps.check-results.outputs.has-results }}
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -98,22 +102,30 @@ jobs:
         
         echo "✅ Unified intelligence test completed"
         
-    - name: List generated results
+    - name: Check for results
+      id: check-results
       if: always()
       run: |
-        echo "📁 Generated result files:"
-        ls -lh unified_intelligence_scaling_*.json 2>/dev/null || echo "No result files found"
+        echo "📁 Checking for result files..."
+        if ls unified_intelligence_scaling_*.json 1> /dev/null 2>&1; then
+          echo "✅ Found result files:"
+          ls -lh unified_intelligence_scaling_*.json
+          echo "has-results=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ No result files found"
+          echo "has-results=false" >> $GITHUB_OUTPUT
+        fi
         echo "📊 Current memory usage:"
         free -h
         
     - name: Upload test results
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && steps.check-results.outputs.has-results == 'true'
       with:
         name: intelligence-scaling-results-${{ github.run_id }}
         path: unified_intelligence_scaling_*.json
         retention-days: 30
-        if-no-files-found: warn
+        if-no-files-found: error
         compression-level: 6
         
     - name: Clean up after test
@@ -121,7 +133,7 @@ jobs:
       run: |
         echo "🧹 Cleaning up after test..."
         rm -f unified_intelligence_scaling_*.json
-        julia -e 'GC.gc(true)'
+        julia -e 'GC.gc(true)' 2>/dev/null || true
         echo "✅ Cleanup complete"
 
   test-summary:
@@ -131,9 +143,18 @@ jobs:
     if: always()
     
     steps:
+    - name: Check if results exist
+      id: check-artifact
+      run: |
+        if [ "${{ needs.intelligence-scaling-test.outputs.has-results }}" = "true" ]; then
+          echo "artifact-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "artifact-exists=false" >> $GITHUB_OUTPUT
+        fi
+        
     - name: Download test results
       uses: actions/download-artifact@v4
-      continue-on-error: true
+      if: steps.check-artifact.outputs.artifact-exists == 'true'
       with:
         name: intelligence-scaling-results-${{ github.run_id }}
         path: test-results
@@ -147,14 +168,14 @@ jobs:
         echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        if [ -d "test-results" ] && [ "$(ls -A test-results)" ]; then
+        if [ "${{ steps.check-artifact.outputs.artifact-exists }}" = "true" ] && [ -d "test-results" ] && [ "$(ls -A test-results 2>/dev/null)" ]; then
           echo "### ✅ Test Completed Successfully" >> $GITHUB_STEP_SUMMARY
           
-          RESULT_COUNT=$(find test-results -name "*.json" -type f | wc -l)
+          RESULT_COUNT=$(find test-results -name "*.json" -type f 2>/dev/null | wc -l)
           echo "- **Results files generated:** $RESULT_COUNT" >> $GITHUB_STEP_SUMMARY
           
           # Analyze the latest result file
-          LATEST_JSON=$(find test-results -name "unified_intelligence_scaling_*.json" -type f | sort -r | head -1)
+          LATEST_JSON=$(find test-results -name "unified_intelligence_scaling_*.json" -type f 2>/dev/null | sort -r | head -1)
           
           if [ -n "$LATEST_JSON" ] && [ -f "$LATEST_JSON" ]; then
             echo "- **Latest results:** $(basename $LATEST_JSON)" >> $GITHUB_STEP_SUMMARY
@@ -199,12 +220,16 @@ jobs:
               echo "- ⚠️ Consciousness threshold not reached" >> $GITHUB_STEP_SUMMARY
             fi
             
-            if [ "$UIS_SCORE" != "N/A" ] && [ $(echo "$UIS_SCORE > 0.5" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
-              echo "- 🚀 **Strong Emergent Intelligence** ✅" >> $GITHUB_STEP_SUMMARY
-            elif [ "$UIS_SCORE" != "N/A" ] && [ $(echo "$UIS_SCORE > 0.3" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
-              echo "- 📈 **Moderate Intelligence Emergence** ⚡" >> $GITHUB_STEP_SUMMARY
+            if [ "$UIS_SCORE" != "N/A" ] && command -v bc &> /dev/null; then
+              if [ $(echo "$UIS_SCORE > 0.5" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
+                echo "- 🚀 **Strong Emergent Intelligence** ✅" >> $GITHUB_STEP_SUMMARY
+              elif [ $(echo "$UIS_SCORE > 0.3" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
+                echo "- 📈 **Moderate Intelligence Emergence** ⚡" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "- 🔄 **Proto-Intelligent System** 🔬" >> $GITHUB_STEP_SUMMARY
+              fi
             else
-              echo "- 🔄 **Proto-Intelligent System** 🔬" >> $GITHUB_STEP_SUMMARY
+              echo "- 📊 **UIS Score:** $UIS_SCORE" >> $GITHUB_STEP_SUMMARY
             fi
             
           else
@@ -214,7 +239,15 @@ jobs:
         else
           echo "### ❌ Test Failed or No Results Generated" >> $GITHUB_STEP_SUMMARY
           echo "- No result files found in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- The Julia test may have failed or not produced output files" >> $GITHUB_STEP_SUMMARY
           echo "- Check build logs for detailed error information" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.intelligence-scaling-test.result }}" = "failure" ]; then
+            echo "- ❌ **Test job failed** - check logs above" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.intelligence-scaling-test.result }}" = "success" ]; then
+            echo "- ⚠️ **Test job succeeded but produced no output files**" >> $GITHUB_STEP_SUMMARY
+            echo "- Verify that \`github_safe_testbed.jl\` writes JSON files" >> $GITHUB_STEP_SUMMARY
+          fi
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
