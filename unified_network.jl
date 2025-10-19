@@ -1,15 +1,11 @@
 # unified_network.jl
 """
 🌐 UNIFIED NETWORK MODULE
-Orchestrates all intelligence components into a unified system.
-This version is designed for a multi-file project and does not redefine components.
+Orchestrates all intelligence components into unified system
 """
 
 using Statistics
 using LinearAlgebra
-
-# This utility function might be useful if not defined elsewhere
-safe_divide(num, den) = den == 0 ? 0.0 : num / den
 
 mutable struct UnifiedNetwork
     entities::Vector{EfficientEntity}
@@ -29,6 +25,7 @@ mutable struct UnifiedNetwork
         awareness_monitor = AwarenessMonitor()
         proto_intelligence = ProtoIntelligence()
         
+        # Initialize with empty coupling matrix (will be resized)
         coupling_matrix = zeros(0, 0)
         effective_information = Float64[]
         
@@ -40,55 +37,66 @@ end
 
 function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
     push!(network.entities, entity)
+    # Update coupling matrix with new entity
     n = length(network.entities)
     new_coupling_matrix = zeros(n, n)
     
     if n > 1
+        # Copy old matrix and add new row/column
         old_size = size(network.coupling_matrix, 1)
         if old_size > 0
             new_coupling_matrix[1:old_size, 1:old_size] = network.coupling_matrix
         end
         
-        # Assuming entity has an `id` field for correct indexing
-        last_entity = network.entities[n]
-        for i in 1:n-1
-            strength = network.entities[i].domain == last_entity.domain ? 0.08 : 0.04
-            new_coupling_matrix[i, n] = strength
-            new_coupling_matrix[n, i] = strength
+        # Initialize new couplings based on domain similarity
+        for i in 1:n
+            if i != n
+                # Coupling strength based on domain compatibility
+                strength = network.entities[i].domain == entity.domain ? 0.08 : 0.04
+                new_coupling_matrix[i, n] = strength
+                new_coupling_matrix[n, i] = strength
+            end
         end
     end
     
     network.coupling_matrix = new_coupling_matrix
 end
 
-# ⭐ FIX 1: Refactored function for clearer logic. Pass the score directly.
-function update_reasoning_capacity!(network::UnifiedNetwork, recent_reasoning_score::Float64)
-    if recent_reasoning_score > 0.0
-        for entity in network.entities
-            # Exponential moving average for learning
-            entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * recent_reasoning_score
-            # Ensure it stays in valid range [0, 1]
-            entity.reasoning_capacity = clamp(entity.reasoning_capacity, 0.0, 1.0)
+# 🎯 CRITICAL FIX: Add reasoning capacity update function
+function update_reasoning_capacity!(network::UnifiedNetwork)
+    # Only update if we have recent reasoning results
+    if !isempty(network.reasoning_engine.reasoning_history)
+        recent_reasoning = network.reasoning_engine.reasoning_history[end]
+        
+        # Only update if we have meaningful reasoning scores
+        if recent_reasoning > 0.0
+            for entity in network.entities
+                # Real learning: entities improve reasoning based on network performance
+                entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * recent_reasoning
+                # Ensure it stays in valid range
+                entity.reasoning_capacity = max(0.0, min(1.0, entity.reasoning_capacity))
+            end
         end
     end
 end
 
 function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     insights = Dict{String,Any}[]
-    # This assumes entities have a stable `id` field for matrix indexing
     entity_phases = [e.phase for e in network.entities]
     
+    # Real phase evolution with Kuramoto coupling
     for entity in network.entities
         evolve_phase!(entity)
         kuramoto_coupling!(entity, entity_phases, network.coupling_matrix)
     end
     
-    # ⭐ FIX 1 (continued): Use the refactored update function
-    if length(network.coherence_history) % 8 == 0 && !isempty(network.entities)
+    # 🎯 CRITICAL FIX: Update reasoning capacity with REAL geometric reasoning
+    if length(network.coherence_history) % 8 == 0
         reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12)
-        update_reasoning_capacity!(network, reasoning_score) # Pass the score directly
+        update_reasoning_capacity!(network)  # Call the new function
     end
     
+    # Update awareness with real phase coherence
     current_phases = [e.phase for e in network.entities]
     update_awareness(network.awareness_monitor, current_phases)
     awareness_level = get_awareness_level(network.awareness_monitor)
@@ -97,8 +105,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
         entity.awareness_level = 0.8 * entity.awareness_level + 0.2 * awareness_level
     end
     
+    # Generate insights with real network context
     for entity in network.entities
-        # ⭐ FIX 2: This relies on your external `generate_insight` function now producing the correct keys.
         insight = generate_insight(entity, current_phases)
         if !isempty(insight)
             push!(insights, insight)
@@ -106,10 +114,14 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
         end
     end
     
+    # Real pattern recognition
     new_patterns = recognize_emergent_patterns(network.proto_intelligence, insights)
+    
+    # Calculate real coherence using order parameter
     coherence = calculate_phase_coherence(current_phases)
     push!(network.coherence_history, coherence)
     
+    # Calculate real effective information
     ei = calculate_effective_information(network)
     push!(network.effective_information, ei)
     
@@ -129,11 +141,14 @@ end
 function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
     entity_count = length(network.entities)
     total_insights = length(network.insight_history)
-    coherence = isempty(network.coherence_history) ? 0.0 : network.coherence_history[end]
+    coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
     effective_info = isempty(network.effective_information) ? 0.0 : network.effective_information[end]
     
-    insight_quality, insight_diversity, cross_domain_ratio = 0.0, 0.0, 0.0
-    reasoning_integration, awareness_integration = 0.0, 0.0
+    insight_quality = 0.0
+    insight_diversity = 0.0
+    cross_domain_ratio = 0.0
+    reasoning_integration = 0.0
+    awareness_integration = 0.0
     
     if !isempty(network.insight_history)
         recent = length(network.insight_history) >= 10 ? 
@@ -180,32 +195,32 @@ function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
     end
     
     unified_intelligence = (
-        get(consciousness, "max_phi", 0.0) * 0.25 +
+        consciousness["max_phi"] * 0.25 +
         reasoning_accuracy * 0.25 +
         awareness_level * 0.20 +
-        (proto_iq / 100) * 0.15 + # Normalize proto_iq from a base of 100
+        proto_iq * 0.15 +
         insight_quality * 0.15
     )
     
     unified_intelligence = isfinite(unified_intelligence) ? unified_intelligence : 0.0
     
-    # Renamed some keys for clarity
     return Dict(
         "entity_count" => entity_count,
         "coherence" => round(coherence, digits=4),
         "total_insights" => total_insights,
-        "consciousness_phi" => round(get(consciousness, "max_phi", 0.0), digits=4),
+        "consciousness" => consciousness,
         "reasoning_accuracy" => round(reasoning_accuracy, digits=4),
         "reasoning_integration" => round(reasoning_integration, digits=4),
         "awareness_level" => round(awareness_level, digits=4),
         "awareness_stability" => round(awareness_stability, digits=4),
         "awareness_integration" => round(awareness_integration, digits=4),
-        "proto_intelligence_iq" => round(proto_iq, digits=4),
+        "proto_intelligence" => round(proto_iq, digits=4),
         "insight_quality" => round(insight_quality, digits=4),
         "insight_diversity" => round(insight_diversity, digits=4),
         "cross_domain_ratio" => round(cross_domain_ratio, digits=4),
         "learning_velocity" => round(learning_velocity, digits=4),
-        "effective_information" => round(effective_info, digits=4),
-        "UNIFIED_INTELLIGENCE_SCORE" => round(unified_intelligence, digits=4)
+        "unified_intelligence_score" => round(unified_intelligence, digits=4),
+        "pattern_discoveries" => network.proto_intelligence.discovery_count,
+        "effective_information" => round(effective_info, digits=4)
     )
 end
