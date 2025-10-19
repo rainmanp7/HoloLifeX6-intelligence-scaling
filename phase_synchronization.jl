@@ -7,6 +7,9 @@ Real Kuramoto model for entity synchronization
 using LinearAlgebra
 using Random
 
+include("utils.jl")
+using .Utils: calculate_phase_coherence
+
 mutable struct EfficientEntity
     entity_id::String
     domain::String
@@ -41,15 +44,23 @@ function kuramoto_coupling!(entity::EfficientEntity, network_phases::Vector{Floa
     
     # Extract entity index safely
     entity_parts = split(entity.entity_id, "-")
-    entity_idx = length(entity_parts) >= 2 ? parse(Int, entity_parts[end]) : 1
+    entity_idx = 1
+    try
+        if length(entity_parts) >= 2
+            entity_idx = parse(Int, entity_parts[end])
+        end
+    catch
+        entity_idx = 1
+    end
     
     phase_sum = 0.0
     weight_sum = 0.0
+    n_entities = length(network_phases)
     
-    for (j, other_phase) in enumerate(network_phases)
+    for j in 1:n_entities
         if j != entity_idx && j <= size(coupling_matrix, 2) && entity_idx <= size(coupling_matrix, 1)
             coupling_strength = coupling_matrix[entity_idx, j]
-            phase_diff = other_phase - entity.phase
+            phase_diff = network_phases[j] - entity.phase
             phase_sum += coupling_strength * sin(2π * phase_diff)
             weight_sum += coupling_strength
         end
@@ -59,15 +70,4 @@ function kuramoto_coupling!(entity::EfficientEntity, network_phases::Vector{Floa
         entity.phase += entity.coupling_strength * (phase_sum / weight_sum)
         entity.phase = mod(entity.phase, 1.0)
     end
-end
-
-function calculate_phase_coherence(phases::Vector{Float64})::Float64
-    # Real order parameter for phase synchronization
-    if isempty(phases)
-        return 0.0
-    end
-    
-    complex_phases = exp.(2π * im .* phases)
-    order_parameter = abs(mean(complex_phases))
-    return order_parameter
 end
