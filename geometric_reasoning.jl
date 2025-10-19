@@ -73,7 +73,12 @@ function manifold_forward_pass(re::GeometricReasoningEngine, X::Matrix{Float64})
         if size(current, 2) > 1
             # Compute persistent homology features manually
             dist_matrix = compute_distance_matrix(current)
-            current = hcat(current, vec(mean(dist_matrix, dims=2)))
+            topological_feature = vec(mean(dist_matrix, dims=2))
+            
+            # 🎯 CRITICAL FIX: Ensure topological feature has correct dimensions
+            if size(topological_feature, 1) == size(current, 1)
+                current = hcat(current, topological_feature)
+            end
         end
     end
     return current
