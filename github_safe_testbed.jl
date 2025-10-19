@@ -1,7 +1,7 @@
-# github_safe_testbed_fixed.jl
+# github_safe_testbed_working.jl
 """
 🧠 HOLOLIFEX6 PROTOTYPE4 - UNIFIED INTELLIGENCE SCALING TESTBED
-FIXED VERSION - Proper NaN handling and improved geometric reasoning
+WORKING VERSION - Fixed NaN handling and improved geometric reasoning
 """
 
 using Statistics
@@ -27,29 +27,29 @@ function safe_divide(a, b)
 end
 
 function safe_log(x)
-    return x <= 0 ? 0.0 : log(x)
+    return x <= 0 ? 0.0 : log(x + 1.0)
 end
 
 function calculate_iit_phi(cv::ConsciousnessValidator, entity_count::Int, 
                           coherence::Float64, total_insights::Int, 
                           cross_domain::Float64)::Float64
     integration = coherence * 0.967
-    complexity = safe_divide(safe_log(total_insights + 1), safe_log(entity_count + 1))
+    complexity = safe_divide(safe_log(total_insights), safe_log(entity_count + 1))
     differentiation = cross_domain
     phi = coherence * integration * complexity * differentiation
-    return max(0.0, min(phi, 10.0))  # Cap at reasonable value
+    return max(0.0, min(phi, 5.0))
 end
 
 function calculate_brown_phi(cv::ConsciousnessValidator, entity_count::Int,
                             coherence::Float64, total_insights::Int,
                             insight_quality::Float64, cross_domain::Float64)::Float64
     density_factor = safe_divide(total_insights, max(entity_count, 1))
-    density_score = min(safe_log(density_factor + 1) / 3.0, 1.5)
+    density_score = min(safe_log(density_factor) / 3.0, 1.5)
     efficiency_score = sqrt(max(coherence * insight_quality, 0.0))
     holographic_factor = coherence * cross_domain * insight_quality
-    emergence = safe_divide(safe_log(total_insights + 1), safe_log(max(entity_count, 10)))
+    emergence = safe_divide(safe_log(total_insights), safe_log(max(entity_count, 10)))
     brown_phi = efficiency_score * density_score * holographic_factor * (1.0 + emergence * 0.3)
-    return max(0.0, min(brown_phi, 10.0))
+    return max(0.0, min(brown_phi, 5.0))
 end
 
 function assess_consciousness(cv::ConsciousnessValidator, entity_count::Int,
@@ -99,91 +99,64 @@ mutable struct GeometricReasoningEngine
     interaction_weights::Matrix{Float64}
     decision_weights::Matrix{Float64}
     reasoning_history::Vector{Float64}
-    geometric_problems::Vector{Tuple{Matrix{Float64}, Int}}
     
     function GeometricReasoningEngine(dimensions::Int=4)
-        # Proper weight initialization with better scaling
-        entity_w = randn(dimensions, 8) * 0.05
-        interaction_w = randn(8, 8) * 0.05  
-        decision_w = randn(8, 1) * 0.05
+        # Better weight initialization
+        entity_w = randn(dimensions, 8) * 0.1
+        interaction_w = randn(8, 8) * 0.1  
+        decision_w = randn(8, 1) * 0.1
         
-        new(dimensions, entity_w, interaction_w, decision_w, Float64[], [])
+        new(dimensions, entity_w, interaction_w, decision_w, Float64[])
     end
 end
 
-function generate_geometric_problem(re::GeometricReasoningEngine, num_points::Int=10, noise_level::Float64=1.2)
-    """Create meaningful geometric problems that are solvable"""
-    # Generate clustered points to create meaningful patterns
-    cluster_centers = randn(3, re.dimensions) * 1.5
+function generate_geometric_problem(re::GeometricReasoningEngine, num_points::Int=8)
+    """Create solvable geometric problems"""
+    # Generate meaningful clusters
+    cluster_centers = randn(2, re.dimensions) * 1.0
     X = zeros(num_points, re.dimensions)
     
     for i in 1:num_points
-        cluster_idx = rand(1:3)
-        X[i, :] = cluster_centers[cluster_idx, :] + randn(re.dimensions) * 0.8
+        cluster_idx = rand(1:2)
+        X[i, :] = cluster_centers[cluster_idx, :] + randn(re.dimensions) * 0.5
     end
-    
-    # Add some noise
-    noise = randn(num_points, re.dimensions) * noise_level
-    X .+= noise
     
     # Calculate distances from origin
     distances = [norm(X[i, :]) for i in 1:num_points]
     true_min_idx = argmin(distances)
     
-    # Ensure reasonable difficulty
-    sorted_dists = sort(distances)
-    min_gap = sorted_dists[2] - sorted_dists[1]
-    
-    # Regenerate if problem is degenerate
-    if min_gap < 0.3 || any(isnan.(X)) || any(isinf.(X))
-        return generate_geometric_problem(re, num_points, noise_level)
-    end
-    
     return X, true_min_idx
 end
 
 function solve_geometric_problem(re::GeometricReasoningEngine, X::Matrix{Float64})
-    """Improved geometric reasoning with better numerical stability"""
+    """Simplified but effective geometric reasoning"""
     num_points = size(X, 1)
     
     try
-        # Layer 1: Entity feature extraction with bounds checking
+        # Simple feature extraction
         entity_features = [X[i, :]' * re.entity_weights for i in 1:num_points]
         entity_matrix = vcat(entity_features...)
         
-        # Clamp values to prevent explosion
-        entity_matrix = clamp.(entity_matrix, -10.0, 10.0)
-        entity_matrix = max.(entity_matrix, 0.0)  # ReLU
+        # ReLU activation
+        entity_matrix = max.(entity_matrix, 0.0)
         
-        # Layer 2: Entity interactions
-        interacted = entity_matrix * re.interaction_weights
-        interacted = clamp.(interacted, -10.0, 10.0)
-        interacted = max.(interacted, 0.0)
-        
-        # Layer 3: Decision layer
-        distance_estimates = interacted * re.decision_weights
-        distance_estimates = clamp.(distance_estimates, -10.0, 10.0)
-        
+        # Decision layer
+        distance_estimates = entity_matrix * re.decision_weights
         estimates_vector = vec(distance_estimates)
+        
         return argmin(estimates_vector)
     catch e
-        # Fallback: return random guess if computation fails
         return rand(1:num_points)
     end
 end
 
-function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=30)
-    """More reliable geometric reasoning test"""
+function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=20)
+    """Reliable geometric reasoning test"""
     correct = 0
     
     for trial in 1:num_trials
         try
-            noise_level = 1.0 + rand() * 0.5
-            num_points = 8  # Fixed for consistency
-            
-            X, true_answer = generate_geometric_problem(re, num_points, noise_level)
-            push!(re.geometric_problems, (X, true_answer))
-            
+            X, true_answer = generate_geometric_problem(re)
             prediction = solve_geometric_problem(re, X)
             
             if prediction == true_answer
@@ -201,7 +174,7 @@ function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=
 end
 
 # =============================================
-# IMPROVED GEOMETRIC ENTITY
+# SIMPLIFIED BUT EFFECTIVE ENTITY
 # =============================================
 
 mutable struct GeometricEntity
@@ -209,17 +182,13 @@ mutable struct GeometricEntity
     domain::String
     base_frequency::Float64
     phase::Float64
-    position::Vector{Float64}
     state_vector::Vector{Float64}
-    coupling_strength::Float64
     reasoning_capacity::Float64
     awareness_level::Float64
-    geometric_insight::Float64
     
-    function GeometricEntity(entity_id::String, domain::String, base_frequency::Float64=0.02, dimensions::Int=4)
-        position = randn(dimensions) * 1.0  # Tighter distribution
-        state_vector = randn(8) * 0.1
-        new(entity_id, domain, base_frequency, rand(), position, state_vector, 0.1, 0.5, 0.5, 0.3)
+    function GeometricEntity(entity_id::String, domain::String, base_frequency::Float64=0.03)
+        state_vector = randn(4) * 0.1
+        new(entity_id, domain, base_frequency, rand(), state_vector, 0.5, 0.5)
     end
 end
 
@@ -233,37 +202,11 @@ function couple_to!(entity::GeometricEntity, other_phase::Float64, strength::Flo
     entity.phase = mod(entity.phase, 1.0)
 end
 
-function compute_geometric_insight(entity::GeometricEntity, problem::Matrix{Float64})
-    """More reliable geometric insight calculation"""
-    try
-        distances = [norm(entity.position - problem[i, :]) for i in 1:size(problem, 1)]
-        
-        if isempty(distances) || any(isnan.(distances)) || any(isinf.(distances))
-            return 0.0
-        end
-        
-        distance_variance = std(distances)
-        min_distance = minimum(distances)
-        avg_distance = mean(distances)
-        
-        # More stable calculation
-        positioning_score = 1.0 / (1.0 + min_distance)
-        consistency_score = 1.0 / (1.0 + distance_variance)
-        centrality_score = 1.0 / (1.0 + avg_distance/5)
-        
-        geometric_insight = positioning_score * consistency_score * centrality_score
-        return min(geometric_insight, 1.0)
-    catch e
-        return 0.0
-    end
-end
-
 function calculate_action_complexity(action::String)::Int
     complexity_map = Dict(
-        "validate" => 1, "check" => 1, "monitor" => 1, "analyze" => 1, "assess" => 1, "detect" => 1,
-        "optimize" => 2, "balance" => 2, "sync" => 2, "predict" => 2, "extract" => 2, "map" => 2, "explore" => 2,
-        "generate" => 3, "innovate" => 3, "coordinate" => 3, "mediate" => 3, "integrate" => 3, 
-        "orchestrate" => 3, "synthesize" => 3, "reason" => 3, "discover" => 3
+        "validate" => 1, "check" => 1, "monitor" => 1, "analyze" => 1, "assess" => 1,
+        "optimize" => 2, "balance" => 2, "sync" => 2, "predict" => 2, "extract" => 2,
+        "generate" => 3, "innovate" => 3, "coordinate" => 3, "integrate" => 3, "synthesize" => 3
     )
     
     for (key, score) in complexity_map
@@ -274,103 +217,70 @@ function calculate_action_complexity(action::String)::Int
     return 1
 end
 
-function generate_geometric_insight(entity::GeometricEntity, problem::Matrix{Float64})::Dict{String,Any}
-    """More reliable insight generation"""
-    try
-        geometric_quality = compute_geometric_insight(entity, problem)
+function generate_insight(entity::GeometricEntity)::Dict{String,Any}
+    """Generate insights based on phase and reasoning capacity"""
+    if entity.phase > 0.6  # Lower threshold for more activity
+        action_map = Dict(
+            "physical" => ["analyze_systems", "optimize_resources", "monitor_performance"],
+            "temporal" => ["predict_trends", "sync_operations", "balance_timing"],
+            "semantic" => ["extract_meaning", "connect_concepts", "synthesize_knowledge"],
+            "network" => ["optimize_paths", "balance_loads", "coordinate_flows"],
+            "spatial" => ["map_relationships", "cluster_patterns", "navigate_space"],
+            "emotional" => ["assess_sentiment", "balance_energy", "mediate_conflicts"],
+            "social" => ["coordinate_groups", "share_insights", "build_consensus"],
+            "creative" => ["generate_ideas", "innovate_solutions", "discover_patterns"]
+        )
         
-        # Lower threshold for insight generation to get more activity
-        if entity.phase > 0.5 && geometric_quality > 0.2
-            action_map = Dict(
-                "physical" => ["analyze_geometry", "optimize_space", "navigate_dimensions"],
-                "temporal" => ["predict_movements", "sync_rhythms", "anticipate_changes"],
-                "semantic" => ["extract_patterns", "map_relationships", "synthesize_ideas"],
-                "network" => ["optimize_connections", "balance_flows", "coordinate_paths"],
-                "spatial" => ["cluster_points", "map_structure", "navigate_space"],
-                "emotional" => ["assess_harmony", "balance_energy", "mediate_tensions"],
-                "social" => ["coordinate_actions", "share_views", "build_consensus"],
-                "creative" => ["discover_patterns", "innovate_solutions", "synthesize_concepts"]
-            )
-            
-            actions = get(action_map, entity.domain, ["analyze_situation"])
-            action_idx = Int(floor(entity.phase * length(actions))) % length(actions) + 1
-            action = actions[action_idx]
-            
-            quality_boost = (entity.reasoning_capacity + geometric_quality) / 2
-            confidence = entity.phase * quality_boost
-            
-            return Dict(
-                "entity" => entity.entity_id,
-                "domain" => entity.domain,
-                "action" => action,
-                "confidence" => round(confidence, digits=4),
-                "phase" => entity.phase,
-                "action_complexity" => calculate_action_complexity(action),
-                "geometric_quality" => round(geometric_quality, digits=4),
-                "reasoning_enhanced" => entity.reasoning_capacity > 0.6,
-                "awareness_enhanced" => entity.awareness_level > 0.6,
-                "dimensional_analysis" => true
-            )
-        end
-    catch e
-        # Return empty on error
+        actions = get(action_map, entity.domain, ["analyze_situation"])
+        action_idx = Int(floor(entity.phase * length(actions))) % length(actions) + 1
+        action = actions[action_idx]
+        
+        # Quality based on reasoning capacity and phase
+        confidence = entity.phase * entity.reasoning_capacity
+        complexity = calculate_action_complexity(action)
+        
+        return Dict(
+            "entity" => entity.entity_id,
+            "domain" => entity.domain,
+            "action" => action,
+            "confidence" => round(confidence, digits=4),
+            "phase" => entity.phase,
+            "action_complexity" => complexity,
+            "reasoning_enhanced" => entity.reasoning_capacity > 0.6,
+            "awareness_enhanced" => entity.awareness_level > 0.6
+        )
     end
     
     return Dict{String,Any}()
 end
 
 # =============================================
-# IMPROVED AWARENESS MONITOR
+# SIMPLIFIED AWARENESS MONITOR
 # =============================================
 
-mutable struct GeometricAwarenessMonitor
-    dimensions::Int
+mutable struct AwarenessMonitor
     state_history::Vector{Vector{Float64}}
-    position_history::Vector{Vector{Float64}}
     awareness_scores::Vector{Float64}
-    geometric_coherence::Vector{Float64}
     
-    GeometricAwarenessMonitor(dimensions::Int=4) = new(dimensions, Vector{Float64}[], Vector{Float64}[], Float64[], Float64[])
+    AwarenessMonitor() = new(Vector{Float64}[], Float64[])
 end
 
-function update_geometric_awareness(am::GeometricAwarenessMonitor, entity_states::Vector{Vector{Float64}}, entity_positions::Vector{Vector{Float64}})
+function update_awareness(am::AwarenessMonitor, entity_states::Vector{Vector{Float64}})
+    if isempty(entity_states)
+        push!(am.awareness_scores, 0.5)
+        return
+    end
+    
     try
-        if !isempty(entity_states)
-            state_avg = mean(entity_states)
-            push!(am.state_history, state_avg)
-        end
+        current_avg = mean(entity_states)
+        push!(am.state_history, current_avg)
         
-        if !isempty(entity_positions)
-            pos_avg = mean(entity_positions)
-            push!(am.position_history, pos_avg)
-        end
-        
-        if length(am.state_history) > 1 && length(am.position_history) > 1
-            # State-based awareness
-            current_state = am.state_history[end]
-            previous_state = am.state_history[end-1]
-            state_change = norm(current_state .- previous_state)
-            state_awareness = 1.0 / (1.0 + state_change)
-            
-            # Geometric awareness
-            current_pos = am.position_history[end]
-            previous_pos = am.position_history[end-1]
-            pos_change = norm(current_pos .- previous_pos)
-            geometric_awareness = 1.0 / (1.0 + pos_change)
-            
-            awareness_score = (state_awareness + geometric_awareness) / 2
+        if length(am.state_history) > 1
+            previous_avg = am.state_history[end-1]
+            change = norm(current_avg - previous_avg)
+            awareness_score = 1.0 / (1.0 + change)
         else
             awareness_score = 0.5
-        end
-        
-        # Calculate geometric coherence
-        if length(entity_positions) > 1
-            avg_position = mean(entity_positions)
-            distances = [norm(pos - avg_position) for pos in entity_positions]
-            if !isempty(distances) && !any(isnan.(distances))
-                coherence = 1.0 / (1.0 + std(distances))
-                push!(am.geometric_coherence, coherence)
-            end
         end
         
         push!(am.awareness_scores, awareness_score)
@@ -379,12 +289,12 @@ function update_geometric_awareness(am::GeometricAwarenessMonitor, entity_states
     end
 end
 
-function get_awareness_level(am::GeometricAwarenessMonitor)::Float64
+function get_awareness_level(am::AwarenessMonitor)::Float64
     scores = am.awareness_scores
-    return isempty(scores) ? 0.0 : mean(scores[max(1, end-4):end])  # Shorter window
+    return isempty(scores) ? 0.5 : mean(scores[max(1, end-4):end])
 end
 
-function get_awareness_stability(am::GeometricAwarenessMonitor)::Float64
+function get_awareness_stability(am::AwarenessMonitor)::Float64
     scores = am.awareness_scores
     if length(scores) < 5
         return 0.0
@@ -393,228 +303,178 @@ function get_awareness_stability(am::GeometricAwarenessMonitor)::Float64
     return 1.0 - std(recent)
 end
 
-function get_geometric_coherence(am::GeometricAwarenessMonitor)::Float64
-    return isempty(am.geometric_coherence) ? 0.5 : am.geometric_coherence[end]
-end
-
 # =============================================
-# IMPROVED PROTO-INTELLIGENCE
+# SIMPLIFIED PROTO-INTELLIGENCE
 # =============================================
 
-mutable struct GeometricProtoIntelligence
+mutable struct ProtoIntelligence
     pattern_memory::Dict{String, Int}
-    geometric_patterns::Dict{String, Int}
     discovery_count::Int
     
-    GeometricProtoIntelligence() = new(Dict{String, Int}(), Dict{String, Int}(), 0)
+    ProtoIntelligence() = new(Dict{String, Int}(), 0)
 end
 
-function observe_pattern(pi::GeometricProtoIntelligence, pattern::String, is_geometric::Bool=false)
-    target_memory = is_geometric ? pi.geometric_patterns : pi.pattern_memory
-    
-    if haskey(target_memory, pattern)
-        target_memory[pattern] += 1
+function observe_pattern(pi::ProtoIntelligence, pattern::String)
+    if haskey(pi.pattern_memory, pattern)
+        pi.pattern_memory[pattern] += 1
     else
-        target_memory[pattern] = 1
+        pi.pattern_memory[pattern] = 1
         pi.discovery_count += 1
     end
 end
 
-function recognize_emergent_patterns(pi::GeometricProtoIntelligence, insights::Vector{Dict{String,Any}})::Tuple{Int, Int}
+function recognize_emergent_patterns(pi::ProtoIntelligence, insights::Vector{Dict{String,Any}})::Int
     new_patterns = 0
-    new_geometric_patterns = 0
     
     for insight in insights
         if haskey(insight, "action") && haskey(insight, "domain")
             pattern = "$(insight["domain"]):$(insight["action"])"
-            is_geometric = get(insight, "dimensional_analysis", false)
-            
-            target_memory = is_geometric ? pi.geometric_patterns : pi.pattern_memory
-            old_count = get(target_memory, pattern, 0)
-            
-            observe_pattern(pi, pattern, is_geometric)
-            
+            old_count = get(pi.pattern_memory, pattern, 0)
+            observe_pattern(pi, pattern)
             if old_count == 0
                 new_patterns += 1
-                if is_geometric
-                    new_geometric_patterns += 1
-                end
             end
         end
     end
-    return new_patterns, new_geometric_patterns
+    return new_patterns
 end
 
-function calculate_geometric_proto_intelligence(pi::GeometricProtoIntelligence)::Tuple{Float64, Float64}
-    # General pattern intelligence
+function calculate_proto_intelligence(pi::ProtoIntelligence)::Float64
+    if isempty(pi.pattern_memory)
+        return 0.0
+    end
+    
     unique_patterns = length(pi.pattern_memory)
     total_observations = sum(values(pi.pattern_memory))
-    pattern_diversity = safe_divide(unique_patterns, max(total_observations, 1))
+    pattern_diversity = safe_divide(unique_patterns, total_observations)
     
     repeated_patterns = count(v -> v > 1, values(pi.pattern_memory))
-    learning_indicator = safe_divide(repeated_patterns, max(unique_patterns, 1))
+    learning_indicator = safe_divide(repeated_patterns, unique_patterns)
     
-    proto_iq = (pattern_diversity * 0.6 + learning_indicator * 0.4) * min(unique_patterns / 8, 1.0)
-    
-    # Geometric pattern intelligence
-    unique_geometric = length(pi.geometric_patterns)
-    total_geometric = sum(values(pi.geometric_patterns))
-    geometric_diversity = safe_divide(unique_geometric, max(total_geometric, 1))
-    
-    repeated_geometric = count(v -> v > 1, values(pi.geometric_patterns))
-    geometric_learning = safe_divide(repeated_geometric, max(unique_geometric, 1))
-    
-    geometric_iq = (geometric_diversity * 0.7 + geometric_learning * 0.3) * min(unique_geometric / 4, 1.0)
-    
-    return min(proto_iq, 1.0), min(geometric_iq, 1.0)
+    proto_iq = (pattern_diversity * 0.6 + learning_indicator * 0.4) * min(unique_patterns / 5, 1.0)
+    return min(proto_iq, 1.0)
 end
 
 # =============================================
-# UNIFIED GEOMETRIC NETWORK
+# UNIFIED NETWORK (SIMPLIFIED BUT EFFECTIVE)
 # =============================================
 
-mutable struct UnifiedGeometricNetwork
+mutable struct UnifiedNetwork
     entities::Vector{GeometricEntity}
     consciousness_validator::ConsciousnessValidator
     reasoning_engine::GeometricReasoningEngine
-    awareness_monitor::GeometricAwarenessMonitor
-    proto_intelligence::GeometricProtoIntelligence
+    awareness_monitor::AwarenessMonitor
+    proto_intelligence::ProtoIntelligence
     coherence_history::Vector{Float64}
     insight_history::Vector{Dict{String,Any}}
     
-    function UnifiedGeometricNetwork()
+    function UnifiedNetwork()
         new(
             GeometricEntity[],
             ConsciousnessValidator(),
             GeometricReasoningEngine(4),
-            GeometricAwarenessMonitor(4),
-            GeometricProtoIntelligence(),
+            AwarenessMonitor(),
+            ProtoIntelligence(),
             Float64[],
             Dict{String,Any}[]
         )
     end
 end
 
-function add_entity!(network::UnifiedGeometricNetwork, entity::GeometricEntity)
+function add_entity!(network::UnifiedNetwork, entity::GeometricEntity)
     push!(network.entities, entity)
 end
 
-function evolve_geometric_step!(network::UnifiedGeometricNetwork)::Dict{String,Any}
+function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     insights = Dict{String,Any}[]
-    current_problem = nothing
     
-    try
-        # Phase evolution and coupling
-        for entity in network.entities
-            evolve_phase!(entity)
-        end
-        
-        if !isempty(network.entities)
-            avg_phase = mean([e.phase for e in network.entities])
-            for entity in network.entities
-                couple_to!(entity, avg_phase, 0.03)  # Reduced coupling strength
-            end
-        end
-        
-        # Test geometric reasoning less frequently to allow learning
-        if length(network.coherence_history) % 15 == 0
-            reasoning_score = test_geometric_reasoning(network.reasoning_engine, 20)
-            for entity in network.entities
-                entity.reasoning_capacity = 0.8 * entity.reasoning_capacity + 0.2 * reasoning_score
-            end
-        end
-        
-        # Use recent problem or generate new one
-        if !isempty(network.reasoning_engine.geometric_problems)
-            current_problem, _ = network.reasoning_engine.geometric_problems[end]
-        else
-            current_problem, _ = generate_geometric_problem(network.reasoning_engine)
-        end
-        
-        # Update geometric awareness
-        entity_states = [e.state_vector for e in network.entities]
-        entity_positions = [e.position for e in network.entities]
-        update_geometric_awareness(network.awareness_monitor, entity_states, entity_positions)
-        
-        awareness_level = get_awareness_level(network.awareness_monitor)
-        for entity in network.entities
-            entity.awareness_level = 0.8 * entity.awareness_level + 0.2 * awareness_level
-        end
-        
-        # Generate geometric insights
-        for entity in network.entities
-            insight = generate_geometric_insight(entity, current_problem)
-            if !isempty(insight)
-                push!(insights, insight)
-                push!(network.insight_history, insight)
-            end
-        end
-        
-        # Calculate coherence
-        if !isempty(network.entities)
-            phases = [e.phase for e in network.entities]
-            phase_coherence = 1.0 - std(phases)
-            geometric_coherence = get_geometric_coherence(network.awareness_monitor)
-            overall_coherence = (phase_coherence + geometric_coherence) / 2
-            push!(network.coherence_history, overall_coherence)
-        else
-            push!(network.coherence_history, 0.5)
-        end
-        
-    catch e
-        # Ensure we always return valid data
-        push!(network.coherence_history, 0.5)
+    # Phase evolution
+    for entity in network.entities
+        evolve_phase!(entity)
     end
     
-    reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
-                        0.0 : network.reasoning_engine.reasoning_history[end]
+    # Coupling
+    if !isempty(network.entities)
+        avg_phase = mean([e.phase for e in network.entities])
+        for entity in network.entities
+            couple_to!(entity, avg_phase, 0.03)
+        end
+    end
     
-    new_patterns, new_geometric_patterns = recognize_emergent_patterns(network.proto_intelligence, insights)
+    # Test reasoning periodically
+    if length(network.coherence_history) % 10 == 0
+        reasoning_score = test_geometric_reasoning(network.reasoning_engine, 15)
+        for entity in network.entities
+            entity.reasoning_capacity = 0.8 * entity.reasoning_capacity + 0.2 * reasoning_score
+        end
+    end
+    
+    # Update awareness
+    entity_states = [e.state_vector for e in network.entities]
+    update_awareness(network.awareness_monitor, entity_states)
+    
+    awareness_level = get_awareness_level(network.awareness_monitor)
+    for entity in network.entities
+        entity.awareness_level = 0.8 * entity.awareness_level + 0.2 * awareness_level
+    end
+    
+    # Generate insights
+    for entity in network.entities
+        insight = generate_insight(entity)
+        if !isempty(insight)
+            push!(insights, insight)
+            push!(network.insight_history, insight)
+        end
+    end
+    
+    # Recognize patterns
+    new_patterns = recognize_emergent_patterns(network.proto_intelligence, insights)
+    
+    # Calculate coherence
+    if !isempty(network.entities)
+        phases = [e.phase for e in network.entities]
+        coherence = 1.0 - std(phases)
+        push!(network.coherence_history, coherence)
+    else
+        push!(network.coherence_history, 0.5)
+    end
     
     return Dict(
         "insights" => length(insights),
         "new_patterns" => new_patterns,
-        "new_geometric_patterns" => new_geometric_patterns,
         "coherence" => network.coherence_history[end],
-        "awareness" => get_awareness_level(network.awareness_monitor),
-        "reasoning_accuracy" => reasoning_accuracy
+        "awareness" => awareness_level,
+        "reasoning_accuracy" => isempty(network.reasoning_engine.reasoning_history) ? 
+                               0.0 : network.reasoning_engine.reasoning_history[end]
     )
 end
 
-function calculate_unified_geometric_metrics(network::UnifiedGeometricNetwork)::Dict{String,Any}
+function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
     entity_count = length(network.entities)
     total_insights = length(network.insight_history)
     coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
     
-    # Safe metric calculations
+    # Insight quality metrics
     insight_quality = 0.0
-    geometric_insight_quality = 0.0
     insight_diversity = 0.0
     cross_domain_ratio = 0.0
-    dimensional_ratio = 0.0
     reasoning_integration = 0.0
     awareness_integration = 0.0
     
     if !isempty(network.insight_history)
-        recent = length(network.insight_history) >= 20 ? 
-                 network.insight_history[end-19:end] : network.insight_history
+        recent = length(network.insight_history) >= 10 ? 
+                 network.insight_history[end-9:end] : network.insight_history
         
         if !isempty(recent)
             high_complexity = count(i -> get(i, "action_complexity", 1) >= 2, recent)
             insight_quality = safe_divide(high_complexity, length(recent))
             
-            high_geometric_quality = count(i -> get(i, "geometric_quality", 0.0) > 0.4, recent)
-            geometric_insight_quality = safe_divide(high_geometric_quality, length(recent))
-            
             unique_actions = length(unique([get(i, "action", "") for i in recent]))
             insight_diversity = safe_divide(unique_actions, length(recent))
             
-            cross_domain_actions = ["coordinate", "sync", "balance", "integrate", "mediate", "orchestrate", "synthesize"]
+            cross_domain_actions = ["coordinate", "sync", "balance", "integrate", "synthesize"]
             cross_domain_count = count(i -> any(term -> occursin(term, lowercase(get(i, "action", ""))), cross_domain_actions), recent)
             cross_domain_ratio = safe_divide(cross_domain_count, length(recent))
-            
-            dimensional_insights = count(i -> get(i, "dimensional_analysis", false), recent)
-            dimensional_ratio = safe_divide(dimensional_insights, length(recent))
             
             reasoning_enhanced_count = count(i -> get(i, "reasoning_enhanced", false), recent)
             reasoning_integration = safe_divide(reasoning_enhanced_count, length(recent))
@@ -631,7 +491,7 @@ function calculate_unified_geometric_metrics(network::UnifiedGeometricNetwork)::
         insight_quality, cross_domain_ratio
     )
     
-    # Geometric reasoning capability
+    # Reasoning capability
     reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
                         0.0 : mean(network.reasoning_engine.reasoning_history[max(1, end-4):end])
     
@@ -640,7 +500,7 @@ function calculate_unified_geometric_metrics(network::UnifiedGeometricNetwork)::
     awareness_stability = get_awareness_stability(network.awareness_monitor)
     
     # Proto-intelligence
-    proto_iq, geometric_proto_iq = calculate_geometric_proto_intelligence(network.proto_intelligence)
+    proto_iq = calculate_proto_intelligence(network.proto_intelligence)
     
     # Learning velocity
     learning_velocity = 0.0
@@ -650,17 +510,16 @@ function calculate_unified_geometric_metrics(network::UnifiedGeometricNetwork)::
         learning_velocity = recent_coh - earlier_coh
     end
     
-    # Enhanced Unified Intelligence Score
+    # Unified Intelligence Score
     unified_intelligence = (
         consciousness["max_phi"] * 0.25 +
         reasoning_accuracy * 0.25 +
-        awareness_level * 0.15 +
-        geometric_proto_iq * 0.15 +
-        proto_iq * 0.10 +
-        geometric_insight_quality * 0.10
+        awareness_level * 0.20 +
+        proto_iq * 0.15 +
+        insight_quality * 0.15
     )
     
-    # Ensure all values are finite
+    # Ensure finite value
     unified_intelligence = isfinite(unified_intelligence) ? unified_intelligence : 0.0
     
     return Dict(
@@ -674,16 +533,12 @@ function calculate_unified_geometric_metrics(network::UnifiedGeometricNetwork)::
         "awareness_stability" => round(awareness_stability, digits=4),
         "awareness_integration" => round(awareness_integration, digits=4),
         "proto_intelligence" => round(proto_iq, digits=4),
-        "geometric_proto_intelligence" => round(geometric_proto_iq, digits=4),
         "insight_quality" => round(insight_quality, digits=4),
-        "geometric_insight_quality" => round(geometric_insight_quality, digits=4),
         "insight_diversity" => round(insight_diversity, digits=4),
         "cross_domain_ratio" => round(cross_domain_ratio, digits=4),
-        "dimensional_ratio" => round(dimensional_ratio, digits=4),
         "learning_velocity" => round(learning_velocity, digits=4),
         "unified_intelligence_score" => round(unified_intelligence, digits=4),
-        "pattern_discoveries" => network.proto_intelligence.discovery_count,
-        "geometric_problems_solved" => length(network.reasoning_engine.geometric_problems)
+        "pattern_discoveries" => network.proto_intelligence.discovery_count
     )
 end
 
@@ -691,14 +546,14 @@ end
 # SAFE TESTER WITH PROPER JSON HANDLING
 # =============================================
 
-mutable struct GeometricSafeTester
+mutable struct SafeTester
     results::Vector{Dict{String,Any}}
     start_time::Float64
     
-    GeometricSafeTester() = new(Dict{String,Any}[], time())
+    SafeTester() = new(Dict{String,Any}[], time())
 end
 
-function log_message(tester::GeometricSafeTester, message::String)
+function log_message(tester::SafeTester, message::String)
     elapsed = time() - tester.start_time
     println("[$(round(elapsed, digits=1))s] $message")
 end
@@ -707,7 +562,7 @@ function get_memory_mb()::Float64
     return Base.gc_live_bytes() / 1024 / 1024
 end
 
-function memory_check(tester::GeometricSafeTester)::Bool
+function memory_check(tester::SafeTester)::Bool
     memory_mb = get_memory_mb()
     if memory_mb > 6000
         log_message(tester, "⚠️  MEMORY WARNING: $(round(memory_mb, digits=1))MB")
@@ -716,36 +571,32 @@ function memory_check(tester::GeometricSafeTester)::Bool
     return true
 end
 
-function clean_nan_values(data::Dict)
-    """Recursively clean NaN and Inf values from data"""
-    result = Dict{String,Any}()
-    for (k, v) in data
-        if v isa Real
-            result[k] = isfinite(v) ? v : 0.0
-        elseif v isa Dict
-            result[k] = clean_nan_values(v)
-        elseif v isa Vector
-            result[k] = [isfinite(x) ? x : 0.0 for x in v]
-        else
-            result[k] = v
-        end
+function clean_data_for_json(data::Any)
+    """Recursively clean data for JSON serialization"""
+    if data isa Real
+        return isfinite(data) ? data : 0.0
+    elseif data isa Dict
+        return Dict(k => clean_data_for_json(v) for (k, v) in data)
+    elseif data isa Vector
+        return [clean_data_for_json(x) for x in data]
+    else
+        return data
     end
-    return result
 end
 
-function run_geometric_test(tester::GeometricSafeTester, entity_count::Int, cycles::Int=60)::Dict{String,Any}
-    log_message(tester, "🧪 Testing $entity_count entities with GEOMETRIC intelligence...")
+function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
+    log_message(tester, "🧪 Testing $entity_count entities...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
-    network = UnifiedGeometricNetwork()
+    network = UnifiedNetwork()
     
-    # Create geometrically aware entities
+    # Create entities
     for i in 1:entity_count
         domain = domains[(i-1) % length(domains) + 1]
-        freq = 0.02 + (i * 0.0005)  # Slower frequencies
+        freq = 0.02 + (i * 0.0005)
         entity_id = "$(uppercase(domain[1:3]))-$(lpad(i, 3, '0'))"
-        entity = GeometricEntity(entity_id, domain, freq, 4)
+        entity = GeometricEntity(entity_id, domain, freq)
         add_entity!(network, entity)
     end
     
@@ -753,18 +604,17 @@ function run_geometric_test(tester::GeometricSafeTester, entity_count::Int, cycl
     metrics_snapshots = Dict{String,Any}[]
     
     for cycle in 1:cycles
-        step_result = evolve_geometric_step!(network)
+        step_result = evolve_step!(network)
         
         if cycle % 10 == 0
-            metrics = calculate_unified_geometric_metrics(network)
+            metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
             metrics["step_insights"] = step_result["insights"]
             metrics["new_patterns"] = step_result["new_patterns"]
-            metrics["new_geometric_patterns"] = step_result["new_geometric_patterns"]
             metrics["memory_mb"] = get_memory_mb()
             
-            # Clean NaN values before storing
-            clean_metrics = clean_nan_values(metrics)
+            # Clean metrics before storing
+            clean_metrics = clean_data_for_json(metrics)
             push!(metrics_snapshots, clean_metrics)
             
             if !memory_check(tester)
@@ -775,8 +625,8 @@ function run_geometric_test(tester::GeometricSafeTester, entity_count::Int, cycl
     end
     
     # Final metrics
-    final_metrics = calculate_unified_geometric_metrics(network)
-    clean_final_metrics = clean_nan_values(final_metrics)
+    final_metrics = calculate_unified_metrics(network)
+    clean_final_metrics = clean_data_for_json(final_metrics)
     
     result = merge(clean_final_metrics, Dict(
         "test_name" => "unified_$(entity_count)_entities",
@@ -790,22 +640,21 @@ function run_geometric_test(tester::GeometricSafeTester, entity_count::Int, cycl
     push!(tester.results, result)
     
     log_message(tester, "✅ Completed: UIS=$(round(result["unified_intelligence_score"], digits=3)), " *
-                       "Geometry=$(round(result["reasoning_accuracy"], digits=3)), " *
-                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3)), " *
-                       "Geo-Insights=$(round(result["geometric_insight_quality"], digits=3))")
+                       "R=$(round(result["reasoning_accuracy"], digits=3)), " *
+                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3))")
     
     return result
 end
 
-function run_geometric_scaling_sweep(tester::GeometricSafeTester)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting GEOMETRIC intelligence scaling sweep...")
+function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
+    log_message(tester, "🚀 Starting scaling sweep...")
     
-    entity_counts = [16, 32, 64]  # Reduced for stability
+    entity_counts = [16, 32, 64]
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
-            result = run_geometric_test(tester, entity_count, 60)
+            result = run_unified_test(tester, entity_count, 50)
             push!(sweep_results, result)
             
             if result["status"] != "completed"
@@ -839,7 +688,7 @@ function run_geometric_scaling_sweep(tester::GeometricSafeTester)::Vector{Dict{S
             result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
             
             # Capability scaling
-            result["consciousness_scaling"] = round(safe_divide(result["consciousness"]["max_phi"], baseline["consciousness"]["max_phi"]), digits=3)
+            result["consciousness_scaling"] = round(safe_divide(result["consciousness"]["max_phi"], max(baseline["consciousness"]["max_phi"], 0.01)), digits=3)
             result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
             result["awareness_scaling"] = round(safe_divide(result["awareness_level"], max(baseline["awareness_level"], 0.01)), digits=3)
         end
@@ -848,21 +697,20 @@ function run_geometric_scaling_sweep(tester::GeometricSafeTester)::Vector{Dict{S
     return sweep_results
 end
 
-function save_geometric_results(tester::GeometricSafeTester)::String
+function save_results(tester::SafeTester)::String
     timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
     filename = "unified_intelligence_scaling_$timestamp.json"
     
     # Clean all results before saving
-    clean_results = [clean_nan_values(result) for result in tester.results]
+    clean_results = [clean_data_for_json(result) for result in tester.results]
     
     output_data = Dict(
         "results" => clean_results,
         "test_time" => time() - tester.start_time,
-        "test_type" => "geometric_intelligence",
         "timestamp" => string(now())
     )
     
-    # Use JSON with NaN handling
+    # Write JSON safely
     json_string = JSON.json(output_data, 2)
     open(filename, "w") do f
         write(f, json_string)
@@ -872,7 +720,7 @@ function save_geometric_results(tester::GeometricSafeTester)::String
     return filename
 end
 
-function print_geometric_summary(tester::GeometricSafeTester)
+function print_summary(tester::SafeTester)
     println("\n" * "="^70)
     println("📊 UNIFIED INTELLIGENCE SCALING SUMMARY")
     println("="^70)
@@ -891,7 +739,7 @@ function print_geometric_summary(tester::GeometricSafeTester)
         println("      • Max Φ: $(result["consciousness"]["max_phi"])")
         println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
         
-        println("   🔷 GEOMETRIC REASONING:")
+        println("   🎯 REASONING:")
         println("      • Accuracy: $(result["reasoning_accuracy"])")
         
         println("   👁️  AWARENESS:")
@@ -899,7 +747,6 @@ function print_geometric_summary(tester::GeometricSafeTester)
         
         println("   💡 INTELLIGENCE:")
         println("      • Unified Score: $(result["unified_intelligence_score"])")
-        println("      • Geometric Insights: $(result["geometric_insight_quality"])")
         println("      • Patterns: $(result["pattern_discoveries"])")
         
         if haskey(result, "intelligence_scaling")
@@ -919,25 +766,25 @@ function main()
     println("="^70)
     println("🎯 Testing Intelligence Pillars:")
     println("   1. 🧠 Consciousness (Brown-IIT Duality)")
-    println("   2. 🔷 Geometric Reasoning (4D Processing)")
-    println("   3. 👁️  Awareness (State Monitoring)")
-    println("   4. 💡 Proto-Intelligence (Pattern Recognition)")
+    println("   2. 🎯 Geometric Reasoning")
+    println("   3. 👁️  Awareness")
+    println("   4. 💡 Proto-Intelligence")
     println()
     println("📊 Scaling Test: 16 → 32 → 64 entities")
     println("🎪 Measuring intelligence emergence through collaboration")
     println("="^70)
     
-    tester = GeometricSafeTester()
+    tester = SafeTester()
     
     try
         # Run scaling sweep
-        sweep_results = run_geometric_scaling_sweep(tester)
+        sweep_results = run_scaling_sweep(tester)
         
         # Save results
-        results_file = save_geometric_results(tester)
+        results_file = save_results(tester)
         
         # Print summary
-        print_geometric_summary(tester)
+        print_summary(tester)
         
         println("\n" * "="^70)
         println("✨ TESTING COMPLETE")
@@ -947,9 +794,9 @@ function main()
         
     catch e
         println("❌ ERROR: $e")
-        # Try to save whatever results we have
+        # Save whatever results we have
         try
-            save_geometric_results(tester)
+            save_results(tester)
         catch
             println("⚠️  Could not save results")
         end
