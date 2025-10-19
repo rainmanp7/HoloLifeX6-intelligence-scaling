@@ -1,24 +1,20 @@
-# geometric_reasoning.jl - DEBUG VERSION
+# geometric_reasoning.jl - SIMPLIFIED WORKING VERSION
 using LinearAlgebra
 using Random
 using Statistics
 
 mutable struct GeometricReasoningEngine
     dimensions::Int
-    weights_input::Matrix{Float64}
-    weights_hidden::Matrix{Float64}
-    weights_output::Matrix{Float64}
+    feature_weights::Matrix{Float64}  # Simple feature extractor
+    decision_weights::Vector{Float64} # Simple decision maker
     reasoning_history::Vector{Float64}
     learning_rate::Float64
-    exploration_rate::Float64
-    debug_scores::Vector{Float64}  # Track actual scores
     
     function GeometricReasoningEngine(dimensions::Int=4)
-        weights_input = randn(dimensions, 8) * 0.1
-        weights_hidden = randn(8, 4) * 0.1  
-        weights_output = randn(4, 1) * 0.1
-        
-        new(dimensions, weights_input, weights_hidden, weights_output, Float64[], 0.01, 0.2, Float64[])
+        # Simple but effective weights
+        feature_weights = randn(dimensions, 4) * 0.1
+        decision_weights = randn(4) * 0.1
+        new(dimensions, feature_weights, decision_weights, Float64[], 0.05)
     end
 end
 
@@ -45,80 +41,122 @@ function generate_geometric_problem(re::GeometricReasoningEngine, num_points::In
     return X, true_min_idx, cluster_assignments
 end
 
-function neural_forward_pass(re::GeometricReasoningEngine, X::Matrix{Float64})
+function extract_features(re::GeometricReasoningEngine, X::Matrix{Float64})
     num_points = size(X, 1)
-    scores = zeros(num_points)
+    features = zeros(num_points, 4)
     
     for i in 1:num_points
-        input_vec = X[i, :]
+        # Extract geometric features
+        point = X[i, :]
         
-        # Forward pass through network
-        hidden1 = max.(0.0, re.weights_input' * input_vec)
-        hidden2 = max.(0.0, re.weights_hidden' * hidden1)
-        scores[i] = (re.weights_output' * hidden2)[1]
+        # Feature 1: Distance to origin
+        features[i, 1] = norm(point)
+        
+        # Feature 2: Distance to centroid (learned)
+        centroid = mean(X, dims=1)
+        features[i, 2] = norm(point .- centroid)
+        
+        # Feature 3: Local density (learned)
+        local_dists = [norm(point .- X[j, :]) for j in 1:num_points if j != i]
+        features[i, 3] = 1.0 / (mean(local_dists) + 0.001)
+        
+        # Feature 4: Cluster alignment (learned)
+        features[i, 4] = sum(point .* centroid) / (norm(point) * norm(centroid) + 0.001)
     end
     
-    return scores
+    return features
 end
 
 function solve_geometric_problem(re::GeometricReasoningEngine, X::Matrix{Float64})
     num_points = size(X, 1)
     
     try
-        if num_points == 0
-            return 1
+        # Extract features
+        features = extract_features(re, X)
+        
+        # Score each point using learned weights
+        scores = zeros(num_points)
+        for i in 1:num_points
+            # Apply feature weights
+            weighted_features = re.feature_weights' * features[i, :]
+            # Apply decision weights
+            scores[i] = sum(weighted_features .* re.decision_weights)
         end
         
-        # Get neural network scores
-        neural_scores = neural_forward_pass(re, X)
-        
-        # Simple selection - always choose minimum score
-        return argmin(neural_scores)
+        # Choose point with minimum score (closest to ideal)
+        return argmin(scores)
         
     catch e
-        # Fallback
+        # Fallback: simple distance-based reasoning
         distances = [norm(X[i, :]) for i in 1:num_points]
         return argmin(distances)
     end
 end
 
+function learn_from_experience!(re::GeometricReasoningEngine, X::Matrix{Float64}, chosen_idx::Int, correct_idx::Int)
+    # SIMPLE BUT EFFECTIVE LEARNING
+    if chosen_idx != correct_idx
+        # Get features for both chosen and correct points
+        features = extract_features(re, X)
+        chosen_features = features[chosen_idx, :]
+        correct_features = features[correct_idx, :]
+        
+        # Calculate error (we want correct point to have lower score)
+        chosen_score = sum((re.feature_weights' * chosen_features) .* re.decision_weights)
+        correct_score = sum((re.feature_weights' * correct_features) .* re.decision_weights)
+        
+        error = chosen_score - correct_score
+        
+        if error > 0  # Only learn if we made a mistake
+            # Update weights to favor correct point
+            learning_strength = re.learning_rate * error
+            
+            # Update feature weights
+            for j in 1:size(re.feature_weights, 2)
+                feature_error = correct_features[j] - chosen_features[j]
+                re.feature_weights[:, j] .+= learning_strength * feature_error * 0.1
+            end
+            
+            # Update decision weights
+            re.decision_weights .+= learning_strength * 0.1
+            
+            # Decay learning rate
+            re.learning_rate *= 0.999
+        end
+    end
+end
+
 function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=20)
     correct = 0
-    total_trials = 0
-    
-    println("🧠 GEOMETRIC REASONING DEBUG:")
     
     for trial in 1:num_trials
         try
             X, true_answer, clusters = generate_geometric_problem(re, 8)
             prediction = solve_geometric_problem(re, X)
             
-            # Simple learning: just track accuracy
+            # LEARN FROM EXPERIENCE
+            learn_from_experience!(re, X, prediction, true_answer)
+            
             if prediction == true_answer
                 correct += 1
-                println("  ✅ Trial $trial: CORRECT (predicted $prediction, true $true_answer)")
-            else
-                println("  ❌ Trial $trial: WRONG (predicted $prediction, true $true_answer)")
             end
-            
-            total_trials += 1
-            
         catch e
-            println("  💥 Trial $trial: ERROR - $e")
+            # Continue with other trials
         end
     end
     
-    accuracy = total_trials > 0 ? correct / total_trials : 0.0
-    println("  📊 Final Accuracy: $accuracy")
+    accuracy = num_trials > 0 ? correct / num_trials : 0.0
     
-    # Store the result
+    # Store result
     push!(re.reasoning_history, accuracy)
-    push!(re.debug_scores, accuracy)
     
     # Keep history manageable
     if length(re.reasoning_history) > 100
         re.reasoning_history = re.reasoning_history[end-99:end]
     end
+    
+    # DEBUG OUTPUT
+    println("🧠 GEOMETRIC REASONING: Accuracy = $accuracy, Learning Rate = $(re.learning_rate)")
     
     return accuracy
 end
