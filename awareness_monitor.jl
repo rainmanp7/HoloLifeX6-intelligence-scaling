@@ -4,10 +4,11 @@
 Dimensional state monitoring and awareness tracking
 """
 
-using Statistics
+using Statistics  # 🎯 ADDED
 
-include("utils.jl")
-using .Utils: calculate_phase_coherence
+# 🎯 ADDED: Phase coherence function
+calculate_phase_coherence(phases::Vector{Float64})::Float64 = 
+    isempty(phases) ? 0.0 : abs(mean(exp.(2π * im .* phases)))
 
 mutable struct AwarenessMonitor
     awareness_scores::Vector{Float64}
