@@ -5,11 +5,15 @@ Real combinatorial creativity and insight generation
 """
 
 using Random
-using Statistics  # 🎯 ADDED
+using Statistics
 
-# 🎯 ADDED: Phase coherence function
-calculate_phase_coherence(phases::Vector{Float64})::Float64 = 
-    isempty(phases) ? 0.0 : abs(mean(exp.(2π * im .* phases)))
+function calculate_phase_coherence(phases::Vector{Float64})::Float64
+    if isempty(phases)
+        return 0.0
+    end
+    complex_phases = exp.(2π * im .* phases)
+    return abs(mean(complex_phases))
+end
 
 function calculate_action_complexity(action::String)::Int
     complexity_map = Dict(
