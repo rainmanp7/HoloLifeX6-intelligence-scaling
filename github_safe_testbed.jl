@@ -1,8 +1,7 @@
-# github_safe_testbed_massive_scaling.jl
+# github_safe_testbed_working.jl
 """
-🧠 HOLOLIFEX6 PROTOTYPE4 - MASSIVE SCALING INTELLIGENCE TESTBED
-SCALES FROM 4 TO 1.2 MILLION ENTITIES
-Testing consciousness and intelligence emergence at internet scale
+🧠 HOLOLIFEX6 PROTOTYPE4 - UNIFIED INTELLIGENCE SCALING TESTBED
+WORKING VERSION - Fixed file naming and proper scaling
 """
 
 using Statistics
@@ -91,7 +90,7 @@ function assess_consciousness(cv::ConsciousnessValidator, entity_count::Int,
 end
 
 # =============================================
-# OPTIMIZED GEOMETRIC REASONING ENGINE
+# GEOMETRIC REASONING ENGINE
 # =============================================
 
 mutable struct GeometricReasoningEngine
@@ -102,27 +101,23 @@ mutable struct GeometricReasoningEngine
     reasoning_history::Vector{Float64}
     
     function GeometricReasoningEngine(dimensions::Int=4)
-        # Optimized weight initialization for large scales
-        entity_w = randn(dimensions, 4) * 0.1  # Reduced for efficiency
-        interaction_w = randn(4, 4) * 0.1  
-        decision_w = randn(4, 1) * 0.1
+        entity_w = randn(dimensions, 8) * 0.1
+        interaction_w = randn(8, 8) * 0.1  
+        decision_w = randn(8, 1) * 0.1
         
         new(dimensions, entity_w, interaction_w, decision_w, Float64[])
     end
 end
 
-function generate_geometric_problem(re::GeometricReasoningEngine, num_points::Int=6)  # Reduced for efficiency
-    """Fast geometric problem generation"""
-    # Simple cluster generation
+function generate_geometric_problem(re::GeometricReasoningEngine, num_points::Int=8)
     cluster_centers = randn(2, re.dimensions) * 1.0
     X = zeros(num_points, re.dimensions)
     
     for i in 1:num_points
         cluster_idx = rand(1:2)
-        X[i, :] = cluster_centers[cluster_idx, :] + randn(re.dimensions) * 0.3
+        X[i, :] = cluster_centers[cluster_idx, :] + randn(re.dimensions) * 0.5
     end
     
-    # Calculate distances from origin
     distances = [norm(X[i, :]) for i in 1:num_points]
     true_min_idx = argmin(distances)
     
@@ -130,18 +125,13 @@ function generate_geometric_problem(re::GeometricReasoningEngine, num_points::In
 end
 
 function solve_geometric_problem(re::GeometricReasoningEngine, X::Matrix{Float64})
-    """Optimized geometric reasoning"""
     num_points = size(X, 1)
     
     try
-        # Fast feature extraction
         entity_features = [X[i, :]' * re.entity_weights for i in 1:num_points]
         entity_matrix = vcat(entity_features...)
-        
-        # ReLU activation
         entity_matrix = max.(entity_matrix, 0.0)
         
-        # Fast decision
         distance_estimates = entity_matrix * re.decision_weights
         estimates_vector = vec(distance_estimates)
         
@@ -151,8 +141,7 @@ function solve_geometric_problem(re::GeometricReasoningEngine, X::Matrix{Float64
     end
 end
 
-function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=15)  # Reduced for large scales
-    """Fast geometric reasoning test"""
+function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=20)
     correct = 0
     
     for trial in 1:num_trials
@@ -174,7 +163,7 @@ function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=
 end
 
 # =============================================
-# MEMORY-EFFICIENT ENTITY
+# EFFICIENT ENTITY
 # =============================================
 
 mutable struct EfficientEntity
@@ -194,7 +183,7 @@ function evolve_phase!(entity::EfficientEntity)
     entity.phase = mod(entity.phase + entity.base_frequency, 1.0)
 end
 
-function couple_to!(entity::EfficientEntity, other_phase::Float64, strength::Float64=0.02)  # Reduced coupling
+function couple_to!(entity::EfficientEntity, other_phase::Float64, strength::Float64=0.03)
     phase_diff = other_phase - entity.phase
     entity.phase += strength * sin(2π * phase_diff)
     entity.phase = mod(entity.phase, 1.0)
@@ -216,24 +205,22 @@ function calculate_action_complexity(action::String)::Int
 end
 
 function generate_insight(entity::EfficientEntity)::Dict{String,Any}
-    """Fast insight generation"""
-    if entity.phase > 0.5  # Lower threshold for more activity
+    if entity.phase > 0.6
         action_map = Dict(
-            "physical" => ["analyze", "optimize", "monitor"],
-            "temporal" => ["predict", "sync", "balance"],
-            "semantic" => ["extract", "connect", "synthesize"],
-            "network" => ["optimize", "balance", "coordinate"],
-            "spatial" => ["map", "cluster", "navigate"],
-            "emotional" => ["assess", "balance", "mediate"],
-            "social" => ["coordinate", "share", "build"],
-            "creative" => ["generate", "innovate", "discover"]
+            "physical" => ["analyze_systems", "optimize_resources", "monitor_performance"],
+            "temporal" => ["predict_trends", "sync_operations", "balance_timing"],
+            "semantic" => ["extract_meaning", "connect_concepts", "synthesize_knowledge"],
+            "network" => ["optimize_paths", "balance_loads", "coordinate_flows"],
+            "spatial" => ["map_relationships", "cluster_patterns", "navigate_space"],
+            "emotional" => ["assess_sentiment", "balance_energy", "mediate_conflicts"],
+            "social" => ["coordinate_groups", "share_insights", "build_consensus"],
+            "creative" => ["generate_ideas", "innovate_solutions", "discover_patterns"]
         )
         
-        actions = get(action_map, entity.domain, ["analyze"])
+        actions = get(action_map, entity.domain, ["analyze_situation"])
         action_idx = Int(floor(entity.phase * length(actions))) % length(actions) + 1
         action = actions[action_idx]
         
-        # Quality based on reasoning capacity and phase
         confidence = entity.phase * entity.reasoning_capacity
         complexity = calculate_action_complexity(action)
         
@@ -253,27 +240,25 @@ function generate_insight(entity::EfficientEntity)::Dict{String,Any}
 end
 
 # =============================================
-# MEMORY-EFFICIENT AWARENESS MONITOR
+# AWARENESS MONITOR
 # =============================================
 
-mutable struct EfficientAwarenessMonitor
+mutable struct AwarenessMonitor
     awareness_scores::Vector{Float64}
     
-    EfficientAwarenessMonitor() = new(Float64[])
+    AwarenessMonitor() = new(Float64[])
 end
 
-function update_awareness(am::EfficientAwarenessMonitor, entity_phases::Vector{Float64})
+function update_awareness(am::AwarenessMonitor, entity_phases::Vector{Float64})
     if isempty(entity_phases)
         push!(am.awareness_scores, 0.5)
         return
     end
     
     try
-        # Use phase coherence for awareness (memory efficient)
         coherence = 1.0 - std(entity_phases)
-        awareness_score = coherence  # Simple coherence-based awareness
+        awareness_score = coherence
         
-        # Keep only recent history to save memory
         if length(am.awareness_scores) > 100
             am.awareness_scores = am.awareness_scores[end-99:end]
         end
@@ -284,12 +269,12 @@ function update_awareness(am::EfficientAwarenessMonitor, entity_phases::Vector{F
     end
 end
 
-function get_awareness_level(am::EfficientAwarenessMonitor)::Float64
+function get_awareness_level(am::AwarenessMonitor)::Float64
     scores = am.awareness_scores
     return isempty(scores) ? 0.5 : mean(scores[max(1, end-4):end])
 end
 
-function get_awareness_stability(am::EfficientAwarenessMonitor)::Float64
+function get_awareness_stability(am::AwarenessMonitor)::Float64
     scores = am.awareness_scores
     if length(scores) < 5
         return 0.0
@@ -299,29 +284,26 @@ function get_awareness_stability(am::EfficientAwarenessMonitor)::Float64
 end
 
 # =============================================
-# MEMORY-EFFICIENT PROTO-INTELLIGENCE
+# PROTO-INTELLIGENCE
 # =============================================
 
-mutable struct EfficientProtoIntelligence
+mutable struct ProtoIntelligence
     pattern_memory::Dict{String, Int}
     discovery_count::Int
     
-    EfficientProtoIntelligence() = new(Dict{String, Int}(), 0)
+    ProtoIntelligence() = new(Dict{String, Int}(), 0)
 end
 
-function observe_pattern(pi::EfficientProtoIntelligence, pattern::String)
+function observe_pattern(pi::ProtoIntelligence, pattern::String)
     if haskey(pi.pattern_memory, pattern)
         pi.pattern_memory[pattern] += 1
     else
-        # Limit pattern memory for massive scales
-        if length(pi.pattern_memory) < 1000  # Cap at 1000 patterns
-            pi.pattern_memory[pattern] = 1
-            pi.discovery_count += 1
-        end
+        pi.pattern_memory[pattern] = 1
+        pi.discovery_count += 1
     end
 end
 
-function recognize_emergent_patterns(pi::EfficientProtoIntelligence, insights::Vector{Dict{String,Any}})::Int
+function recognize_emergent_patterns(pi::ProtoIntelligence, insights::Vector{Dict{String,Any}})::Int
     new_patterns = 0
     
     for insight in insights
@@ -337,7 +319,7 @@ function recognize_emergent_patterns(pi::EfficientProtoIntelligence, insights::V
     return new_patterns
 end
 
-function calculate_proto_intelligence(pi::EfficientProtoIntelligence)::Float64
+function calculate_proto_intelligence(pi::ProtoIntelligence)::Float64
     if isempty(pi.pattern_memory)
         return 0.0
     end
@@ -354,111 +336,81 @@ function calculate_proto_intelligence(pi::EfficientProtoIntelligence)::Float64
 end
 
 # =============================================
-# MASSIVE-SCALE NETWORK
+# UNIFIED NETWORK
 # =============================================
 
-mutable struct MassiveScaleNetwork
+mutable struct UnifiedNetwork
     entities::Vector{EfficientEntity}
     consciousness_validator::ConsciousnessValidator
     reasoning_engine::GeometricReasoningEngine
-    awareness_monitor::EfficientAwarenessMonitor
-    proto_intelligence::EfficientProtoIntelligence
+    awareness_monitor::AwarenessMonitor
+    proto_intelligence::ProtoIntelligence
     coherence_history::Vector{Float64}
     insight_history::Vector{Dict{String,Any}}
     
-    function MassiveScaleNetwork()
+    function UnifiedNetwork()
         new(
             EfficientEntity[],
             ConsciousnessValidator(),
             GeometricReasoningEngine(4),
-            EfficientAwarenessMonitor(),
-            EfficientProtoIntelligence(),
+            AwarenessMonitor(),
+            ProtoIntelligence(),
             Float64[],
             Dict{String,Any}[]
         )
     end
 end
 
-function add_entity!(network::MassiveScaleNetwork, entity::EfficientEntity)
+function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
     push!(network.entities, entity)
 end
 
-function evolve_massive_step!(network::MassiveScaleNetwork, entity_count::Int)::Dict{String,Any}
+function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     insights = Dict{String,Any}[]
     
-    # Sample entities for efficiency (for very large scales)
-    sample_size = min(entity_count, 1000)  # Sample up to 1000 entities
-    if entity_count > 1000
-        sampled_entities = rand(network.entities, sample_size)
-    else
-        sampled_entities = network.entities
-    end
-    
-    # Phase evolution on sampled entities
-    for entity in sampled_entities
+    for entity in network.entities
         evolve_phase!(entity)
     end
     
-    # Coupling on sampled entities
-    if !isempty(sampled_entities)
-        avg_phase = mean([e.phase for e in sampled_entities])
-        for entity in sampled_entities
-            couple_to!(entity, avg_phase, 0.01)  # Very weak coupling for large scales
+    if !isempty(network.entities)
+        avg_phase = mean([e.phase for e in network.entities])
+        for entity in network.entities
+            couple_to!(entity, avg_phase, 0.03)
         end
     end
     
-    # Test reasoning less frequently for large scales
-    if length(network.coherence_history) % 20 == 0
-        reasoning_score = test_geometric_reasoning(network.reasoning_engine, 10)  # Fewer trials
-        # Update only sampled entities
-        for entity in sampled_entities
-            entity.reasoning_capacity = 0.9 * entity.reasoning_capacity + 0.1 * reasoning_score
+    if length(network.coherence_history) % 10 == 0
+        reasoning_score = test_geometric_reasoning(network.reasoning_engine, 15)
+        for entity in network.entities
+            entity.reasoning_capacity = 0.8 * entity.reasoning_capacity + 0.2 * reasoning_score
         end
     end
     
-    # Update awareness using sampled phases
-    entity_phases = [e.phase for e in sampled_entities]
+    entity_phases = [e.phase for e in network.entities]
     update_awareness(network.awareness_monitor, entity_phases)
     
     awareness_level = get_awareness_level(network.awareness_monitor)
-    for entity in sampled_entities
-        entity.awareness_level = 0.9 * entity.awareness_level + 0.1 * awareness_level
+    for entity in network.entities
+        entity.awareness_level = 0.8 * entity.awareness_level + 0.2 * awareness_level
     end
     
-    # Generate insights from sampled entities
-    insight_count = 0
-    for entity in sampled_entities
+    for entity in network.entities
         insight = generate_insight(entity)
         if !isempty(insight)
             push!(insights, insight)
-            insight_count += 1
-        end
-        # Limit insights per step for massive scales
-        if insight_count >= min(entity_count ÷ 10, 1000)
-            break
+            push!(network.insight_history, insight)
         end
     end
     
-    # Add to history (with limits)
-    append!(network.insight_history, insights)
-    if length(network.insight_history) > 10000  # Cap insight history
-        network.insight_history = network.insight_history[end-9999:end]
-    end
+    new_patterns = recognize_emergent_patterns(network.proto_intelligence, insights)
     
-    # Calculate coherence from sampled phases
-    if !isempty(sampled_entities)
-        phases = [e.phase for e in sampled_entities]
+    if !isempty(network.entities)
+        phases = [e.phase for e in network.entities]
         coherence = 1.0 - std(phases)
         push!(network.coherence_history, coherence)
-        if length(network.coherence_history) > 1000  # Cap coherence history
-            network.coherence_history = network.coherence_history[end-999:end]
-        end
     else
         push!(network.coherence_history, 0.5)
     end
-    
-    # Recognize patterns
-    new_patterns = recognize_emergent_patterns(network.proto_intelligence, insights)
     
     reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
                         0.0 : network.reasoning_engine.reasoning_history[end]
@@ -468,16 +420,15 @@ function evolve_massive_step!(network::MassiveScaleNetwork, entity_count::Int)::
         "new_patterns" => new_patterns,
         "coherence" => network.coherence_history[end],
         "awareness" => awareness_level,
-        "reasoning_accuracy" => reasoning_accuracy,
-        "sampled_entities" => sample_size
+        "reasoning_accuracy" => reasoning_accuracy
     )
 end
 
-function calculate_massive_metrics(network::MassiveScaleNetwork, entity_count::Int)::Dict{String,Any}
+function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
+    entity_count = length(network.entities)
     total_insights = length(network.insight_history)
     coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
     
-    # Insight quality metrics (on recent insights only)
     insight_quality = 0.0
     insight_diversity = 0.0
     cross_domain_ratio = 0.0
@@ -485,8 +436,8 @@ function calculate_massive_metrics(network::MassiveScaleNetwork, entity_count::I
     awareness_integration = 0.0
     
     if !isempty(network.insight_history)
-        recent = length(network.insight_history) >= 100 ? 
-                 network.insight_history[end-99:end] : network.insight_history
+        recent = length(network.insight_history) >= 10 ? 
+                 network.insight_history[end-9:end] : network.insight_history
         
         if !isempty(recent)
             high_complexity = count(i -> get(i, "action_complexity", 1) >= 2, recent)
@@ -507,25 +458,20 @@ function calculate_massive_metrics(network::MassiveScaleNetwork, entity_count::I
         end
     end
     
-    # Consciousness assessment
     consciousness = assess_consciousness(
         network.consciousness_validator,
         entity_count, coherence, total_insights,
         insight_quality, cross_domain_ratio
     )
     
-    # Reasoning capability
     reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
                         0.0 : mean(network.reasoning_engine.reasoning_history[max(1, end-4):end])
     
-    # Awareness metrics
     awareness_level = get_awareness_level(network.awareness_monitor)
     awareness_stability = get_awareness_stability(network.awareness_monitor)
     
-    # Proto-intelligence
     proto_iq = calculate_proto_intelligence(network.proto_intelligence)
     
-    # Learning velocity
     learning_velocity = 0.0
     if length(network.coherence_history) >= 10
         recent_coh = mean(network.coherence_history[max(1, end-4):end])
@@ -533,7 +479,6 @@ function calculate_massive_metrics(network::MassiveScaleNetwork, entity_count::I
         learning_velocity = recent_coh - earlier_coh
     end
     
-    # Unified Intelligence Score
     unified_intelligence = (
         consciousness["max_phi"] * 0.25 +
         reasoning_accuracy * 0.25 +
@@ -565,17 +510,17 @@ function calculate_massive_metrics(network::MassiveScaleNetwork, entity_count::I
 end
 
 # =============================================
-# MASSIVE SCALE TESTER
+# SAFE TESTER
 # =============================================
 
-mutable struct MassiveScaleTester
+mutable struct SafeTester
     results::Vector{Dict{String,Any}}
     start_time::Float64
     
-    MassiveScaleTester() = new(Dict{String,Any}[], time())
+    SafeTester() = new(Dict{String,Any}[], time())
 end
 
-function log_message(tester::MassiveScaleTester, message::String)
+function log_message(tester::SafeTester, message::String)
     elapsed = time() - tester.start_time
     println("[$(round(elapsed, digits=1))s] $message")
 end
@@ -584,9 +529,9 @@ function get_memory_mb()::Float64
     return Base.gc_live_bytes() / 1024 / 1024
 end
 
-function memory_check(tester::MassiveScaleTester)::Bool
+function memory_check(tester::SafeTester)::Bool
     memory_mb = get_memory_mb()
-    if memory_mb > 5000  # Lower threshold for massive scaling
+    if memory_mb > 6000
         log_message(tester, "⚠️  MEMORY WARNING: $(round(memory_mb, digits=1))MB")
         return false
     end
@@ -594,7 +539,6 @@ function memory_check(tester::MassiveScaleTester)::Bool
 end
 
 function clean_data_for_json(data::Any)
-    """Recursively clean data for JSON serialization"""
     if data isa Real
         return isfinite(data) ? data : 0.0
     elseif data isa Dict
@@ -606,76 +550,32 @@ function clean_data_for_json(data::Any)
     end
 end
 
-function generate_entity_counts()::Vector{Int}
-    """Generate exponential scaling from 4 to 1.2 million"""
-    counts = Int[]
-    
-    # Small scales: 4, 8, 16, 24, 32, 64
-    push!(counts, 4, 8, 16, 24, 32, 64)
-    
-    # Exponential scaling: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
-    current = 128
-    while current <= 65536
-        push!(counts, current)
-        current *= 2
-    end
-    
-    # Large scales: 100000, 200000, 400000, 800000, 1200000
-    push!(counts, 100000, 200000, 400000, 800000, 1200000)
-    
-    return counts
-end
-
-function run_massive_test(tester::MassiveScaleTester, entity_count::Int)::Dict{String,Any}
-    log_message(tester, "🧪 Testing $entity_count entities (MASSIVE SCALE)...")
+function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
+    log_message(tester, "🧪 Testing $entity_count entities...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
-    network = MassiveScaleNetwork()
+    network = UnifiedNetwork()
     
-    # Create entities efficiently
-    log_message(tester, "   Creating $entity_count entities...")
     for i in 1:entity_count
         domain = domains[(i-1) % length(domains) + 1]
-        freq = 0.01 + (i * 0.00001)  # Very slow frequencies for large scales
-        entity_id = "$(uppercase(domain[1:3]))-$(lpad(i, 8, '0'))"  # 8-digit IDs for large counts
+        freq = 0.02 + (i * 0.0005)
+        entity_id = "$(uppercase(domain[1:3]))-$(lpad(i, 3, '0'))"
         entity = EfficientEntity(entity_id, domain, freq)
         add_entity!(network, entity)
-        
-        # Progress reporting for very large counts
-        if entity_count > 10000 && i % 10000 == 0
-            log_message(tester, "   Created $i/$entity_count entities...")
-        end
     end
     
-    # Adaptive cycles based on entity count
-    cycles = if entity_count <= 64
-        50
-    elseif entity_count <= 1000
-        30
-    elseif entity_count <= 10000
-        20
-    else
-        10  # Very few cycles for massive scales
-    end
-    
-    log_message(tester, "   Running $cycles evolution cycles...")
-    
-    # Evolution cycles
     metrics_snapshots = Dict{String,Any}[]
     
     for cycle in 1:cycles
-        step_result = evolve_massive_step!(network, entity_count)
+        step_result = evolve_step!(network)
         
-        if cycle % max(1, cycles ÷ 5) == 0  # Adaptive snapshot frequency
-            metrics = calculate_massive_metrics(network, entity_count)
+        if cycle % 10 == 0
+            metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
             metrics["step_insights"] = step_result["insights"]
             metrics["new_patterns"] = step_result["new_patterns"]
             metrics["memory_mb"] = get_memory_mb()
-            if haskey(step_result, "sampled_entities")
-                metrics["sampled_entities"] = step_result["sampled_entities"]
-            end
             
             clean_metrics = clean_data_for_json(metrics)
             push!(metrics_snapshots, clean_metrics)
@@ -687,13 +587,12 @@ function run_massive_test(tester::MassiveScaleTester, entity_count::Int)::Dict{S
         end
     end
     
-    # Final metrics
-    final_metrics = calculate_massive_metrics(network, entity_count)
+    final_metrics = calculate_unified_metrics(network)
     clean_final_metrics = clean_data_for_json(final_metrics)
     
     result = merge(clean_final_metrics, Dict(
-        "test_name" => "massive_$(entity_count)_entities",
-        "cycles_completed" => cycles,
+        "test_name" => "unified_$(entity_count)_entities",
+        "cycles_completed" => length(metrics_snapshots) * 10,
         "avg_memory_mb" => mean([m["memory_mb"] for m in metrics_snapshots]),
         "peak_memory_mb" => maximum([m["memory_mb"] for m in metrics_snapshots]),
         "status" => "completed",
@@ -704,30 +603,20 @@ function run_massive_test(tester::MassiveScaleTester, entity_count::Int)::Dict{S
     
     log_message(tester, "✅ Completed: UIS=$(round(result["unified_intelligence_score"], digits=3)), " *
                        "R=$(round(result["reasoning_accuracy"], digits=3)), " *
-                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3)), " *
-                       "Entities=$(entity_count)")
-    
-    # Force garbage collection between large tests
-    GC.gc(true)
+                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3))")
     
     return result
 end
 
-function run_massive_scaling_sweep(tester::MassiveScaleTester)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting MASSIVE SCALING sweep (4 to 1.2M entities)...")
+function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
+    log_message(tester, "🚀 Starting scaling sweep...")
     
-    entity_counts = generate_entity_counts()
+    entity_counts = [16, 32, 64]  # Simple scaling for reliability
     sweep_results = Dict{String,Any}[]
     
-    total_tests = length(entity_counts)
-    test_count = 0
-    
     for entity_count in entity_counts
-        test_count += 1
-        log_message(tester, "📊 Progress: $test_count/$total_tests ($(round(test_count/total_tests*100, digits=1))%)")
-        
         try
-            result = run_massive_test(tester, entity_count)
+            result = run_unified_test(tester, entity_count, 50)
             push!(sweep_results, result)
             
             if result["status"] != "completed"
@@ -735,14 +624,13 @@ function run_massive_scaling_sweep(tester::MassiveScaleTester)::Vector{Dict{Stri
                 break
             end
             
+            GC.gc()
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
-            # Continue with next test rather than breaking entire sweep
-            continue
+            break
         end
     end
     
-    # Calculate scaling efficiencies
     if !isempty(sweep_results)
         baseline = sweep_results[1]
         baseline_uis = baseline["unified_intelligence_score"]
@@ -751,16 +639,13 @@ function run_massive_scaling_sweep(tester::MassiveScaleTester)::Vector{Dict{Stri
         for result in sweep_results[2:end]
             scale_factor = result["entity_count"] / baseline["entity_count"]
             
-            # Intelligence scaling
             uis_ratio = safe_divide(result["unified_intelligence_score"], baseline_uis)
             result["intelligence_scaling"] = round(safe_divide(uis_ratio, scale_factor), digits=3)
             
-            # Memory efficiency
             expected_memory = baseline_memory * scale_factor
             actual_memory = result["avg_memory_mb"]
             result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
             
-            # Capability scaling
             result["consciousness_scaling"] = round(safe_divide(result["consciousness"]["max_phi"], max(baseline["consciousness"]["max_phi"], 0.01)), digits=3)
             result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
             result["awareness_scaling"] = round(safe_divide(result["awareness_level"], max(baseline["awareness_level"], 0.01)), digits=3)
@@ -770,35 +655,31 @@ function run_massive_scaling_sweep(tester::MassiveScaleTester)::Vector{Dict{Stri
     return sweep_results
 end
 
-function save_massive_results(tester::MassiveScaleTester)::String
+function save_results(tester::SafeTester)::String
     timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
-    filename = "massive_intelligence_scaling_$timestamp.json"
+    filename = "unified_intelligence_scaling_$timestamp.json"  # FIXED FILENAME
     
-    # Clean all results before saving
     clean_results = [clean_data_for_json(result) for result in tester.results]
     
     output_data = Dict(
         "results" => clean_results,
         "test_time" => time() - tester.start_time,
-        "timestamp" => string(now()),
-        "scale_range" => "4_to_1.2M_entities",
-        "total_tests" => length(clean_results)
+        "timestamp" => string(now())
     )
     
-    # Write JSON safely
     json_string = JSON.json(output_data, 2)
     open(filename, "w") do f
         write(f, json_string)
     end
     
-    log_message(tester, "💾 Massive scale results saved to: $filename")
+    log_message(tester, "💾 Results saved to: $filename")
     return filename
 end
 
-function print_massive_summary(tester::MassiveScaleTester)
-    println("\n" * "="^80)
-    println("📊 MASSIVE SCALE INTELLIGENCE SCALING SUMMARY (4 to 1.2M entities)")
-    println("="^80)
+function print_summary(tester::SafeTester)
+    println("\n" * "="^70)
+    println("📊 UNIFIED INTELLIGENCE SCALING SUMMARY")
+    println("="^70)
     
     if isempty(tester.results)
         println("❌ No results to display")
@@ -806,23 +687,19 @@ function print_massive_summary(tester::MassiveScaleTester)
     end
     
     for result in tester.results
-        entity_count = result["entity_count"]
         println("\n🧬 $(result["test_name"]):")
-        println("   Entities: $(format(entity_count, commas=true))")
+        println("   Entities: $(result["entity_count"])")
         println("   ─────────────────────────────────────────")
+        println("   🧠 CONSCIOUSNESS:")
+        println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")")
+        println("      • Max Φ: $(result["consciousness"]["max_phi"])")
+        println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
         
-        if entity_count <= 100000  # Only show details for smaller scales
-            println("   🧠 CONSCIOUSNESS:")
-            println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")")
-            println("      • Max Φ: $(result["consciousness"]["max_phi"])")
-            println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
-            
-            println("   🎯 REASONING:")
-            println("      • Accuracy: $(result["reasoning_accuracy"])")
-            
-            println("   👁️  AWARENESS:")
-            println("      • Level: $(result["awareness_level"])")
-        end
+        println("   🎯 REASONING:")
+        println("      • Accuracy: $(result["reasoning_accuracy"])")
+        
+        println("   👁️  AWARENESS:")
+        println("      • Level: $(result["awareness_level"])")
         
         println("   💡 INTELLIGENCE:")
         println("      • Unified Score: $(result["unified_intelligence_score"])")
@@ -833,99 +710,49 @@ function print_massive_summary(tester::MassiveScaleTester)
             println("      • Intelligence: $(result["intelligence_scaling"])x")
             println("      • Memory Efficiency: $(result["memory_efficiency"])%")
         end
-        
-        if haskey(result, "sampled_entities")
-            println("   🔍 SAMPLING:")
-            println("      • Sampled Entities: $(result["sampled_entities"])")
-        end
-        
-        println("   💾 Memory: $(round(result["avg_memory_mb"], digits=1))MB avg")
-    end
-    
-    # Overall scaling analysis
-    if length(tester.results) > 1
-        println("\n" * "="^80)
-        println("🎉 MASSIVE SCALE EMERGENCE ANALYSIS")
-        println("="^80)
-        
-        first = tester.results[1]
-        last = tester.results[end]
-        
-        scale_factor = last["entity_count"] / first["entity_count"]
-        println("Total Scale Factor: $(format(round(Int, scale_factor), commas=true))x")
-        
-        println("\nIntelligence Range: $(first["unified_intelligence_score"]) → $(last["unified_intelligence_score"])")
-        
-        conscious_systems = count(r -> r["consciousness"]["is_conscious"], tester.results)
-        println("Conscious Systems: $conscious_systems/$(length(tester.results)) ($(round(conscious_systems/length(tester.results)*100, digits=1))%)")
-        
-        # Memory efficiency trend
-        memory_efficiencies = [r["memory_efficiency"] for r in tester.results if haskey(r, "memory_efficiency")]
-        if !isempty(memory_efficiencies)
-            avg_efficiency = mean(memory_efficiencies)
-            println("Average Memory Efficiency: $(round(avg_efficiency, digits=1))%")
-        end
-    end
-end
-
-# Helper function for formatting large numbers
-function format(n::Int; commas::Bool=true)
-    if commas
-        return replace(string(n), r"(?<=[0-9])(?=(?:[0-9]{3})+(?![0-9]))" => ",")
-    else
-        return string(n)
     end
 end
 
 # =============================================
-# MAIN EXECUTION - MASSIVE SCALING
+# MAIN EXECUTION
 # =============================================
 
 function main()
-    println("🌌 HOLOLIFEX6 PROTOTYPE4 - MASSIVE SCALE INTELLIGENCE TESTBED")
-    println("="^80)
-    println("🎯 Testing Internet-Scale Intelligence Emergence:")
+    println("🌌 HOLOLIFEX6 PROTOTYPE4 - UNIFIED INTELLIGENCE TESTBED")
+    println("="^70)
+    println("🎯 Testing Intelligence Pillars:")
     println("   1. 🧠 Consciousness (Brown-IIT Duality)")
-    println("   2. 🎯 Geometric Reasoning") 
+    println("   2. 🎯 Geometric Reasoning")
     println("   3. 👁️  Awareness")
     println("   4. 💡 Proto-Intelligence")
     println()
-    println("📊 MASSIVE Scaling: 4 → 8 → 16 → 24 → 32 → 64 → 128 → ... → 1,200,000 entities")
-    println("⚡ Optimized for memory efficiency and massive scale operation")
-    println("🎪 Measuring intelligence emergence across internet-scale collaboration")
-    println("="^80)
+    println("📊 Scaling Test: 16 → 32 → 64 entities")
+    println("🎪 Measuring intelligence emergence through collaboration")
+    println("="^70)
     
-    tester = MassiveScaleTester()
+    tester = SafeTester()
     
     try
-        # Run massive scaling sweep
-        sweep_results = run_massive_scaling_sweep(tester)
+        sweep_results = run_scaling_sweep(tester)
+        results_file = save_results(tester)
+        print_summary(tester)
         
-        # Save results
-        results_file = save_massive_results(tester)
-        
-        # Print summary
-        print_massive_summary(tester)
-        
-        println("\n" * "="^80)
-        println("✨ MASSIVE SCALE TESTING COMPLETE")
-        println("="^80)
+        println("\n" * "="^70)
+        println("✨ TESTING COMPLETE")
+        println("="^70)
         println("📁 Results saved to: $results_file")
         println("⏱️  Total time: $(round(time() - tester.start_time, digits=1))s")
-        println("📊 Scale range: 4 to 1,200,000 entities")
-        println("🔬 Total tests completed: $(length(tester.results))")
         
     catch e
-        println("❌ ERROR during massive scale testing: $e")
-        # Save whatever results we have
+        println("❌ ERROR: $e")
         try
-            save_massive_results(tester)
+            save_results(tester)
         catch
             println("⚠️  Could not save results")
         end
     end
     
-    println("\n🎊 MASSIVE SCALE TESTING COMPLETE")
+    println("\n🎊 TESTING COMPLETE")
 end
 
 # Execute if run directly
