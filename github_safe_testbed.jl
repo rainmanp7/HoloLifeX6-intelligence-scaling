@@ -210,12 +210,15 @@ function kuramoto_coupling!(entity::EfficientEntity, network_phases::Vector{Floa
         return
     end
     
-    entity_idx = parse(Int, split(entity.entity_id, "-")[end])
+    # Extract entity index safely
+    entity_parts = split(entity.entity_id, "-")
+    entity_idx = length(entity_parts) >= 2 ? parse(Int, entity_parts[end]) : 1
+    
     phase_sum = 0.0
     weight_sum = 0.0
     
     for (j, other_phase) in enumerate(network_phases)
-        if j != entity_idx && j <= size(coupling_matrix, 2)
+        if j != entity_idx && j <= size(coupling_matrix, 2) && entity_idx <= size(coupling_matrix, 1)
             coupling_strength = coupling_matrix[entity_idx, j]
             phase_diff = other_phase - entity.phase
             phase_sum += coupling_strength * sin(2π * phase_diff)
@@ -282,7 +285,8 @@ function generate_insight(entity::EfficientEntity, network_context::Vector{Float
         modifiers = ["adaptively", "recursively", "holistically", "emergently", "optimally"]
         targets = ["patterns", "systems", "flows", "structures", "dynamics"]
         
-        base = rand(base_actions[entity.domain])
+        base_list = get(base_actions, entity.domain, ["analyze"])
+        base = rand(base_list)
         modifier = rand(modifiers)
         target = rand(targets)
         
@@ -434,13 +438,13 @@ function calculate_entropy(values::Vector{Float64}, bins::Int=10)::Float64
 end
 
 function calculate_joint_entropy(values_list::Vector{Vector{Float64}}, bins::Int=10)::Float64
-    # Real joint entropy calculation
+    # Real joint entropy calculation - FIXED VERSION
     if isempty(values_list) || any(isempty.(values_list))
         return 0.0
     end
     
     n = length(values_list[1])
-    joint_histogram = Dict{Vector{Int}, Int}()
+    joint_histogram = Dict{String, Int}()  # Use String keys instead of Vector{Int}
     
     for i in 1:n
         bin_vector = Int[]
@@ -449,7 +453,8 @@ function calculate_joint_entropy(values_list::Vector{Vector{Float64}}, bins::Int
             push!(bin_vector, bin_idx)
         end
         
-        key = tuple(bin_vector...)
+        # Convert to string key to avoid tuple conversion issues
+        key = join(bin_vector, "_")
         joint_histogram[key] = get(joint_histogram, key, 0) + 1
     end
     
@@ -473,15 +478,19 @@ function calculate_effective_information(network)::Float64
     
     # Mutual information between entity phases
     mutual_info = 0.0
+    valid_pairs = 0
+    
     for i in 1:length(entities)
         for j in i+1:length(entities)
             joint_entropy = calculate_joint_entropy([[entities[i].phase], [entities[j].phase]])
-            mutual_info += phase_entropy * 2 - joint_entropy
+            if joint_entropy > 0
+                mutual_info += phase_entropy * 2 - joint_entropy
+                valid_pairs += 1
+            end
         end
     end
     
-    pair_count = length(entities) * (length(entities) - 1) / 2
-    avg_mutual_info = pair_count > 0 ? mutual_info / pair_count : 0.0
+    avg_mutual_info = valid_pairs > 0 ? mutual_info / valid_pairs : 0.0
     
     # Integration scaling with network size
     integration_scaling = min(length(entities) / 10.0, 1.0)
