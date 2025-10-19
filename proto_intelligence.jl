@@ -84,4 +84,57 @@ function calculate_joint_entropy(values_list::Vector{Vector{Float64}}, bins::Int
     n = length(values_list[1])
     joint_histogram = Dict{String, Int}()  # Use String keys instead of Vector{Int}
     
-   
+    for i in 1:n
+        bin_vector = Int[]
+        for values in values_list
+            bin_idx = min(Int(floor(values[i] * bins)) + 1, bins)
+            push!(bin_vector, bin_idx)
+        end
+        
+        # Convert to string key to avoid tuple conversion issues
+        key = join(bin_vector, "_")
+        joint_histogram[key] = get(joint_histogram, key, 0) + 1
+    end
+    
+    probabilities = [count / n for count in values(joint_histogram)]
+    joint_entropy = -sum([p > 0 ? p * log(p) : 0.0 for p in probabilities])
+    
+    max_entropy = log(length(probabilities))
+    return max_entropy > 0 ? joint_entropy / max_entropy : 0.0
+end
+
+function calculate_effective_information(network)::Float64
+    entities = network.entities
+    if length(entities) < 2
+        return 0.0
+    end
+    
+    try
+        # Get current phases for all entities
+        current_phases = [e.phase for e in entities]
+        
+        if length(current_phases) < 2
+            return 0.0
+        end
+        
+        # Calculate actual phase coherence as integration measure
+        coherence = calculate_phase_coherence(current_phases)
+        
+        # Calculate phase diversity (differentiation measure)
+        phase_std = std(current_phases)
+        phase_diversity = min(phase_std * 2.0, 1.0)  # Normalize to [0,1]
+        
+        # Effective information = integration × differentiation
+        # High EI = system is both integrated AND differentiated
+        effective_info = coherence * (0.3 + 0.7 * phase_diversity)
+        
+        # Scale by network size (larger networks can have higher EI)
+        size_factor = min(length(entities) / 15.0, 1.0)
+        
+        return effective_info * size_factor
+        
+    catch e
+        # Fallback: use simple coherence
+        return length(entities) >= 2 ? 0.1 : 0.0
+    end
+end
