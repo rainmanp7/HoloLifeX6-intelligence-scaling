@@ -6,7 +6,9 @@ Orchestrates all intelligence components into unified system
 
 using Statistics
 using LinearAlgebra
-using .PhaseSynchronization: calculate_phase_coherence
+
+include("utils.jl")
+using .Utils: safe_divide, calculate_phase_coherence
 
 mutable struct UnifiedNetwork
     entities::Vector{EfficientEntity}
