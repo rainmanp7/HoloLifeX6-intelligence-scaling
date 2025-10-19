@@ -9,7 +9,6 @@ using JSON
 using Dates
 using LinearAlgebra
 using Random
-using Distances
 
 # =============================================
 # CONSCIOUSNESS: Brown-IIT Duality Framework
@@ -80,6 +79,18 @@ function generate_geometric_problem(re::GeometricReasoningEngine, num_points::In
     return X, true_min_idx, cluster_assignments
 end
 
+function compute_distance_matrix(X::Matrix{Float64})
+    # Manual distance matrix computation without Distances package
+    n = size(X, 1)
+    dist_matrix = zeros(n, n)
+    for i in 1:n
+        for j in 1:n
+            dist_matrix[i, j] = norm(X[i, :] - X[j, :])
+        end
+    end
+    return dist_matrix
+end
+
 function manifold_forward_pass(re::GeometricReasoningEngine, X::Matrix{Float64})
     # Real geometric transformations through manifold layers
     current = X
@@ -87,8 +98,8 @@ function manifold_forward_pass(re::GeometricReasoningEngine, X::Matrix{Float64})
         current = max.(0.0, current * layer)  # ReLU activation
         # Add topological persistence
         if size(current, 2) > 1
-            # Compute persistent homology features
-            dist_matrix = pairwise(Euclidean(), eachrow(current))
+            # Compute persistent homology features manually
+            dist_matrix = compute_distance_matrix(current)
             current = hcat(current, vec(mean(dist_matrix, dims=2)))
         end
     end
