@@ -62,6 +62,24 @@ function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
     network.coupling_matrix = new_coupling_matrix
 end
 
+# 🎯 CRITICAL FIX: Add reasoning capacity update function
+function update_reasoning_capacity!(network::UnifiedNetwork)
+    # Only update if we have recent reasoning results
+    if !isempty(network.reasoning_engine.reasoning_history)
+        recent_reasoning = network.reasoning_engine.reasoning_history[end]
+        
+        # Only update if we have meaningful reasoning scores
+        if recent_reasoning > 0.0
+            for entity in network.entities
+                # Real learning: entities improve reasoning based on network performance
+                entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * recent_reasoning
+                # Ensure it stays in valid range
+                entity.reasoning_capacity = max(0.0, min(1.0, entity.reasoning_capacity))
+            end
+        end
+    end
+end
+
 function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     insights = Dict{String,Any}[]
     entity_phases = [e.phase for e in network.entities]
@@ -72,12 +90,10 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
         kuramoto_coupling!(entity, entity_phases, network.coupling_matrix)
     end
     
-    # Update reasoning capacity with real geometric reasoning
+    # 🎯 CRITICAL FIX: Update reasoning capacity with REAL geometric reasoning
     if length(network.coherence_history) % 8 == 0
         reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12)
-        for entity in network.entities
-            entity.reasoning_capacity = 0.85 * entity.reasoning_capacity + 0.15 * reasoning_score
-        end
+        update_reasoning_capacity!(network)  # Call the new function
     end
     
     # Update awareness with real phase coherence
