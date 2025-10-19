@@ -4,11 +4,15 @@
 Dimensional state monitoring and awareness tracking
 """
 
-using Statistics  # 🎯 ADDED
+using Statistics
 
-# 🎯 ADDED: Phase coherence function
-calculate_phase_coherence(phases::Vector{Float64})::Float64 = 
-    isempty(phases) ? 0.0 : abs(mean(exp.(2π * im .* phases)))
+function calculate_phase_coherence(phases::Vector{Float64})::Float64
+    if isempty(phases)
+        return 0.0
+    end
+    complex_phases = exp.(2π * im .* phases)
+    return abs(mean(complex_phases))
+end
 
 mutable struct AwarenessMonitor
     awareness_scores::Vector{Float64}
