@@ -4,7 +4,6 @@
 Modular architecture for unified intelligence testing
 """
 
-include("utils.jl")
 include("consciousness_core.jl")
 include("geometric_reasoning.jl") 
 include("phase_synchronization.jl")
