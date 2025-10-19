@@ -7,6 +7,9 @@ Testing framework with memory management and result logging
 using JSON
 using Dates
 
+include("utils.jl")
+using .Utils: safe_divide
+
 mutable struct SafeTester
     results::Vector{Dict{String,Any}}
     start_time::Float64
