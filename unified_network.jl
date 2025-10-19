@@ -7,10 +7,15 @@ Orchestrates all intelligence components into unified system
 using Statistics
 using LinearAlgebra
 
-# 🎯 ADDED: Both missing functions
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
-calculate_phase_coherence(phases::Vector{Float64})::Float64 = 
-    isempty(phases) ? 0.0 : abs(mean(exp.(2π * im .* phases)))
+
+function calculate_phase_coherence(phases::Vector{Float64})::Float64
+    if isempty(phases)
+        return 0.0
+    end
+    complex_phases = exp.(2π * im .* phases)
+    return abs(mean(complex_phases))
+end
 
 mutable struct UnifiedNetwork
     entities::Vector{EfficientEntity}
