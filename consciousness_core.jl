@@ -8,9 +8,6 @@ using Statistics
 using LinearAlgebra
 using Random
 
-include("utils.jl")
-using .Utils: safe_divide, safe_log
-
 mutable struct ConsciousnessValidator
     iit_threshold::Float64
     brown_threshold::Float64
