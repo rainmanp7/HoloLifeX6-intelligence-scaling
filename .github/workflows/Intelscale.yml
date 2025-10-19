@@ -28,9 +28,8 @@ jobs:
         echo "🧹 Cleaning workspace..."
         rm -rf ~/.julia/compiled
         rm -rf ~/.julia/logs
-        rm -rf *.json
         rm -rf _work/_temp
-        find . -type f -name "*.json" -delete
+        # Don't delete JSON files yet - we want to backup everything at the end
         echo "✅ Workspace cleaned"
         
     - name: Setup Julia
@@ -142,6 +141,23 @@ jobs:
         path: unified_intelligence_scaling_*.json
         retention-days: 30
         if-no-files-found: error
+        compression-level: 6
+        
+    - name: Backup all project files
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: project-backup-${{ github.run_id }}
+        path: |
+          **/*.jl
+          **/*.toml
+          **/*.yml
+          **/*.yaml
+          **/*.md
+          **/*.txt
+          **/*.json
+        retention-days: 30
+        if-no-files-found: warn
         compression-level: 6
         
     - name: Clean up after test
@@ -275,6 +291,8 @@ jobs:
         echo "- **Time Limit:** 60 minutes" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📥 **Download artifacts to view detailed JSON results with full metrics**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "💾 **Project files have been backed up as artifact: \`project-backup-${{ github.run_id }}\`**" >> $GITHUB_STEP_SUMMARY
         
     - name: Final cleanup
       if: always()
