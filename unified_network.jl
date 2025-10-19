@@ -90,10 +90,10 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
         kuramoto_coupling!(entity, entity_phases, network.coupling_matrix)
     end
     
-    # 🎯 CRITICAL FIX: Update reasoning capacity with REAL geometric reasoning
-    if length(network.coherence_history) % 8 == 0
+    # 🎯 FIXED: Test reasoning every cycle once network is established
+    if length(network.entities) >= 8
         reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12)
-        update_reasoning_capacity!(network)  # Call the new function
+        update_reasoning_capacity!(network)
     end
     
     # Update awareness with real phase coherence
