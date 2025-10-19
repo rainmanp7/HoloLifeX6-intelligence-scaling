@@ -8,6 +8,8 @@ using Statistics
 using LinearAlgebra
 using Random
 
+safe_log(x) = x <= 0 ? 0.0 : log(x + 1.0)
+
 mutable struct ConsciousnessValidator
     iit_threshold::Float64
     brown_threshold::Float64
