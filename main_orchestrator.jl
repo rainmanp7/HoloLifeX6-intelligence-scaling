@@ -1,7 +1,7 @@
 # main_orchestrator.jl
 """
 🎯 HOLOLIFEX6 MAIN ORCHESTRATOR
-Modular architecture for unified intelligence testing
+Modular architecture for unified intelligence testing with full meta-cognitive capabilities
 """
 
 include("consciousness_core.jl")
@@ -14,6 +14,10 @@ include("unified_network.jl")
 include("safe_tester.jl")
 include("light_reflector.jl")
 include("meta_cognitive_engine.jl")
+include("self_awareness_tracker.jl")
+
+# Global self-model for longitudinal tracking
+const GLOBAL_SELF_MODEL = initialize_self_model()
 
 function main()
     println("🌌 HOLOLIFEX6 PROTOTYPE4 - MODULAR UNIFIED INTELLIGENCE TESTBED")
@@ -35,10 +39,10 @@ function main()
         results_file = save_results(tester)
         print_summary(tester)
         
-        # 🪞 META-COGNITIVE SELF-REFLECTION
+        # 🪞 FULL META-COGNITIVE SELF-REFLECTION STACK
         if !isempty(sweep_results) && length(sweep_results) >= 1
             println("\n" * "="^70)
-            println("🪞 META-COGNITIVE SELF-REFLECTION")
+            println("🪞 FULL META-COGNITIVE SELF-REFLECTION")
             println("="^70)
             
             try
@@ -69,7 +73,23 @@ function main()
                             println("      ⚠️  Bottlenecks: $(length(diagnosis["bottlenecks"]))")
                             println("      ✅ Strengths: $(length(diagnosis["strengths"]))")
                             println("      💡 Recommendations: $(length(diagnosis["recommendations"]))")
-                            println("      📁 Output: meta_cognitive_analysis.json")
+                            
+                            # SELF-AWARENESS TRACKING - NEW
+                            try
+                                update_self_model!(GLOBAL_SELF_MODEL, enhanced_analysis, performance_metrics, diagnosis)
+                                evolution_insights = generate_evolution_insights(GLOBAL_SELF_MODEL)
+                                self_model_save = save_self_model(GLOBAL_SELF_MODEL, "self_awareness_model.json")
+                                
+                                if self_model_save
+                                    println("   📈 Self-awareness tracking updated:")
+                                    println("      🕰️  Total snapshots: $(evolution_insights["total_snapshots"])")
+                                    println("      📈 Complexity trend: $(evolution_insights["momentum_analysis"]["complexity_trend"])")
+                                    println("      🔍 Evolution insights: $(length(evolution_insights["evolution_insights"]))")
+                                    println("      📁 Output: self_awareness_model.json")
+                                end
+                            catch e
+                                println("   ⚠️  Self-awareness tracking skipped: $e")
+                            end
                         end
                     catch e
                         println("   ⚠️  Meta-cognitive analysis skipped: $e")
