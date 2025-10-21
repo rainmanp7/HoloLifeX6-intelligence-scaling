@@ -34,48 +34,27 @@ function main()
         results_file = save_results(tester)
         print_summary(tester)
         
-        # 🪞 LIGHTWEIGHT SELF-REFLECTION - GitHub Remote Compatible
+        # 🪞 SINGLE ENHANCED SELF-REFLECTION
         if !isempty(sweep_results) && length(sweep_results) >= 1
             println("\n" * "="^70)
-            println("🪞 GITHUB-OPTIMIZED SELF-REFLECTION")
+            println("🪞 ARCHITECTURAL SELF-REFLECTION")
             println("="^70)
             
             try
-                # Quick AST analysis without heavy computation
-                quick_ast_map = generate_quick_ast()
-                ast_summary = analyze_architecture_health(quick_ast_map)
-                save_success = save_light_blueprint(ast_summary, "light_architecture_scan.json")
+                enhanced_ast = generate_enhanced_ast()
+                enhanced_analysis = analyze_architecture_health_v2(enhanced_ast)
+                save_success = save_enhanced_blueprint(enhanced_analysis, "architecture_scan.json")
                 
                 if save_success
-                    println("✅ Lightweight self-reflection completed")
-                    println("   📊 Modules: $(ast_summary["module_count"])")
-                    println("   🛠️  Functions: $(ast_summary["total_functions"])")
-                    println("   📁 Output: light_architecture_scan.json")
-                    
-                    # 🪞 ENHANCED SELF-REFLECTION - If lightweight succeeds
-                    try
-                        println("   🔄 Running enhanced architectural analysis...")
-                        enhanced_ast = generate_enhanced_ast()
-                        enhanced_analysis = analyze_architecture_health_v2(enhanced_ast)
-                        enhanced_save = save_enhanced_blueprint(enhanced_analysis, "enhanced_architecture_scan.json")
-                        
-                        if enhanced_save
-                            println("   📈 Enhanced analysis complete:")
-                            println("      🏗️  System Cohesion: $(enhanced_analysis["system_cohesion"])")
-                            println("      🧩 Avg Complexity: $(enhanced_analysis["average_complexity"])")
-                            println("      📊 Health: $(enhanced_analysis["architecture_health"])")
-                            println("      📁 Output: enhanced_architecture_scan.json")
-                        end
-                    catch e
-                        println("   ⚠️  Enhanced analysis skipped: $e")
-                    end
-                else
-                    println("⚠️  Self-reflection completed but file save failed")
+                    println("✅ Architectural self-reflection completed")
+                    println("   🏗️  System Cohesion: $(enhanced_analysis["system_cohesion"])")
+                    println("   🧩 Avg Complexity: $(enhanced_analysis["average_complexity"])") 
+                    println("   📊 Health: $(enhanced_analysis["architecture_health"])")
+                    println("   🛠️  Functions: $(enhanced_analysis["total_functions"])")
+                    println("   📁 Output: architecture_scan.json")
                 end
-                
             catch e
-                println("⚠️  Light self-reflection skipped: $e")
-                # Non-fatal - intelligence tests are primary
+                println("⚠️  Self-reflection skipped: $e")
             end
         end
         
