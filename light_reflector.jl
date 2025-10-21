@@ -23,7 +23,6 @@ function generate_quick_ast()::Dict{String, Any}
         if isfile(module_file)
             source_code = read(module_file, String)
             lines = split(source_code, '\n')
-            # Fixed function counting with proper regex
             func_count = count(line -> occursin(r"^\s*function", line), lines)
             total_functions += func_count
             
@@ -74,7 +73,6 @@ function calculate_complexity_metrics(source_code::String)::Dict{String, Any}
     lines = split(source_code, '\n')
     non_empty_lines = filter(line -> !isempty(strip(line)), lines)
     
-    # Fixed regex patterns with proper closing and whitespace handling
     control_flow_count = count(line -> occursin(r"if |for |while |try |catch ", line), lines)
     function_count = count(line -> occursin(r"^\s*function", line), lines)
     comment_count = count(line -> occursin(r"^\s*#", line), lines)
@@ -99,15 +97,13 @@ function analyze_module_dependencies()::Dict{String, Vector{String}}
         "proto_intelligence.jl", "insight_generation.jl"
     ]
     
-    for module in core_modules
-        if isfile(module)
-            source = read(module, String)
+    for mod_file in core_modules
+        if isfile(mod_file)
+            source = read(mod_file, String)
             dependencies = String[]
             
-            # Find include statements - robust quote handling
             for line in split(source, '\n')
                 if occursin(r"include\(", line)
-                    # Extract filename from include statement - handle both single and double quotes
                     if occursin(r"[\"'](.*?)[\"']", line)
                         m = match(r"[\"'](.*?)[\"']", line)
                         if m !== nothing
@@ -116,7 +112,7 @@ function analyze_module_dependencies()::Dict{String, Vector{String}}
                     end
                 end
             end
-            dependency_map[module] = dependencies
+            dependency_map[mod_file] = dependencies
         end
     end
     return dependency_map
@@ -141,12 +137,10 @@ function generate_enhanced_ast()::Dict{String, Any}
             source_code = read(module_file, String)
             source_lines = split(source_code, '\n')
             
-            # Fixed function counting with proper regex
             func_lines = filter(line -> occursin(r"^\s*function", line), source_lines)
             func_count = length(func_lines)
             total_functions += func_count
             
-            # Complexity analysis
             metrics = calculate_complexity_metrics(source_code)
             total_complexity += metrics["control_flow_density"]
             analyzed_count += 1
@@ -160,10 +154,8 @@ function generate_enhanced_ast()::Dict{String, Any}
         end
     end
     
-    # Dependency analysis
     dependency_map = analyze_module_dependencies()
     
-    # Safe average calculation
     avg_complexity = analyzed_count > 0 ? round(total_complexity / analyzed_count, digits=3) : 0.0
     
     result = Dict(
@@ -199,7 +191,6 @@ function analyze_architecture_health_v2(ast_map::Dict)::Dict
     module_count = get(ast_map, "module_count", 0)
     avg_complexity = get(ast_map, "average_complexity", 0.0)
     
-    # Enhanced health scoring
     health_factors = []
     
     if module_count >= 5
@@ -245,6 +236,5 @@ function save_enhanced_blueprint(ast_summary::Dict, filename::String="enhanced_a
     end
 end
 
-# Export all functions
 export generate_quick_ast, analyze_architecture_health, save_light_blueprint,
        generate_enhanced_ast, analyze_architecture_health_v2, save_enhanced_blueprint
