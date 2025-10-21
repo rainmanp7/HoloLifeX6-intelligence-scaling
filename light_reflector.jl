@@ -23,7 +23,8 @@ function generate_quick_ast()::Dict{String, Any}
         if isfile(module)
             # Ultra-fast analysis - just count functions and basic stats
             source = read(module, String)
-            func_count = count(l -> occursin(r"^function|^def " || occursin(r"=\s*function", l), split(source, '\n'))
+            lines = split(source, '\n')
+            func_count = count(line -> occursin(r"^function", line) || occursin(r"=\s*function", line), lines)
             total_functions += func_count
             
             quick_ast[module] = Dict(
