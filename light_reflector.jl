@@ -1,20 +1,83 @@
 # light_reflector.jl
 """
-🪞 LIGHTWEIGHT SELF-REFLECTION v2
-Enhanced with complexity metrics and dependency analysis
+🪞 LIGHTWEIGHT SELF-REFLECTION
+GitHub-remote optimized AST analysis with enhanced metrics
 """
 
 using JSON
 using Dates
 
+function generate_quick_ast()::Dict{String, Any}
+    println("   🔍 Quick-scanning architecture...")
+    
+    core_modules = [
+        "consciousness_core.jl", "geometric_reasoning.jl",
+        "phase_synchronization.jl", "unified_network.jl", 
+        "safe_tester.jl"
+    ]
+    
+    quick_ast = Dict{String, Any}()
+    total_functions = 0
+    
+    for module_file in core_modules
+        if isfile(module_file)
+            source_code = read(module_file, String)
+            lines = split(source_code, '\n')
+            # Fixed function counting with proper regex
+            func_count = count(line -> occursin(r"^\s*function", line), lines)
+            total_functions += func_count
+            
+            quick_ast[module_file] = Dict(
+                "function_count" => func_count,
+                "file_size_kb" => round(length(source_code) / 1024, digits=2),
+                "last_modified" => string(mtime(module_file))
+            )
+        end
+    end
+    
+    return Dict(
+        "timestamp" => now(),
+        "scan_type" => "lightweight_github",
+        "modules_analyzed" => quick_ast,
+        "total_functions" => total_functions,
+        "module_count" => length(quick_ast)
+    )
+end
+
+function analyze_architecture_health(ast_map::Dict)::Dict
+    total_funcs = get(ast_map, "total_functions", 0)
+    module_count = get(ast_map, "module_count", 0)
+    
+    health_score = module_count > 5 ? "EXCELLENT" :
+                   module_count > 3 ? "GOOD" : "MINIMAL"
+    
+    return merge(ast_map, Dict(
+        "architecture_health" => health_score,
+        "recommendation" => total_funcs > 50 ? "Ready for deep analysis" : "Continue core development",
+        "scan_duration_seconds" => "@github_remote"
+    ))
+end
+
+function save_light_blueprint(ast_summary::Dict, filename::String="light_architecture_scan.json")
+    try
+        json_data = JSON.json(ast_summary, 2)
+        open(filename, "w") do file
+            write(file, json_data)
+        end
+        return true
+    catch
+        return false
+    end
+end
+
 function calculate_complexity_metrics(source_code::String)::Dict{String, Any}
     lines = split(source_code, '\n')
     non_empty_lines = filter(line -> !isempty(strip(line)), lines)
     
-    # Basic complexity indicators
-    control_flow_count = count(line -> occursin(r"if |for |while |try |catch", line), lines)
-    function_count = count(line -> occursin(r"^function", line), lines)
-    comment_count = count(line -> occursin(r"^#", line), lines)
+    # Fixed regex patterns with proper closing and whitespace handling
+    control_flow_count = count(line -> occursin(r"if |for |while |try |catch ", line), lines)
+    function_count = count(line -> occursin(r"^\s*function", line), lines)
+    comment_count = count(line -> occursin(r"^\s*#", line), lines)
     
     complexity_score = control_flow_count / max(1, function_count)
     comment_ratio = comment_count / max(1, length(non_empty_lines))
@@ -41,13 +104,15 @@ function analyze_module_dependencies()::Dict{String, Vector{String}}
             source = read(module, String)
             dependencies = String[]
             
-            # Find include statements
+            # Find include statements - robust quote handling
             for line in split(source, '\n')
                 if occursin(r"include\(", line)
-                    # Extract filename from include statement
-                    if occursin(r"\"(.*?)\"", line)
-                        match = match(r"\"(.*?)\"", line)
-                        push!(dependencies, match.captures[1])
+                    # Extract filename from include statement - handle both single and double quotes
+                    if occursin(r"[\"'](.*?)[\"']", line)
+                        m = match(r"[\"'](.*?)[\"']", line)
+                        if m !== nothing
+                            push!(dependencies, m.captures[1])
+                        end
                     end
                 end
             end
@@ -69,20 +134,22 @@ function generate_enhanced_ast()::Dict{String, Any}
     enhanced_ast = Dict{String, Any}()
     total_functions = 0
     total_complexity = 0.0
+    analyzed_count = 0
     
     for module_file in core_modules
         if isfile(module_file)
             source_code = read(module_file, String)
             source_lines = split(source_code, '\n')
             
-            # Function counting
-            func_lines = filter(line -> occursin("function", line), source_lines)
+            # Fixed function counting with proper regex
+            func_lines = filter(line -> occursin(r"^\s*function", line), source_lines)
             func_count = length(func_lines)
             total_functions += func_count
             
             # Complexity analysis
             metrics = calculate_complexity_metrics(source_code)
             total_complexity += metrics["control_flow_density"]
+            analyzed_count += 1
             
             enhanced_ast[module_file] = Dict(
                 "function_count" => func_count,
@@ -96,6 +163,9 @@ function generate_enhanced_ast()::Dict{String, Any}
     # Dependency analysis
     dependency_map = analyze_module_dependencies()
     
+    # Safe average calculation
+    avg_complexity = analyzed_count > 0 ? round(total_complexity / analyzed_count, digits=3) : 0.0
+    
     result = Dict(
         "timestamp" => now(),
         "scan_type" => "enhanced_github_v2",
@@ -103,7 +173,7 @@ function generate_enhanced_ast()::Dict{String, Any}
         "dependency_graph" => dependency_map,
         "total_functions" => total_functions,
         "module_count" => length(enhanced_ast),
-        "average_complexity" => round(total_complexity / length(enhanced_ast), digits=3),
+        "average_complexity" => avg_complexity,
         "system_cohesion" => calculate_system_cohesion(dependency_map)
     )
     
@@ -112,7 +182,8 @@ end
 
 function calculate_system_cohesion(dependency_map::Dict)::String
     total_deps = sum(length(v) for v in values(dependency_map))
-    avg_deps = total_deps / max(1, length(dependency_map))
+    module_count = length(dependency_map)
+    avg_deps = module_count > 0 ? total_deps / module_count : 0.0
     
     if avg_deps < 1.0
         return "LOW_COUPLING"
@@ -174,5 +245,6 @@ function save_enhanced_blueprint(ast_summary::Dict, filename::String="enhanced_a
     end
 end
 
-# Export enhanced functions
-export generate_enhanced_ast, analyze_architecture_health_v2, save_enhanced_blueprint
+# Export all functions
+export generate_quick_ast, analyze_architecture_health, save_light_blueprint,
+       generate_enhanced_ast, analyze_architecture_health_v2, save_enhanced_blueprint
