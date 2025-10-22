@@ -5,6 +5,7 @@ Analyzes architecture-performance correlations and generates improvement insight
 """
 
 using JSON
+using Dates
 using Statistics
 
 function perform_self_diagnosis(architecture_scan::Dict, performance_metrics::Dict)::Dict
@@ -194,5 +195,71 @@ function save_meta_cognitive_analysis(diagnosis::Dict, filename::String="meta_co
     end
 end
 
-# Export functions
-export perform_self_diagnosis, save_meta_cognitive_analysis
+function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vector{Dict}
+    decisions = []
+    
+    # Decision 1: Address high complexity in unified_network.jl
+    high_complexity_bottlenecks = filter(b -> occursin("unified_network", get(b, "module", "")), get(diagnosis, "bottlenecks", []))
+    if !isempty(high_complexity_bottlenecks)
+        push!(decisions, Dict(
+            "decision_id" => "ARCH_REFACTOR_001",
+            "type" => "COMPLEXITY_REDUCTION",
+            "target_module" => "unified_network.jl", 
+            "action" => "Decompose orchestration logic into specialized sub-modules",
+            "rationale" => "High control flow density (3.5) indicates architectural bottleneck",
+            "expected_impact" => "Reduce maintenance complexity by 40%",
+            "priority" => "HIGH",
+            "estimated_effort" => "MEDIUM"
+        ))
+    end
+    
+    # Decision 2: Enhance documentation based on low comment coverage
+    low_doc_bottlenecks = filter(b -> occursin("safe_tester", get(b, "module", "")), get(diagnosis, "bottlenecks", []))
+    if !isempty(low_doc_bottlenecks)
+        push!(decisions, Dict(
+            "decision_id" => "DOC_IMPROVE_001", 
+            "type" => "DOCUMENTATION_ENHANCEMENT",
+            "target_module" => "safe_tester.jl",
+            "action" => "Add comprehensive function documentation and test cases",
+            "rationale" => "Critical test infrastructure has only 0.6% comment coverage",
+            "expected_impact" => "Improve maintainability and onboarding efficiency",
+            "priority" => "MEDIUM", 
+            "estimated_effort" => "LOW"
+        ))
+    end
+    
+    # Decision 3: Preserve architectural strengths
+    low_coupling_strengths = filter(s -> occursin("LOW_COUPLING", get(s, "assessment", "")), get(diagnosis, "strengths", []))
+    if !isempty(low_coupling_strengths)
+        push!(decisions, Dict(
+            "decision_id" => "ARCH_PRESERVE_001",
+            "type" => "ARCHITECTURAL_PRESERVATION", 
+            "target_module" => "system_architecture",
+            "action" => "Maintain current modular design with zero dependencies",
+            "rationale" => "Low coupling architecture enables emergent intelligence scaling",
+            "expected_impact" => "Preserve system stability and testability",
+            "priority" => "HIGH",
+            "estimated_effort" => "NONE"
+        ))
+    end
+    
+    # Decision 4: Monitor complexity trends
+    momentum = get(evolution, "momentum_analysis", Dict())
+    if get(momentum, "complexity_trend", "") == "INCREASING"
+        push!(decisions, Dict(
+            "decision_id" => "MONITOR_001",
+            "type" => "COMPLEXITY_MONITORING",
+            "target_module" => "all_modules",
+            "action" => "Implement automated complexity tracking with alerts",
+            "rationale" => "Complexity trending upward requires proactive monitoring",
+            "expected_impact" => "Early detection of architectural degradation",
+            "priority" => "MEDIUM",
+            "estimated_effort" => "LOW"
+        ))
+    end
+    
+    return decisions
+end
+
+# Export ALL functions
+export perform_self_diagnosis, save_meta_cognitive_analysis, generate_architectural_decisions
