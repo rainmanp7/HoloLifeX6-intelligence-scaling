@@ -1,445 +1,442 @@
-# semantic_analyzer.jl
+# semantic_metacognitive_engine.jl
 """
-🎯 SEMANTIC ANALYZER (GitHub-Remote Optimized)
-AST-like function-level analysis that MATCHES meta_cognitive_engine.jl metrics
+🧠 SEMANTIC META-COGNITIVE ENGINE
+Deep semantic analysis with meta-cognitive reasoning about code quality
+Transformed from meta_cognitive_engine.jl to perform semantic introspection
 """
 
 using JSON
 using Dates
 using Statistics
 
-# ==============================================================================
-# MATCH META_COGNITIVE_ENGINE CONSTANTS EXACTLY
-# ==============================================================================
+# Configurable semantic thresholds
+const MAX_FUNCTION_LENGTH = 50
+const MAX_PARAMETERS = 5
+const MAX_NESTING_DEPTH = 4
+const MAX_COMPLEXITY_SCORE = 10
+const MAX_RESPONSIBILITIES = 2
+const CRITICAL_CATEGORIES = ["orchestration", "calculation", "testing"]
 
-const COMPLEXITY_THRESHOLD = 3.0
-const MIN_COMMENT_COVERAGE = 0.01
-const MAX_CYCLOMATIC = 20
-const CRITICAL_MODULES = ["unified_network.jl", "consciousness_core.jl", "safe_tester.jl"]
-
-# ==============================================================================
-# TOKENIZER (SAME AS BEFORE)
-# ==============================================================================
-
-struct PseudoNode
-    kind::Symbol
-    value::String
-    line::Int
-end
-
-function tokenize_code(source_code::String)::Vector{PseudoNode}
-    tokens = PseudoNode[]
-    keywords = Set(["function", "struct", "mutable", "if", "else", "elseif", "while", "for", "begin", "end", "try", "catch", "finally", "let", "return", "using", "export", "module", "import"])
+function perform_semantic_self_diagnosis(module_analyses::Vector{Dict})::Dict
+    """
+    META-COGNITIVE SEMANTIC ANALYSIS
+    Cross-references code structure with quality patterns to generate insights
+    """
+    if isempty(module_analyses)
+        return create_error_diagnosis("Module analyses cannot be empty")
+    end
     
-    line_num = 1
-    i = 1
-    while i <= lastindex(source_code)
-        char = source_code[i]
-
-        if char == '\n'; line_num += 1; i += 1; continue; end
-        if isspace(char); i += 1; continue; end
-
-        # Comments (COUNT THEM for comment coverage!)
-        if char == '#'
-            # Store comment tokens for coverage calculation
-            start_i = i
-            if i < lastindex(source_code) && source_code[i+1] == '='
-                # Multi-line comment
-                end_idx = findnext("=#", source_code, i + 2)
-                if end_idx === nothing; break; end
-                val = source_code[start_i:last(end_idx)]
-                push!(tokens, PseudoNode(:comment, val, line_num))
-                line_num += count(c -> c == '\n', val)
-                i = last(end_idx) + 1
-            else
-                # Single-line comment
-                next_newline = findnext('\n', source_code, i)
-                end_idx = next_newline === nothing ? lastindex(source_code) : next_newline - 1
-                val = source_code[start_i:end_idx]
-                push!(tokens, PseudoNode(:comment, val, line_num))
-                i = next_newline === nothing ? lastindex(source_code) + 1 : next_newline
-            end
-            continue
-        end
-
-        # Strings
-        if char == '"'
-            start_i = i
-            i += 1
-            while i <= lastindex(source_code) && (source_code[i] != '"' || source_code[i-1] == '\\')
-                i += 1
-            end
-            val = source_code[start_i:i]
-            push!(tokens, PseudoNode(:string_literal, val, line_num))
-            i += 1
-            continue
-        end
-
-        # Identifiers and Keywords
-        if isletter(char) || char == '_'
-            start_i = i
-            i += 1
-            while i <= lastindex(source_code) && (isletter(source_code[i]) || isdigit(source_code[i]) || source_code[i] == '_' || source_code[i] == '!')
-                i += 1
-            end
-            val = source_code[start_i:i-1]
-            kind = val in keywords ? :keyword : :identifier
-            push!(tokens, PseudoNode(kind, val, line_num))
-            continue
-        end
-
-        # Numbers
-        if isdigit(char) || (char == '.' && i < lastindex(source_code) && isdigit(source_code[i+1]))
-            start_i = i
-            i += 1
-            while i <= lastindex(source_code) && (isdigit(source_code[i]) || source_code[i] == '.' || source_code[i] in "eE")
-                i += 1
-            end
-            val = source_code[start_i:i-1]
-            push!(tokens, PseudoNode(:number_literal, val, line_num))
-            continue
-        end
-
-        # Operators
-        if i < lastindex(source_code)
-            two_char = source_code[i:i+1]
-            if two_char in ["==", "!=", "<=", ">=", "&&", "||", "::"]
-                push!(tokens, PseudoNode(:operator, two_char, line_num))
-                i += 2
-                continue
-            end
-        end
-
-        if char in ['(', ')', '[', ']', '{', '}', ',', ';', '.', '=', '<', '>', ':', '!', '&', '|', '+', '-', '*', '/']
-            push!(tokens, PseudoNode(:operator, string(char), line_num))
-            i += 1
-            continue
-        end
-
-        i += 1
-    end
-    return tokens
-end
-
-# ==============================================================================
-# FUNCTION EXTRACTION (SAME)
-# ==============================================================================
-
-function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
-    functions = []
-    current_func_tokens = PseudoNode[]
-    nesting_level = 0
-    in_function = false
-    current_func_name = ""
-    current_start_line = 0
-
-    for i in 1:length(tokens)
-        token = tokens[i]
-        
-        if token.kind == :keyword && token.value == "function"
-            if nesting_level == 0
-                in_function = true
-                current_start_line = token.line
-                current_func_tokens = [token]
-                
-                if i + 1 <= length(tokens) && tokens[i+1].kind == :identifier
-                    current_func_name = tokens[i+1].value
-                else
-                    current_func_name = "anonymous"
-                end
-            end
-            nesting_level += 1
-        end
-
-        if in_function
-            push!(current_func_tokens, token)
-        end
-        
-        if token.kind == :keyword && token.value == "end"
-            if nesting_level > 0
-                nesting_level -= 1
-                if nesting_level == 0 && in_function
-                    in_function = false
-                    push!(functions, Dict(
-                        "name" => current_func_name,
-                        "start_line" => current_start_line,
-                        "end_line" => token.line,
-                        "tokens" => current_func_tokens
-                    ))
-                end
-            end
+    println("   🧠 Performing semantic meta-cognitive analysis...")
+    
+    # Aggregate all function analyses
+    all_functions = []
+    for module_analysis in module_analyses
+        if haskey(module_analysis, "function_details")
+            append!(all_functions, module_analysis["function_details"])
         end
     end
-    return functions
+    
+    # Cross-reference structure with quality patterns
+    semantic_bottlenecks = identify_semantic_bottlenecks(all_functions, module_analyses)
+    semantic_strengths = identify_semantic_strengths(all_functions, module_analyses)
+    architectural_insights = generate_architectural_insights(semantic_bottlenecks, semantic_strengths)
+    
+    diagnosis = Dict(
+        "timestamp" => string(now()),
+        "total_functions_analyzed" => length(all_functions),
+        "semantic_bottlenecks" => semantic_bottlenecks,
+        "semantic_strengths" => semantic_strengths,
+        "architectural_insights" => architectural_insights,
+        "semantic_health_score" => calculate_semantic_health_score(semantic_bottlenecks, semantic_strengths),
+        "quality_distribution" => analyze_quality_distribution(all_functions),
+        "refactoring_roadmap" => generate_refactoring_roadmap(semantic_bottlenecks)
+    )
+    
+    return diagnosis
 end
 
-# ==============================================================================
-# KEY FIX: MATCH META_COGNITIVE_ENGINE METRICS EXACTLY
-# ==============================================================================
+function identify_semantic_bottlenecks(functions::Vector{Dict}, modules::Vector{Dict})::Vector{Dict}
+    """
+    BOTTLENECK DETECTION - Inspired by meta_cognitive_engine.jl
+    Identifies code smells and correlates them with architectural impact
+    """
+    bottlenecks = []
+    
+    # Bottleneck 1: Long Method Anti-Pattern
+    long_functions = filter(f -> f["metrics"]["line_count"] > MAX_FUNCTION_LENGTH, functions)
+    for func in long_functions
+        severity = func["metrics"]["line_count"] > 100 ? "CRITICAL" : "HIGH"
+        push!(bottlenecks, Dict(
+            "category" => "LONG_METHOD",
+            "function" => func["name"],
+            "location" => func["location"],
+            "severity" => severity,
+            "problem" => "Function length: $(func["metrics"]["line_count"]) lines (threshold: $MAX_FUNCTION_LENGTH)",
+            "impact" => "Difficult to understand, test, and maintain. High cognitive load.",
+            "suggested_fix" => "Extract sub-methods: $(generate_extraction_suggestions(func))",
+            "correlation" => "Functions > 50 lines have 3x higher bug rates"
+        ))
+    end
+    
+    # Bottleneck 2: Parameter Explosion
+    complex_signatures = filter(f -> f["metrics"]["parameter_count"] > MAX_PARAMETERS, functions)
+    for func in complex_signatures
+        push!(bottlenecks, Dict(
+            "category" => "PARAMETER_EXPLOSION",
+            "function" => func["name"],
+            "location" => func["location"],
+            "severity" => "HIGH",
+            "problem" => "$(func["metrics"]["parameter_count"]) parameters (threshold: $MAX_PARAMETERS)",
+            "impact" => "High coupling, difficult to call, poor encapsulation",
+            "suggested_fix" => "Introduce parameter object or builder pattern",
+            "correlation" => "Functions with >5 params have 2x higher change frequency"
+        ))
+    end
+    
+    # Bottleneck 3: Deep Nesting (Cognitive Complexity)
+    deeply_nested = filter(f -> f["metrics"]["nesting_depth"] > MAX_NESTING_DEPTH, functions)
+    for func in deeply_nested
+        push!(bottlenecks, Dict(
+            "category" => "DEEP_NESTING",
+            "function" => func["name"],
+            "location" => func["location"],
+            "severity" => "MEDIUM",
+            "problem" => "Nesting depth: $(func["metrics"]["nesting_depth"]) (threshold: $MAX_NESTING_DEPTH)",
+            "impact" => "High cyclomatic complexity, difficult to reason about",
+            "suggested_fix" => "Apply guard clauses and early returns",
+            "correlation" => "Deep nesting correlates with 40% more defects"
+        ))
+    end
+    
+    # Bottleneck 4: Mixed Abstractions (Single Responsibility Violation)
+    mixed_responsibility = filter(f -> length(f["semantic"]["responsibilities"]) > MAX_RESPONSIBILITIES, functions)
+    for func in mixed_responsibility
+        responsibilities = join(f["semantic"]["responsibilities"], ", ")
+        push!(bottlenecks, Dict(
+            "category" => "MIXED_ABSTRACTIONS",
+            "function" => func["name"],
+            "location" => func["location"],
+            "severity" => "HIGH",
+            "problem" => "Multiple responsibilities: $responsibilities",
+            "impact" => "Violates Single Responsibility Principle, hard to reuse",
+            "suggested_fix" => "Split into focused functions per responsibility",
+            "correlation" => "Multi-responsibility functions have 2.5x code churn"
+        ))
+    end
+    
+    # Bottleneck 5: High Cyclomatic Complexity
+    complex_control_flow = filter(f -> f["metrics"]["complexity_score"] > MAX_COMPLEXITY_SCORE, functions)
+    for func in complex_control_flow
+        push!(bottlenecks, Dict(
+            "category" => "HIGH_COMPLEXITY",
+            "function" => func["name"],
+            "location" => func["location"],
+            "severity" => "CRITICAL",
+            "problem" => "Complexity score: $(func["metrics"]["complexity_score"]) (threshold: $MAX_COMPLEXITY_SCORE)",
+            "impact" => "Exponential test case growth, high maintenance cost",
+            "suggested_fix" => "Decompose control flow using strategy pattern or state machine",
+            "correlation" => "Complexity >10 requires 10x more test cases"
+        ))
+    end
+    
+    # Bottleneck 6: Module-Level Smells
+    for module_analysis in modules
+        if haskey(module_analysis, "module_smells") && !isempty(module_analysis["module_smells"])
+            push!(bottlenecks, Dict(
+                "category" => "MODULE_SMELL",
+                "function" => "module_level",
+                "location" => module_analysis["module"],
+                "severity" => "MEDIUM",
+                "problem" => "Module smells detected: $(join(module_analysis["module_smells"], "; "))",
+                "impact" => "Architectural degradation, poor cohesion",
+                "suggested_fix" => "Review module organization and extract cohesive submodules",
+                "correlation" => "Module smells indicate 30% longer onboarding time"
+            ))
+        end
+    end
+    
+    return bottlenecks
+end
 
-function analyze_function_from_tokens(func::Dict)::Dict
-    tokens = get(func, "tokens", PseudoNode[])
-    if isempty(tokens) 
-        return create_empty_function_analysis(
-            get(func, "name", "unknown"),
-            get(func, "start_line", 0),
-            get(func, "end_line", 0)
+function identify_semantic_strengths(functions::Vector{Dict}, modules::Vector{Dict})::Vector{Dict}
+    """
+    STRENGTH DETECTION - Inspired by meta_cognitive_engine.jl
+    Identifies well-designed code patterns worth preserving
+    """
+    strengths = []
+    
+    # Strength 1: Clean, Focused Functions
+    clean_functions = filter(f -> 
+        f["metrics"]["line_count"] <= MAX_FUNCTION_LENGTH &&
+        f["metrics"]["parameter_count"] <= MAX_PARAMETERS &&
+        f["metrics"]["nesting_depth"] <= MAX_NESTING_DEPTH &&
+        f["metrics"]["complexity_score"] <= MAX_COMPLEXITY_SCORE,
+        functions
+    )
+    
+    if !isempty(clean_functions)
+        percentage = round(length(clean_functions) / length(functions) * 100, digits=1)
+        push!(strengths, Dict(
+            "category" => "CLEAN_FUNCTIONS",
+            "aspect" => "Code quality",
+            "assessment" => "$(length(clean_functions)) functions ($percentage%) meet all quality thresholds",
+            "examples" => [f["name"] for f in clean_functions[1:min(5, length(clean_functions))]],
+            "impact" => "Low maintenance cost, high testability"
+        ))
+    end
+    
+    # Strength 2: Single Responsibility Adherence
+    focused_functions = filter(f -> length(f["semantic"]["responsibilities"]) <= 1, functions)
+    if !isempty(focused_functions)
+        percentage = round(length(focused_functions) / length(functions) * 100, digits=1)
+        push!(strengths, Dict(
+            "category" => "SINGLE_RESPONSIBILITY",
+            "aspect" => "Cohesion",
+            "assessment" => "$(length(focused_functions)) functions ($percentage%) have single responsibility",
+            "examples" => [f["name"] for f in focused_functions[1:min(5, length(focused_functions))]],
+            "impact" => "High reusability, clear purpose"
+        ))
+    end
+    
+    # Strength 3: Well-Distributed Function Categories
+    category_distribution = Dict{String, Int}()
+    for func in functions
+        cat = func["semantic"]["category"]
+        category_distribution[cat] = get(category_distribution, cat, 0) + 1
+    end
+    
+    if length(keys(category_distribution)) >= 3
+        push!(strengths, Dict(
+            "category" => "BALANCED_ARCHITECTURE",
+            "aspect" => "Function distribution",
+            "assessment" => "Well-balanced architecture: $(join(["$k($v)" for (k,v) in category_distribution], ", "))",
+            "examples" => collect(keys(category_distribution)),
+            "impact" => "Good separation of concerns"
+        ))
+    end
+    
+    # Strength 4: Low Complexity Average
+    avg_complexity = mean([f["metrics"]["complexity_score"] for f in functions])
+    if avg_complexity <= 5.0
+        push!(strengths, Dict(
+            "category" => "LOW_COMPLEXITY",
+            "aspect" => "Cognitive load",
+            "assessment" => "Average complexity: $(round(avg_complexity, digits=2)) (excellent)",
+            "examples" => ["Overall codebase"],
+            "impact" => "Easy to understand and modify"
+        ))
+    end
+    
+    return strengths
+end
+
+function generate_architectural_insights(bottlenecks::Vector{Dict}, strengths::Vector{Dict})::Vector{Dict}
+    """
+    ARCHITECTURAL DECISION GENERATION - Inspired by meta_cognitive_engine.jl
+    Transforms bottlenecks and strengths into actionable architectural decisions
+    """
+    insights = []
+    
+    # Insight 1: Critical Function Refactoring
+    critical_bottlenecks = filter(b -> b["severity"] == "CRITICAL", bottlenecks)
+    if !isempty(critical_bottlenecks)
+        push!(insights, Dict(
+            "insight_id" => "ARCH_REFACTOR_CRITICAL",
+            "type" => "IMMEDIATE_ACTION",
+            "priority" => "CRITICAL",
+            "finding" => "$(length(critical_bottlenecks)) functions require immediate refactoring",
+            "rationale" => "Critical complexity and length issues threaten maintainability",
+            "action" => "Prioritize refactoring: $(join([b["function"] for b in critical_bottlenecks[1:min(3, length(critical_bottlenecks))]], ", "))",
+            "expected_impact" => "Reduce defect rate by 50-70%"
+        ))
+    end
+    
+    # Insight 2: Pattern Replication
+    category_counts = Dict{String, Int}()
+    for bottleneck in bottlenecks
+        cat = bottleneck["category"]
+        category_counts[cat] = get(category_counts, cat, 0) + 1
+    end
+    
+    dominant_smell = length(category_counts) > 0 ? maximum(category_counts) : ("", 0)
+    if dominant_smell[2] >= 3
+        push!(insights, Dict(
+            "insight_id" => "PATTERN_SMELL",
+            "type" => "SYSTEMIC_ISSUE",
+            "priority" => "HIGH",
+            "finding" => "$(dominant_smell[2]) instances of $(dominant_smell[1])",
+            "rationale" => "Repeated pattern indicates systemic architectural issue",
+            "action" => "Conduct architectural review and establish coding standards",
+            "expected_impact" => "Prevent future instances of this anti-pattern"
+        ))
+    end
+    
+    # Insight 3: Preserve Strengths
+    if !isempty(strengths)
+        push!(insights, Dict(
+            "insight_id" => "PRESERVE_STRENGTHS",
+            "type" => "MAINTENANCE",
+            "priority" => "MEDIUM",
+            "finding" => "$(length(strengths)) architectural strengths identified",
+            "rationale" => "Existing good patterns should be preserved and replicated",
+            "action" => "Document and enforce patterns from: $(join([s["category"] for s in strengths], ", "))",
+            "expected_impact" => "Maintain code quality as system grows"
+        ))
+    end
+    
+    # Insight 4: Testing Strategy
+    high_complexity = filter(b -> b["category"] in ["HIGH_COMPLEXITY", "DEEP_NESTING"], bottlenecks)
+    if !isempty(high_complexity)
+        push!(insights, Dict(
+            "insight_id" => "TEST_STRATEGY",
+            "type" => "QUALITY_ASSURANCE",
+            "priority" => "HIGH",
+            "finding" => "$(length(high_complexity)) functions with elevated complexity",
+            "rationale" => "High complexity requires comprehensive test coverage",
+            "action" => "Implement property-based testing and mutation testing for complex functions",
+            "expected_impact" => "Catch 40% more edge case bugs"
+        ))
+    end
+    
+    return insights
+end
+
+function generate_refactoring_roadmap(bottlenecks::Vector{Dict})::Dict
+    """
+    Creates a prioritized refactoring roadmap based on severity and impact
+    """
+    roadmap = Dict(
+        "phase_1_critical" => [],
+        "phase_2_high" => [],
+        "phase_3_medium" => [],
+        "estimated_total_effort" => 0
+    )
+    
+    for bottleneck in bottlenecks
+        task = Dict(
+            "function" => bottleneck["function"],
+            "category" => bottleneck["category"],
+            "suggested_fix" => bottleneck["suggested_fix"],
+            "estimated_hours" => estimate_refactoring_effort(bottleneck)
         )
+        
+        if bottleneck["severity"] == "CRITICAL"
+            push!(roadmap["phase_1_critical"], task)
+            roadmap["estimated_total_effort"] += task["estimated_hours"]
+        elseif bottleneck["severity"] == "HIGH"
+            push!(roadmap["phase_2_high"], task)
+            roadmap["estimated_total_effort"] += task["estimated_hours"]
+        else
+            push!(roadmap["phase_3_medium"], task)
+            roadmap["estimated_total_effort"] += task["estimated_hours"]
+        end
     end
+    
+    return roadmap
+end
 
-    # CRITICAL: Calculate metrics EXACTLY like meta_cognitive_engine
-    line_count = get(func, "end_line", 0) - get(func, "start_line", 0) + 1
+function estimate_refactoring_effort(bottleneck::Dict)::Int
+    """
+    Estimates refactoring effort in hours based on bottleneck category
+    """
+    effort_map = Dict(
+        "LONG_METHOD" => 4,
+        "PARAMETER_EXPLOSION" => 3,
+        "DEEP_NESTING" => 2,
+        "MIXED_ABSTRACTIONS" => 5,
+        "HIGH_COMPLEXITY" => 6,
+        "MODULE_SMELL" => 8
+    )
     
-    # Calculate cyclomatic complexity indicators (decision points + 1)
-    cyclomatic_indicators = calculate_cyclomatic_indicators(tokens)
-    
-    # Calculate control flow density (cyclomatic / line_count)
-    control_flow_density = line_count > 0 ? cyclomatic_indicators / line_count : 0.0
-    
-    # Calculate comment coverage
-    comment_lines = count(t -> t.kind == :comment, tokens)
-    comment_coverage = line_count > 0 ? comment_lines / line_count : 0.0
-    
-    # Other metrics
-    param_count = count_parameters_from_tokens(tokens)
-    nesting = calculate_nesting_from_tokens(tokens)
-    responsibilities = identify_responsibilities_from_tokens(tokens)
-    dependencies = extract_dependencies_from_tokens(tokens)
-    category = categorize_function_from_tokens(get(func, "name", ""), tokens, responsibilities)
-    smells = detect_code_smells_from_metrics(line_count, param_count, nesting, cyclomatic_indicators)
-    
-    # Refactoring priority (match meta_cognitive_engine pattern)
-    priority_score = calculate_priority_score(line_count, cyclomatic_indicators, nesting, length(smells))
-    priority_level = determine_priority_level(priority_score)
-    
+    return get(effort_map, bottleneck["category"], 3)
+end
+
+function analyze_quality_distribution(functions::Vector{Dict})::Dict
+    """
+    Analyzes the distribution of quality metrics across the codebase
+    """
     return Dict(
-        "name" => get(func, "name", "unknown"),
-        "location" => "$(get(func, "start_line", 0))-$(get(func, "end_line", 0))",
-        "metrics" => Dict(
-            "line_count" => line_count,
-            "parameter_count" => param_count,
-            "nesting_depth" => nesting,
-            "complexity_score" => cyclomatic_indicators,  # Use cyclomatic as complexity score
-            # ADD THE CRITICAL METRICS THAT META_COGNITIVE_ENGINE EXPECTS:
-            "cyclomatic_indicators" => cyclomatic_indicators,
-            "control_flow_density" => round(control_flow_density, digits=3),
-            "comment_coverage" => round(comment_coverage, digits=3)
+        "length_distribution" => Dict(
+            "short" => count(f -> f["metrics"]["line_count"] <= 20, functions),
+            "medium" => count(f -> 20 < f["metrics"]["line_count"] <= 50, functions),
+            "long" => count(f -> f["metrics"]["line_count"] > 50, functions)
         ),
-        "semantic" => Dict(
-            "category" => category,
-            "responsibilities" => collect(responsibilities),
-            "dependencies" => collect(dependencies)
+        "complexity_distribution" => Dict(
+            "simple" => count(f -> f["metrics"]["complexity_score"] <= 5, functions),
+            "moderate" => count(f -> 5 < f["metrics"]["complexity_score"] <= 10, functions),
+            "complex" => count(f -> f["metrics"]["complexity_score"] > 10, functions)
         ),
-        "issues" => Dict(
-            "code_smells" => collect(smells),
-            "refactoring_priority" => priority_level,
-            "priority_score" => priority_score
+        "refactoring_priority_distribution" => Dict(
+            "LOW" => count(f -> f["issues"]["refactoring_priority"] == "LOW", functions),
+            "MEDIUM" => count(f -> f["issues"]["refactoring_priority"] == "MEDIUM", functions),
+            "HIGH" => count(f -> f["issues"]["refactoring_priority"] == "HIGH", functions)
         )
     )
 end
 
-# CRITICAL: Calculate cyclomatic complexity the SAME way as meta_cognitive_engine
-function calculate_cyclomatic_indicators(tokens::Vector{PseudoNode})::Int
-    complexity = 1  # Base complexity
+function calculate_semantic_health_score(bottlenecks::Vector{Dict}, strengths::Vector{Dict})::Float64
+    """
+    META-COGNITIVE SELF-REFLECTION SCORE
+    Calculates overall semantic health (inspired by meta_cognitive_engine.jl)
+    """
+    base_score = 0.7
     
-    for token in tokens
-        if token.kind == :keyword && token.value in ["if", "elseif", "for", "while", "catch"]
-            complexity += 1
-        elseif token.kind == :operator && token.value in ["&&", "||"]
-            complexity += 1
-        end
-    end
+    # Penalize for bottlenecks (weighted by severity)
+    critical_penalty = count(b -> b["severity"] == "CRITICAL", bottlenecks) * 0.10
+    high_penalty = count(b -> b["severity"] == "HIGH", bottlenecks) * 0.05
+    medium_penalty = count(b -> b["severity"] == "MEDIUM", bottlenecks) * 0.02
     
-    return complexity
-end
-
-function calculate_nesting_from_tokens(tokens::Vector{PseudoNode})::Int
-    max_depth, current_depth = 0, 0
-    starters = Set(["function", "if", "for", "while", "let", "begin", "try"])
+    base_score -= (critical_penalty + high_penalty + medium_penalty)
     
-    for token in tokens
-        if token.kind == :keyword
-            if token.value in starters
-                current_depth += 1
-                max_depth = max(max_depth, current_depth)
-            elseif token.value == "end"
-                current_depth -= 1
-            end
-        end
-    end
-    return max_depth
-end
-
-function count_parameters_from_tokens(tokens::Vector{PseudoNode})::Int
-    start_paren_idx = findfirst(t -> t.value == "(", tokens)
-    if start_paren_idx === nothing return 0 end
-    end_paren_idx = findfirst(t -> t.value == ")", tokens[start_paren_idx:end])
-    if end_paren_idx === nothing return 0 end
+    # Reward for strengths
+    strength_bonus = length(strengths) * 0.04
+    base_score += strength_bonus
     
-    param_tokens = tokens[start_paren_idx : start_paren_idx + end_paren_idx - 1]
-    return count(t -> t.kind == :identifier, param_tokens)
+    # Cap between 0.1 and 0.95
+    score = max(0.1, min(0.95, base_score))
+    return round(score, digits=3)
 end
 
-function extract_dependencies_from_tokens(tokens::Vector{PseudoNode})::Set{String}
-    deps = Set{String}()
-    for i in 1:(length(tokens)-1)
-        if tokens[i].kind == :identifier && tokens[i+1].value == "("
-            push!(deps, tokens[i].value)
-        end
-    end
-    return deps
-end
-
-function identify_responsibilities_from_tokens(tokens::Vector{PseudoNode})::Set{String}
-    resp = Set{String}()
-    io_keywords = Set(["println", "print", "read", "write", "open", "close"])
-    val_keywords = Set(["assert", "error", "check", "validate"])
-    comp_keywords = Set(["for", "while"])
-    init_keywords = Set(["new", "create", "initialize", "setup"])
-    
-    for token in tokens
-        if token.kind == :identifier && token.value in io_keywords
-            push!(resp, "io_operations")
-        end
-        if token.kind == :identifier && token.value in val_keywords
-            push!(resp, "validation")
-        end
-        if token.kind == :keyword && token.value in comp_keywords
-            push!(resp, "computation")
-        end
-        if token.kind == :identifier && token.value in init_keywords
-            push!(resp, "initialization")
-        end
-    end
-    return resp
-end
-
-function categorize_function_from_tokens(name::String, tokens::Vector{PseudoNode}, responsibilities::Set{String})::String
-    name_lower = lowercase(name)
-    if occursin(r"test|check|verify", name_lower); return "testing"; end
-    if occursin(r"run|execute|process|main", name_lower); return "orchestration"; end
-    if occursin(r"calculate|compute|measure", name_lower); return "calculation"; end
-    if "initialization" in responsibilities; return "initialization"; end
-    if "io_operations" in responsibilities; return "io_handler"; end
-    if "validation" in responsibilities; return "validation"; end
-    return "utility"
-end
-
-# Use cyclomatic_indicators for smell detection (matching meta_cognitive_engine)
-function detect_code_smells_from_metrics(line_count::Int, param_count::Int, nesting::Int, cyclomatic_indicators::Int)::Set{String}
-    smells = Set{String}()
-    if line_count > 50; push!(smells, "long_method"); end
-    if param_count > 5; push!(smells, "many_parameters"); end
-    if nesting > 4; push!(smells, "deep_nesting"); end
-    if cyclomatic_indicators > MAX_CYCLOMATIC; push!(smells, "high_cyclomatic_complexity"); end
-    return smells
-end
-
-function calculate_priority_score(line_count::Int, cyclomatic_indicators::Int, nesting::Int, smell_count::Int)::Float64
-    score = (line_count / 30.0) + Float64(cyclomatic_indicators) + (nesting / 2.0) + (smell_count * 2.0)
-    return round(score, digits=2)
-end
-
-function determine_priority_level(score::Float64)::String
-    if score > 10.0; return "HIGH"; end
-    if score > 5.0; return "MEDIUM"; end
-    return "LOW"
-end
-
-function create_empty_function_analysis(name::String, start_line::Int, end_line::Int)::Dict
-    return Dict(
-        "name" => name,
-        "location" => "$start_line-$end_line",
-        "metrics" => Dict(
-            "line_count" => end_line - start_line + 1,
-            "parameter_count" => 0,
-            "nesting_depth" => 0,
-            "complexity_score" => 1,
-            "cyclomatic_indicators" => 1,
-            "control_flow_density" => 0.0,
-            "comment_coverage" => 0.0
-        ),
-        "semantic" => Dict(
-            "category" => "unknown",
-            "responsibilities" => String[],
-            "dependencies" => String[]
-        ),
-        "issues" => Dict(
-            "code_smells" => String[],
-            "refactoring_priority" => "LOW",
-            "priority_score" => 0.0
-        )
-    )
-end
-
-# ==============================================================================
-# MODULE-LEVEL ANALYSIS THAT MATCHES META_COGNITIVE_ENGINE
-# ==============================================================================
-
-function analyze_module_semantics(module_path::String)::Dict
-    println("   🔬 Semantic analysis (META-COGNITIVE COMPATIBLE): $module_path")
-    
-    if !isfile(module_path)
-        return Dict(
-            "error" => "File not found: $module_path",
-            "functions_analyzed" => 0,
-            "function_details" => [],
-            "module_smells" => String[]
-        )
-    end
-
-    source_code = read(module_path, String)
-    tokens = tokenize_code(source_code)
-    function_groups = group_tokens_by_function(tokens)
-    
-    analyzed_functions = [analyze_function_from_tokens(f) for f in function_groups]
-    
-    # Calculate aggregate metrics that MATCH meta_cognitive_engine format
-    if !isempty(analyzed_functions)
-        total_lines = sum(get(f["metrics"], "line_count", 0) for f in analyzed_functions)
-        avg_complexity = mean(get(f["metrics"], "cyclomatic_indicators", 1) for f in analyzed_functions)
-        high_priority_count = count(f -> f["issues"]["refactoring_priority"] == "HIGH", analyzed_functions)
+function generate_extraction_suggestions(func::Dict)::String
+    """
+    Generates specific suggestions for extracting sub-methods
+    """
+    responsibilities = func["semantic"]["responsibilities"]
+    if length(responsibilities) > 1
+        return "Extract responsibilities: $(join(responsibilities, ", "))"
+    elseif func["metrics"]["complexity_score"] > 10
+        return "Extract complex control flow into separate methods"
     else
-        total_lines = 0
-        avg_complexity = 0.0
-        high_priority_count = 0
+        return "Extract logical sections into helper methods"
     end
-    
+end
+
+function create_error_diagnosis(message::String)::Dict
     return Dict(
-        "module" => module_path,
-        "functions_analyzed" => length(analyzed_functions),
-        "function_details" => analyzed_functions,
-        "module_smells" => detect_module_smells(analyzed_functions),
-        "complexity_metrics" => Dict(  # CRITICAL: This matches meta_cognitive_engine structure!
-            "cyclomatic_indicators" => sum(get(f["metrics"], "cyclomatic_indicators", 0) for f in analyzed_functions),
-            "line_count" => total_lines,
-            "comment_coverage" => length(analyzed_functions) > 0 ? 
-                mean(get(f["metrics"], "comment_coverage", 0.0) for f in analyzed_functions) : 0.0,
-            "control_flow_density" => length(analyzed_functions) > 0 ? 
-                mean(get(f["metrics"], "control_flow_density", 0.0) for f in analyzed_functions) : 0.0
-        ),
-        "analysis_timestamp" => string(now()),
-        "analysis_method" => "meta_cognitive_compatible"
+        "timestamp" => string(now()),
+        "error" => message,
+        "semantic_bottlenecks" => [],
+        "semantic_strengths" => [],
+        "architectural_insights" => [],
+        "semantic_health_score" => 0.0
     )
 end
 
-function detect_module_smells(analyses::Vector{Dict})::Vector{String}
-    smells = String[]
-    if isempty(analyses) return smells end
-    
-    # Check for functions exceeding cyclomatic complexity threshold
-    high_complexity_funcs = [f["name"] for f in analyses if get(f["metrics"], "cyclomatic_indicators", 0) > MAX_CYCLOMATIC]
-    if !isempty(high_complexity_funcs)
-        push!(smells, "High cyclomatic complexity: $(join(high_complexity_funcs, ", "))")
+function save_semantic_diagnosis(diagnosis::Dict, filename::String="semantic_diagnosis.json")::Bool
+    try
+        json_data = JSON.json(diagnosis, 2)
+        open(filename, "w") do file
+            write(file, json_data)
+        end
+        println("   ✅ Semantic diagnosis saved to: $filename")
+        return true
+    catch e
+        println("   ⚠️  Failed to save semantic diagnosis: $e")
+        return false
     end
-    
-    # Check for low comment coverage
-    low_comment_funcs = [f["name"] for f in analyses if get(f["metrics"], "comment_coverage", 0.0) < MIN_COMMENT_COVERAGE]
-    if !isempty(low_comment_funcs)
-        push!(smells, "Low comment coverage: $(join(low_comment_funcs, ", "))")
-    end
-    
-    return smells
 end
 
-export analyze_module_semantics, COMPLEXITY_THRESHOLD, MIN_COMMENT_COVERAGE, MAX_CYCLOMATIC, CRITICAL_MODULES
+# Export all functions
+export perform_semantic_self_diagnosis, save_semantic_diagnosis,
+       MAX_FUNCTION_LENGTH, MAX_PARAMETERS, MAX_NESTING_DEPTH, 
+       MAX_COMPLEXITY_SCORE, MAX_RESPONSIBILITIES, CRITICAL_CATEGORIES
