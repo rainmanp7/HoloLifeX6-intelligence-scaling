@@ -1,4 +1,3 @@
-# ast_truth_teller.jl
 """
 🔮 AST TRUTH TELLER - Second Opinion Architecture Analysis
 Uses real Julia parsing instead of regex for accurate code analysis
@@ -39,7 +38,7 @@ function parse_file_ast(filename::String)::Dict
 end
 
 function extract_functions_ast(source_code::String, lines::Vector{String})::Vector{Dict}
-    functions = []
+    functions = Dict[]
     current_function = nothing
     brace_count = 0
     in_function = false
@@ -59,7 +58,7 @@ function extract_functions_ast(source_code::String, lines::Vector{String})::Vect
                     "line_count" => 1,
                     "complexity" => 0,
                     "parameters" => extract_parameters(stripped),
-                    "issues" => []
+                    "issues" => String[]
                 )
                 in_function = true
                 function_start = i
@@ -122,7 +121,7 @@ function calculate_real_complexity(source_code::String, lines::Vector{String})::
 end
 
 function find_structure_issues(source_code::String, lines::Vector{String}, functions::Vector{Dict})::Vector{Dict}
-    issues = []
+    issues = Dict[]
     
     # Check for long functions
     for func in functions
@@ -210,7 +209,7 @@ function generate_ast_second_opinion()::Dict
     
     ast_analysis = Dict()
     total_issues = 0
-    health_scores = []
+    health_scores = Float64[]
     
     for module_file in core_modules
         if isfile(module_file)
@@ -248,7 +247,7 @@ end
 
 function create_health_prescription(ast_analysis::Dict)::Dict
     """Generate actual helpful fixes based on real AST analysis"""
-    prescriptions = []
+    prescriptions = Dict[]
     
     for (filename, analysis) in ast_analysis
         issues = get(analysis, "structure_issues", [])
@@ -269,7 +268,7 @@ function create_health_prescription(ast_analysis::Dict)::Dict
         end
     end
     
-    # Sort by priority
+    # Sort by priority: HIGH > MEDIUM > LOW
     sort!(prescriptions, by = x -> x["priority"] == "HIGH" ? 0 : x["priority"] == "MEDIUM" ? 1 : 2)
     
     return Dict(
@@ -283,6 +282,7 @@ function create_health_prescription(ast_analysis::Dict)::Dict
 end
 
 # Helper functions
+
 function count_braces(line::String)::Int
     open_braces = count(c -> c == '(' || c == '{' || c == '[', line)
     close_braces = count(c -> c == ')' || c == '}' || c == ']', line)
@@ -291,20 +291,20 @@ end
 
 function count_control_flow(line::String)::Int
     patterns = [r"\bif\b", r"\bfor\b", r"\bwhile\b", r"\btry\b", r"\bcatch\b"]
-    return sum(pattern -> count(occursin(pattern, line), patterns)
+    return sum(pattern -> count(occursin(pattern, line)), patterns)
 end
 
 function extract_parameters(line::String)::Vector{String}
     # Extract parameters from function definition
     m = match(r"function\s+\w+\((.*?)\)", line)
     if m !== nothing && !isempty(m.captures[1])
-        return split(m.captures[1], ',')
+        return [strip(p) for p in split(m.captures[1], ',')]
     end
-    return []
+    return String[]
 end
 
 function analyze_function_issues(func::Dict, function_lines::Vector{String})::Vector{String}
-    issues = []
+    issues = String[]
     
     # Check for long parameter list
     if length(func["parameters"]) > 5
@@ -371,7 +371,7 @@ function create_fallback_analysis(filename::String)::Dict
 end
 
 function compare_with_regex_analysis(ast_analysis::Dict)::Dict
-    comparisons = []
+    comparisons = Dict[]
     
     for (filename, ast_data) in ast_analysis
         # Simulate what regex analyzer would say
@@ -401,7 +401,6 @@ end
 
 function simulate_regex_score(filename::String)::Float64
     # Simulate what the regex-based analyzer would incorrectly report
-    # This is based on patterns we've seen in your previous analysis
     if occursin("safe_tester", filename)
         return 0.3  # Regex hates safe_tester.jl
     elseif occursin("unified_network", filename)
