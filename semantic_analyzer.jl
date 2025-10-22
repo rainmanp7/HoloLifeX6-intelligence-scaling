@@ -131,76 +131,90 @@ end
 # STAGE 2 & 3 (Your excellent structure is maintained, with minor tweaks)
 # ==============================================================================
 
-# ==============================================================================
-# STAGE 2: FUNCTION EXTRACTION USING TOKENS (UPGRADED AND FIXED)
-# Now correctly handles both block (`function...end`) and one-line (`function...=`) syntax.
+# # ==============================================================================
+# STAGE 2: FUNCTION EXTRACTION (FINAL, ROBUST VERSION)
+# This version correctly handles block functions, one-line functions,
+# and anonymous `function (...) ... end` blocks. It also uses a safer
+# loop mechanism to prevent errors.
 # ==============================================================================
 
 function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
     functions = []
+    if isempty(tokens) return functions end
+
     nesting_level = 0
     func_start_index = 0
+    skip_until_index = 0
 
-    i = 1
-    while i <= length(tokens)
+    for i in 1:length(tokens)
+        # Use a safer skip mechanism than manual loop control
+        if i < skip_until_index
+            continue
+        end
+        
         token = tokens[i]
         
-        if token.kind == :keyword && token.value == "function"
-            if nesting_level == 0
-                # We found a potential top-level function start
-                func_start_index = i
-                
-                # ⭐ FIX: Look ahead to determine if this is a one-liner or a block function
-                is_one_liner = false
-                # Scan from after the 'function' token to the end of the line
-                j = i + 1
-                while j <= length(tokens) && tokens[j].line == token.line
-                    if tokens[j].kind == :operator && tokens[j].value == "="
+        # --- Start of a potential top-level function ---
+        if token.kind == :keyword && token.value == "function" && nesting_level == 0
+            func_start_index = i
+            
+            # --- Lookahead to determine function style ---
+            is_one_liner = false
+            # Scan from the next token to see if an '=' appears on the same line
+            j = i + 1
+            while j <= length(tokens) && tokens[j].line == token.line
+                # Check for one-liner assignment syntax
+                if tokens[j].kind == :operator && tokens[j].value == "="
+                    # But make sure it's not part of `==`, `!=`, etc.
+                    if j > 1 && !(tokens[j-1].value in ["=", "!", "<", ">"])
                         is_one_liner = true
                         break
                     end
-                    j += 1
                 end
+                j += 1
+            end
 
-                if is_one_liner
-                    # A one-liner ends at the end of its line.
-                    line_end_idx = findnext(t -> t.line > token.line, tokens, i)
-                    if line_end_idx === nothing
-                        line_end_idx = length(tokens) + 1
-                    end
-                    func_end_idx = line_end_idx - 1
-                    
-                    func_tokens = tokens[func_start_index:func_end_idx]
-                    name_token_idx = findfirst(t -> t.kind == :identifier, func_tokens)
-                    name = name_token_idx !== nothing ? func_tokens[name_token_idx].value : "anonymous"
+            if is_one_liner
+                # --- Handle One-Line Function ---
+                line_end_idx = findnext(t -> t.line > token.line, tokens, i)
+                func_end_idx = (line_end_idx === nothing) ? length(tokens) : line_end_idx - 1
+                
+                func_tokens = tokens[func_start_index:func_end_idx]
+                name = "anonymous"
+                name_idx = findfirst(t -> t.kind == :identifier, func_tokens)
+                if name_idx !== nothing; name = func_tokens[name_idx].value; end
 
-                    push!(functions, Dict(
-                        "name" => name,
-                        "start_line" => token.line,
-                        "end_line" => tokens[func_end_idx].line,
-                        "tokens" => func_tokens
-                    ))
-                    
-                    # Jump the main loop index past this one-line function
-                    i = func_end_idx
-                    func_start_index = 0 # Reset
-                else
-                    # It's a block function, so we need to track nesting
-                    nesting_level += 1
-                end
+                push!(functions, Dict(
+                    "name" => name,
+                    "start_line" => token.line,
+                    "end_line" => tokens[func_end_idx].line,
+                    "tokens" => func_tokens
+                ))
+                
+                skip_until_index = func_end_idx + 1
+                func_start_index = 0 # Reset
             else
-                # This is a nested function, just increment the level
-                nesting_level += 1
+                # --- Handle Block Function (regular or anonymous) ---
+                nesting_level = 1
             end
         
+        # --- Handle nested functions ---
+        elseif token.kind == :keyword && token.value == "function" && nesting_level > 0
+            nesting_level += 1
+
+        # --- Handle end of a block ---
         elseif token.kind == :keyword && token.value == "end"
             if nesting_level > 0
                 nesting_level -= 1
                 if nesting_level == 0 && func_start_index > 0
-                    # We found the end of a top-level block function
+                    # This is the end of a top-level block function
                     func_tokens = tokens[func_start_index:i]
-                    name_token_idx = findfirst(t -> t.kind == :identifier, func_tokens)
-                    name = name_token_idx !== nothing ? func_tokens[name_token_idx].value : "anonymous"
+                    name = "anonymous"
+
+                    # Find name: check token after "function"
+                    if func_tokens[2].kind == :identifier
+                        name = func_tokens[2].value
+                    end
 
                     push!(functions, Dict(
                         "name" => name,
@@ -212,7 +226,6 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
                 end
             end
         end
-        i += 1
     end
     return functions
 end
