@@ -15,6 +15,7 @@ include("safe_tester.jl")
 include("light_reflector.jl")
 include("meta_cognitive_engine.jl")
 include("self_awareness_tracker.jl")
+include("semantic_analyzer.jl")
 
 # Global self-model for longitudinal tracking
 const GLOBAL_SELF_MODEL = initialize_self_model()
