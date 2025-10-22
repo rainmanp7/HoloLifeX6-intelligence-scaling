@@ -1,4 +1,4 @@
-# semantic_analyzer.jl (PRAGMATIC VERSION)
+# semantic_analyzer.jl
 """
 🎯 SEMANTIC ANALYZER (GitHub-Remote Optimized)
 Function-level analysis without external dependencies
@@ -81,7 +81,7 @@ end
 
 function analyze_function_pragmatic(func::Dict, all_lines::Vector{String})::Dict
     func_lines = func["lines"]
-    func_text = join(func_lines, "\n")
+    func_text = join(func_lines, '\n')
     
     # Basic metrics
     line_count = length(func_lines)
