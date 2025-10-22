@@ -2,11 +2,20 @@
 """
 🎯 SEMANTIC ANALYZER (GitHub-Remote Optimized)
 AST-like function-level analysis without external dependencies.
-This version refines the tokenizer and analysis logic for maximum robustness.
+Fixed to match meta_cognitive_engine.jl patterns for proper metric extraction.
 """
 
 using JSON
 using Dates
+using Statistics
+
+# Configurable thresholds (matching meta_cognitive_engine.jl pattern)
+const LONG_METHOD_THRESHOLD = 50
+const MAX_PARAMS = 5
+const MAX_NESTING = 4
+const MAX_RESPONSIBILITIES = 2
+const HIGH_PRIORITY_SCORE = 10.0
+const MEDIUM_PRIORITY_SCORE = 5.0
 
 # ==============================================================================
 # STAGE 1: THE TOKENIZER (LEXER) - CORE UPGRADE
@@ -32,14 +41,14 @@ function tokenize_code(source_code::String)::Vector{PseudoNode}
 
         # Comments
         if char == '#'
-            # ⭐ UPGRADE: Handle shebang `#!/usr/bin/env julia` on first line gracefully.
+            # Handle shebang `#!/usr/bin/env julia` on first line gracefully.
             if i == 1 && i < lastindex(source_code) && source_code[i+1] == '!'
                  # This is a shebang line, skip to the end of it.
             elseif i < lastindex(source_code) && source_code[i+1] == '='
                 # Multi-line comment
                 end_idx = findnext("=#", source_code, i + 2);
                 if end_idx === nothing; break; end
-                line_num += count(c -> c == '\n', source_code[i:last(end_idx)]) # Update line count
+                line_num += count(c -> c == '\n', source_code[i:last(end_idx)])
                 i = last(end_idx) + 1;
                 continue
             end
@@ -52,8 +61,6 @@ function tokenize_code(source_code::String)::Vector{PseudoNode}
 
         # Handle ' (can be char literal or transpose operator)
         if char == '\''
-            # ⭐ UPGRADE: Differentiate between char 'c' and transpose operator x'.
-            # If the previous token was an identifier, number, or ')', it's a transpose operator.
             is_transpose = !isempty(tokens) && (last(tokens).kind in [:identifier, :number_literal] || last(tokens).value == ")")
             if !is_transpose
                 start_i = i; i += 1
@@ -62,7 +69,6 @@ function tokenize_code(source_code::String)::Vector{PseudoNode}
                 push!(tokens, PseudoNode(:char_literal, val, line_num))
                 i += 1; continue
             end
-            # If it is a transpose, it will be handled by the operator logic below.
         end
 
         # Strings
@@ -73,10 +79,10 @@ function tokenize_code(source_code::String)::Vector{PseudoNode}
             i += (is_multiline ? 3 : 1)
             
             end_idx = findnext(terminator, source_code, i)
-            if end_idx === nothing; break; end # Unclosed string
+            if end_idx === nothing; break; end
             
             val = source_code[start_i:last(end_idx)]
-            line_num += count(c -> c == '\n', val) # Update line count for multiline strings
+            line_num += count(c -> c == '\n', val)
             push!(tokens, PseudoNode(:string_literal, val, line_num))
             i = last(end_idx) + 1
             continue
@@ -101,7 +107,6 @@ function tokenize_code(source_code::String)::Vector{PseudoNode}
             continue
         end
         
-        # ⭐ UPGRADE: Reordered and consolidated operator logic for clarity and correctness.
         # Check for 3-char operators first
         if i + 2 <= lastindex(source_code)
             three_char = source_code[i:i+2]
@@ -121,21 +126,13 @@ function tokenize_code(source_code::String)::Vector{PseudoNode}
             push!(tokens, PseudoNode(:operator, string(char), line_num)); i += 1; continue
         end
 
-        i += 1 # Unknown character
+        i += 1
     end
     return tokens
 end
 
-
 # ==============================================================================
-# STAGE 2 & 3 (Your excellent structure is maintained, with minor tweaks)
-# ==============================================================================
-
-# # ==============================================================================
-# STAGE 2: FUNCTION EXTRACTION (FINAL, ROBUST VERSION)
-# This version correctly handles block functions, one-line functions,
-# and anonymous `function (...) ... end` blocks. It also uses a safer
-# loop mechanism to prevent errors.
+# STAGE 2: FUNCTION EXTRACTION
 # ==============================================================================
 
 function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
@@ -147,25 +144,21 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
     skip_until_index = 0
 
     for i in 1:length(tokens)
-        # Use a safer skip mechanism than manual loop control
         if i < skip_until_index
             continue
         end
         
         token = tokens[i]
         
-        # --- Start of a potential top-level function ---
+        # Start of a potential top-level function
         if token.kind == :keyword && token.value == "function" && nesting_level == 0
             func_start_index = i
             
-            # --- Lookahead to determine function style ---
+            # Lookahead to determine function style
             is_one_liner = false
-            # Scan from the next token to see if an '=' appears on the same line
             j = i + 1
             while j <= length(tokens) && tokens[j].line == token.line
-                # Check for one-liner assignment syntax
                 if tokens[j].kind == :operator && tokens[j].value == "="
-                    # But make sure it's not part of `==`, `!=`, etc.
                     if j > 1 && !(tokens[j-1].value in ["=", "!", "<", ">"])
                         is_one_liner = true
                         break
@@ -175,7 +168,7 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
             end
 
             if is_one_liner
-                # --- Handle One-Line Function ---
+                # Handle One-Line Function
                 line_end_idx = findnext(t -> t.line > token.line, tokens, i)
                 func_end_idx = (line_end_idx === nothing) ? length(tokens) : line_end_idx - 1
                 
@@ -192,26 +185,24 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
                 ))
                 
                 skip_until_index = func_end_idx + 1
-                func_start_index = 0 # Reset
+                func_start_index = 0
             else
-                # --- Handle Block Function (regular or anonymous) ---
+                # Handle Block Function
                 nesting_level = 1
             end
         
-        # --- Handle nested functions ---
+        # Handle nested functions
         elseif token.kind == :keyword && token.value == "function" && nesting_level > 0
             nesting_level += 1
 
-        # --- Handle end of a block ---
+        # Handle end of a block
         elseif token.kind == :keyword && token.value == "end"
             if nesting_level > 0
                 nesting_level -= 1
                 if nesting_level == 0 && func_start_index > 0
-                    # This is the end of a top-level block function
                     func_tokens = tokens[func_start_index:i]
                     name = "anonymous"
 
-                    # Find name: check token after "function"
                     if func_tokens[2].kind == :identifier
                         name = func_tokens[2].value
                     end
@@ -222,7 +213,7 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
                         "end_line" => token.line,
                         "tokens" => func_tokens
                     ))
-                    func_start_index = 0 # Reset
+                    func_start_index = 0
                 end
             end
         end
@@ -230,18 +221,22 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
     return functions
 end
 
-# The rest of your analysis functions are very solid.
-# I've kept them as they are, as they correctly build upon the tokenizer's output.
-# The following section contains your functions, unchanged.
+# ==============================================================================
+# STAGE 3: ANALYSIS FUNCTIONS (FIXED TO MATCH META_COGNITIVE_ENGINE PATTERNS)
+# ==============================================================================
 
 function analyze_function_from_tokens(func::Dict)::Dict
-    tokens = func["tokens"]
+    tokens = get(func, "tokens", PseudoNode[])
     if isempty(tokens) 
-        return create_empty_function_analysis(func["name"], func["start_line"], func["end_line"])
+        return create_empty_function_analysis(
+            get(func, "name", "unknown"),
+            get(func, "start_line", 0),
+            get(func, "end_line", 0)
+        )
     end
 
-    # Enhanced metrics using tokens
-    line_count = func["end_line"] - func["start_line"] + 1
+    # Enhanced metrics using tokens (with proper defaults like meta_cognitive_engine)
+    line_count = get(func, "end_line", 0) - get(func, "start_line", 0) + 1
     param_count = count_parameters_from_tokens(tokens)
     complexity = calculate_complexity_from_tokens(tokens)
     nesting = calculate_nesting_from_tokens(tokens)
@@ -249,12 +244,16 @@ function analyze_function_from_tokens(func::Dict)::Dict
     # Semantic analysis
     responsibilities = identify_responsibilities_from_tokens(tokens)
     dependencies = extract_dependencies_from_tokens(tokens)
-    category = categorize_function_from_tokens(func["name"], tokens, responsibilities)
+    category = categorize_function_from_tokens(get(func, "name", ""), tokens, responsibilities)
     smells = detect_code_smells_from_metrics(line_count, param_count, nesting, responsibilities)
     
+    # Calculate numerical refactoring priority (matching meta_cognitive_engine pattern)
+    priority_score = calculate_priority_score(line_count, complexity, nesting, length(smells))
+    priority_level = determine_priority_level(priority_score)
+    
     return Dict(
-        "name" => func["name"],
-        "location" => "$(func["start_line"])-$(func["end_line"])",
+        "name" => get(func, "name", "unknown"),
+        "location" => "$(get(func, "start_line", 0))-$(get(func, "end_line", 0))",
         "metrics" => Dict(
             "line_count" => line_count,
             "parameter_count" => param_count,
@@ -268,7 +267,8 @@ function analyze_function_from_tokens(func::Dict)::Dict
         ),
         "issues" => Dict(
             "code_smells" => collect(smells),
-            "refactoring_priority" => calculate_refactoring_priority(line_count, complexity, nesting, length(smells))
+            "refactoring_priority" => priority_level,
+            "priority_score" => priority_score
         )
     )
 end
@@ -277,9 +277,22 @@ function create_empty_function_analysis(name::String, start_line::Int, end_line:
     return Dict(
         "name" => name,
         "location" => "$start_line-$end_line",
-        "metrics" => Dict("line_count"=>end_line-start_line+1, "parameter_count"=>0, "nesting_depth"=>0, "complexity_score"=>1),
-        "semantic" => Dict("category"=>"unknown", "responsibilities"=>[], "dependencies"=>[]),
-        "issues" => Dict("code_smells"=>[], "refactoring_priority"=>"LOW")
+        "metrics" => Dict(
+            "line_count" => end_line - start_line + 1,
+            "parameter_count" => 0,
+            "nesting_depth" => 0,
+            "complexity_score" => 1
+        ),
+        "semantic" => Dict(
+            "category" => "unknown",
+            "responsibilities" => String[],
+            "dependencies" => String[]
+        ),
+        "issues" => Dict(
+            "code_smells" => String[],
+            "refactoring_priority" => "LOW",
+            "priority_score" => 0.0
+        )
     )
 end
 
@@ -290,7 +303,6 @@ function count_parameters_from_tokens(tokens::Vector{PseudoNode})::Int
     if end_paren_idx === nothing return 0 end
     
     param_tokens = tokens[start_paren_idx : start_paren_idx + end_paren_idx - 1]
-    # This is more robust as it just counts identifiers inside the parens
     return count(t -> t.kind == :identifier, param_tokens)
 end
 
@@ -310,8 +322,13 @@ function calculate_nesting_from_tokens(tokens::Vector{PseudoNode})::Int
     starters = Set(["function", "struct", "if", "for", "while", "let", "begin", "try"])
     for token in tokens
         if token.kind == :keyword
-            if token.value in starters; current_depth += 1; max_depth = max(max_depth, current_depth); end
-            if token.value == "end"; current_depth -= 1; end
+            if token.value in starters
+                current_depth += 1
+                max_depth = max(max_depth, current_depth)
+            end
+            if token.value == "end"
+                current_depth -= 1
+            end
         end
     end
     return max_depth
@@ -335,10 +352,18 @@ function identify_responsibilities_from_tokens(tokens::Vector{PseudoNode})::Set{
     init_keywords = Set(["new", "create", "initialize", "setup"])
     
     for token in tokens
-        if token.kind == :identifier && token.value in io_keywords; push!(resp, "io_operations"); end
-        if token.kind == :identifier && token.value in val_keywords; push!(resp, "validation"); end
-        if token.kind == :keyword && token.value in comp_keywords; push!(resp, "computation"); end
-        if token.kind == :identifier && token.value in init_keywords; push!(resp, "initialization"); end
+        if token.kind == :identifier && token.value in io_keywords
+            push!(resp, "io_operations")
+        end
+        if token.kind == :identifier && token.value in val_keywords
+            push!(resp, "validation")
+        end
+        if token.kind == :keyword && token.value in comp_keywords
+            push!(resp, "computation")
+        end
+        if token.kind == :identifier && token.value in init_keywords
+            push!(resp, "initialization")
+        end
     end
     return resp
 end
@@ -354,20 +379,53 @@ function categorize_function_from_tokens(name::String, tokens::Vector{PseudoNode
     return "utility"
 end
 
-function detect_code_smells_from_metrics(l,p,n,r)
+function detect_code_smells_from_metrics(line_count::Int, param_count::Int, nesting::Int, responsibilities::Set{String})::Set{String}
     smells = Set{String}()
-    if l > 50; push!(smells, "long_method"); end
-    if p > 5; push!(smells, "many_parameters"); end
-    if n > 4; push!(smells, "deep_nesting"); end
-    if length(r) > 2; push!(smells, "mixed_abstractions"); end
+    if line_count > LONG_METHOD_THRESHOLD
+        push!(smells, "long_method")
+    end
+    if param_count > MAX_PARAMS
+        push!(smells, "many_parameters")
+    end
+    if nesting > MAX_NESTING
+        push!(smells, "deep_nesting")
+    end
+    if length(responsibilities) > MAX_RESPONSIBILITIES
+        push!(smells, "mixed_abstractions")
+    end
     return smells
 end
 
-calculate_refactoring_priority(l,c,n,s) = (score = (l/30)+c+(n/2)+(s*2)) > 10 ? "HIGH" : score > 5 ? "MEDIUM" : "LOW"
+# FIXED: Proper numerical calculation matching meta_cognitive_engine pattern
+function calculate_priority_score(line_count::Int, complexity::Int, nesting::Int, smell_count::Int)::Float64
+    score = (line_count / 30.0) + Float64(complexity) + (nesting / 2.0) + (smell_count * 2.0)
+    return round(score, digits=2)
+end
+
+function determine_priority_level(score::Float64)::String
+    if score > HIGH_PRIORITY_SCORE
+        return "HIGH"
+    elseif score > MEDIUM_PRIORITY_SCORE
+        return "MEDIUM"
+    else
+        return "LOW"
+    end
+end
+
+# ==============================================================================
+# MODULE-LEVEL ANALYSIS (FIXED TO RETURN PROPER METRICS)
+# ==============================================================================
 
 function analyze_module_semantics(module_path::String)::Dict
     println("   🔬 Performing enhanced token-based semantic analysis: $module_path")
-    if !isfile(module_path); return Dict("error" => "File not found: $module_path"); end
+    if !isfile(module_path)
+        return Dict(
+            "error" => "File not found: $module_path",
+            "functions_analyzed" => 0,
+            "function_details" => [],
+            "module_smells" => String[]
+        )
+    end
 
     source_code = read(module_path, String)
     tokens = tokenize_code(source_code)
@@ -375,12 +433,23 @@ function analyze_module_semantics(module_path::String)::Dict
     
     analyzed_functions = [analyze_function_from_tokens(f) for f in function_groups]
     
+    # Calculate aggregate metrics (matching meta_cognitive_engine pattern)
+    total_lines = sum(get(get(f, "metrics", Dict()), "line_count", 0) for f in analyzed_functions)
+    avg_complexity = length(analyzed_functions) > 0 ? 
+        mean(get(get(f, "metrics", Dict()), "complexity_score", 1) for f in analyzed_functions) : 0.0
+    high_priority_count = count(f -> get(get(f, "issues", Dict()), "refactoring_priority", "LOW") == "HIGH", analyzed_functions)
+    
     return Dict(
         "module" => module_path,
         "functions_analyzed" => length(analyzed_functions),
         "function_details" => analyzed_functions,
         "module_smells" => detect_module_smells(analyzed_functions),
-        "analysis_timestamp" => now(UTC),
+        "aggregate_metrics" => Dict(
+            "total_lines" => total_lines,
+            "average_complexity" => round(avg_complexity, digits=2),
+            "high_priority_functions" => high_priority_count
+        ),
+        "analysis_timestamp" => string(now(UTC)),
         "analysis_method" => "enhanced_tokenizer"
     )
 end
@@ -390,14 +459,43 @@ function detect_module_smells(analyses::Vector{Dict})::Vector{String}
     if isempty(analyses) return smells end
     
     # Dead Code Detection
-    all_names = Set(get.(analyses, "name", ""))
-    all_deps = union(get.(get.(get.(analyses, "semantic", Dict()), "dependencies", Set()), "")...)
+    all_names = Set(get(f, "name", "") for f in analyses)
+    all_deps = Set{String}()
+    for f in analyses
+        deps = get(get(f, "semantic", Dict()), "dependencies", String[])
+        union!(all_deps, deps)
+    end
+    
     dead_code = setdiff(all_names, all_deps)
-    # Exclude the entry point from being marked as dead code
-    filter!(f -> f != "analyze_module_semantics", dead_code)
-    if !isempty(dead_code); push!(smells, "Potential Dead Code: $(join(collect(dead_code), ", "))"); end
+    # Exclude entry points
+    filter!(f -> f != "analyze_module_semantics" && !startswith(f, "main"), dead_code)
+    if !isempty(dead_code)
+        push!(smells, "Potential Dead Code: $(join(collect(dead_code), ", "))")
+    end
+    
+    # High complexity concentration
+    high_complexity_funcs = filter(f -> get(get(f, "metrics", Dict()), "complexity_score", 0) > 10, analyses)
+    if length(high_complexity_funcs) > length(analyses) / 3
+        push!(smells, "High Complexity Concentration: $(length(high_complexity_funcs)) functions")
+    end
 
     return smells
 end
 
-export analyze_module_semantics
+# Save functionality matching meta_cognitive_engine pattern
+function save_semantic_analysis(analysis::Dict, filename::String="semantic_analysis.json")::Bool
+    try
+        json_data = JSON.json(analysis, 2)
+        open(filename, "w") do file
+            write(file, json_data)
+        end
+        println("   ✅ Semantic analysis saved to: $filename")
+        return true
+    catch e
+        println("   ⚠️  Failed to save semantic analysis: $e")
+        return false
+    end
+end
+
+export analyze_module_semantics, save_semantic_analysis,
+       LONG_METHOD_THRESHOLD, MAX_PARAMS, MAX_NESTING, MAX_RESPONSIBILITIES
