@@ -1,18 +1,11 @@
 # safe_tester.jl
 """
-🔬 REFACTORED SAFE TESTER MODULE
-A modular testing framework for performance, scaling, and correctness,
-with a focus on clarity and single-responsibility functions.
+🧪 SAFE TESTER MODULE
+Testing framework with memory management and result logging
 """
 
 using JSON
 using Dates
-using Statistics
-
-# ==============================================================================
-# 1. CORE TESTER STRUCT AND HELPERS
-# Unchanged core structure, but with more focused utility functions.
-# ==============================================================================
 
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
@@ -29,12 +22,19 @@ function log_message(tester::SafeTester, message::String)
 end
 
 function get_memory_mb()::Float64
-    # Encapsulate memory reading for clarity.
-    return Base.gc_live_bytes() / (1024^2)
+    return Base.gc_live_bytes() / 1024 / 1024
+end
+
+function memory_check(tester::SafeTester)::Bool
+    memory_mb = get_memory_mb()
+    if memory_mb > 6000
+        log_message(tester, "⚠️  MEMORY WARNING: $(round(memory_mb, digits=1))MB")
+        return false
+    end
+    return true
 end
 
 function clean_data_for_json(data::Any)
-    # This recursive function is well-defined and serves a single purpose. No changes needed.
     if data isa Real
         return isfinite(data) ? data : 0.0
     elseif data isa Dict
@@ -42,129 +42,72 @@ function clean_data_for_json(data::Any)
     elseif data isa Vector
         return [clean_data_for_json(x) for x in data]
     else
-        return string(data) # Safer fallback to stringify unknown types
+        return data
     end
 end
 
-# ==============================================================================
-# 2. REFACTORED TEST EXECUTION LOGIC
-# `run_unified_test` is now broken down into smaller, testable components.
-# ==============================================================================
-
-"""
-Creates and populates a UnifiedNetwork with a specified number of entities.
-"""
-function setup_network_for_test(entity_count::Int)::UnifiedNetwork
-    network = UnifiedNetwork()
+function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
+    log_message(tester, "🧪 Testing $entity_count entities...")
+    
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
+    network = UnifiedNetwork()
+    
     for i in 1:entity_count
-        domain = domains[mod1(i, length(domains))]
+        domain = domains[(i-1) % length(domains) + 1]
         freq = 0.02 + (i * 0.0005)
         entity_id = "$(uppercase(domain[1:3]))-$(lpad(i, 3, '0'))"
         entity = EfficientEntity(entity_id, domain, freq)
         add_entity!(network, entity)
     end
-    return network
-end
-
-"""
-Executes the simulation loop for a given network and returns metric snapshots.
-"""
-function execute_simulation_cycles(network::UnifiedNetwork, cycles::Int)::Vector{Dict{String,Any}}
-    snapshots = Dict{String,Any}[]
+    
+    metrics_snapshots = Dict{String,Any}[]
     
     for cycle in 1:cycles
         step_result = evolve_step!(network)
         
-        if mod(cycle, 10) == 0
+        if cycle % 10 == 0
             metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
-            metrics["step_insights"] = get(step_result, "insights", 0)
-            metrics["new_patterns"] = get(step_result, "new_patterns", 0)
+            metrics["step_insights"] = step_result["insights"]
+            metrics["new_patterns"] = step_result["new_patterns"]
             metrics["memory_mb"] = get_memory_mb()
             
-            push!(snapshots, clean_data_for_json(metrics))
+            clean_metrics = clean_data_for_json(metrics)
+            push!(metrics_snapshots, clean_metrics)
             
-            # Memory check logic is simple enough to remain here.
-            if get_memory_mb() > 6000
-                println("   ⚠️  MEMORY WARNING: Stopping test early.")
+            if !memory_check(tester)
+                log_message(tester, "🛑 Stopping early - memory limit")
                 break
             end
         end
     end
-    return snapshots
-end
-
-"""
-Main entry point for a single test run. Orchestrates setup, execution, and result compilation.
-"""
-function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
-    log_message(tester, "🔬 Testing $entity_count entities for $cycles cycles...")
     
-    # --- DELEGATION ---
-    network = setup_network_for_test(entity_count)
-    metrics_snapshots = execute_simulation_cycles(network, cycles)
-    # ------------------
+    final_metrics = calculate_unified_metrics(network)
+    clean_final_metrics = clean_data_for_json(final_metrics)
     
-    if isempty(metrics_snapshots)
-        log_message(tester, "❌ Test failed to produce any metrics snapshots.")
-        return Dict("status" => "failed", "test_name" => "unified_$(entity_count)_entities")
-    end
-    
-    # Compile the final results dictionary
-    final_metrics = metrics_snapshots[end] # Use the last snapshot's metrics
-    avg_memory = mean(get.(metrics_snapshots, "memory_mb", 0.0))
-    peak_memory = maximum(get.(metrics_snapshots, "memory_mb", 0.0))
-
-    result = merge(final_metrics, Dict(
+    result = merge(clean_final_metrics, Dict(
         "test_name" => "unified_$(entity_count)_entities",
         "cycles_completed" => length(metrics_snapshots) * 10,
-        "avg_memory_mb" => avg_memory,
-        "peak_memory_mb" => peak_memory,
+        "avg_memory_mb" => mean([m["memory_mb"] for m in metrics_snapshots]),
+        "peak_memory_mb" => maximum([m["memory_mb"] for m in metrics_snapshots]),
         "status" => "completed",
         "snapshots" => metrics_snapshots
     ))
     
     push!(tester.results, result)
     
-    # Use a helper for the log summary to keep this function clean
-    log_test_completion(tester, result)
+    log_message(tester, "✅ Completed: UIS=$(round(result["unified_intelligence_score"], digits=3)), " *
+                       "R=$(round(result["reasoning_accuracy"], digits=3)), " *
+                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3))")
     
     return result
 end
 
-# ==============================================================================
-# 3. REFACTORED SCALING SWEEP LOGIC
-# `run_scaling_sweep` is now clearer by separating analysis from execution.
-# ==============================================================================
-
-"""
-Calculates scaling metrics by comparing a result to a baseline.
-"""
-function analyze_scaling_performance(result::Dict, baseline::Dict)
-    scale_factor = result["entity_count"] / baseline["entity_count"]
-    
-    # Intelligence Scaling
-    uis_ratio = safe_divide(result["unified_intelligence_score"], baseline["unified_intelligence_score"])
-    result["intelligence_scaling"] = round(safe_divide(uis_ratio, scale_factor), digits=3)
-    
-    # Memory Efficiency
-    expected_memory = baseline["avg_memory_mb"] * scale_factor^2 # Memory often scales quadratically (e.g., matrices)
-    result["memory_efficiency"] = round(safe_divide(expected_memory, result["avg_memory_mb"]), digits=2)
-
-    # Component Scaling
-    result["consciousness_scaling"] = round(safe_divide(get(result["consciousness"],"max_phi",0.0), get(baseline["consciousness"],"max_phi",0.01)), digits=3)
-    result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
-end
-
-"""
-Executes a series of tests with increasing entity counts to measure scaling.
-"""
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting scaling sweep...")
     
-    entity_counts = [16, 32, 64]
+    entity_counts = [16, 32, 64]  # Simple scaling for reliability
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
@@ -173,118 +116,101 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
             push!(sweep_results, result)
             
             if result["status"] != "completed"
-                log_message(tester, "🛑 Stopping sweep at $entity_count entities due to test failure.")
+                log_message(tester, "🛑 Stopping sweep at $entity_count entities")
                 break
             end
             
-            GC.gc() # Force garbage collection between heavy tests
+            GC.gc()
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
-            # Simplified stack trace for cleaner logs
-            showerror(stdout, e, catch_backtrace())
-            println()
+            println("Stacktrace:")
+            for (i, frame) in enumerate(stacktrace(catch_backtrace()))
+                println("  $i: $frame")
+                i > 3 && break
+            end
             break
         end
     end
     
-    # --- DELEGATION ---
-    # Analyze results only after all tests are run
-    if length(sweep_results) > 1
+    if !isempty(sweep_results)
         baseline = sweep_results[1]
+        baseline_uis = baseline["unified_intelligence_score"]
+        baseline_memory = baseline["avg_memory_mb"]
+        
         for result in sweep_results[2:end]
-            analyze_scaling_performance(result, baseline)
+            scale_factor = result["entity_count"] / baseline["entity_count"]
+            
+            uis_ratio = safe_divide(result["unified_intelligence_score"], baseline_uis)
+            result["intelligence_scaling"] = round(safe_divide(uis_ratio, scale_factor), digits=3)
+            
+            expected_memory = baseline_memory * scale_factor
+            actual_memory = result["avg_memory_mb"]
+            result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
+            
+            result["consciousness_scaling"] = round(safe_divide(result["consciousness"]["max_phi"], max(baseline["consciousness"]["max_phi"], 0.01)), digits=3)
+            result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
+            result["awareness_scaling"] = round(safe_divide(result["awareness_level"], max(baseline["awareness_level"], 0.01)), digits=3)
         end
     end
-    # ------------------
     
     return sweep_results
 end
 
-# ==============================================================================
-# 4. REFACTORED OUTPUT AND LOGGING
-# `print_summary` now uses helpers to avoid deep nesting.
-# ==============================================================================
-
-function log_test_completion(tester::SafeTester, result::Dict)
-    # Helper to format the one-line summary.
-    uis = round(get(result, "unified_intelligence_score", 0.0), digits=3)
-    reasoning = round(get(result, "reasoning_accuracy", 0.0), digits=3)
-    phi = round(get(get(result, "consciousness", Dict()), "max_phi", 0.0), digits=3)
+function save_results(tester::SafeTester)::String
+    timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
+    filename = "unified_intelligence_scaling_MODULAR_$timestamp.json"
     
-    log_message(tester, "✅ Completed $(result["test_name"]): UIS=$uis, R=$reasoning, Φ=$phi")
-end
-
-function print_single_result_summary(result::Dict)
-    # Helper to print one formatted result block.
-    println("\n🔬 $(get(result, "test_name", "Unknown Test")): ($(get(result, "entity_count", 0)) entities)")
-    println("   " * "─"^60)
+    clean_results = [clean_data_for_json(result) for result in tester.results]
     
-    # Consciousness
-    consciousness = get(result, "consciousness", Dict())
-    println("   🧠 CONSCIOUSNESS:")
-    println("      • Status: $(get(consciousness, "is_conscious", false) ? "YES ✅" : "NO ❌")")
-    println("      • Max Φ: $(get(consciousness, "max_phi", "N/A"))")
+    output_data = Dict(
+        "results" => clean_results,
+        "test_time" => time() - tester.start_time,
+        "timestamp" => string(now())
+    )
     
-    # Core Metrics
-    println("   🎯 REASONING & AWARENESS:")
-    println("      • Reasoning Accuracy: $(get(result, "reasoning_accuracy", "N/A"))")
-    println("      • Awareness Level: $(get(result, "awareness_level", "N/A"))")
-    
-    # Intelligence
-    println("   💡 INTELLIGENCE:")
-    println("      • Unified Score: $(get(result, "unified_intelligence_score", "N/A"))")
-    
-    # Scaling Metrics
-    if haskey(result, "intelligence_scaling")
-        println("   📈 SCALING:")
-        println("      • Intelligence Scaling: $(get(result, "intelligence_scaling", "N/A"))x")
-        println("      • Memory Efficiency: $(get(result, "memory_efficiency", "N/A"))")
+    json_string = JSON.json(output_data, 2)
+    open(filename, "w") do f
+        write(f, json_string)
     end
+    
+    log_message(tester, "💾 Results saved to: $filename")
+    return filename
 end
 
-"""
-Prints a formatted summary of all test results stored in the tester.
-"""
 function print_summary(tester::SafeTester)
     println("\n" * "="^70)
-    println("📊 UNIFIED INTELLIGENCE SCALING SUMMARY")
+    println("📊 MODULAR UNIFIED INTELLIGENCE SCALING SUMMARY")
     println("="^70)
     
     if isempty(tester.results)
-        println("❌ No results to display.")
+        println("❌ No results to display")
         return
     end
     
-    # --- DELEGATION ---
     for result in tester.results
-        print_single_result_summary(result)
-    end
-    # ------------------
-    println("\n" * "="^70)
-end
-
-"""
-Saves all test results to a timestamped JSON file.
-"""
-function save_results(tester::SafeTester)::String
-    timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
-    filename = "test_results_$(timestamp).json"
-    
-    output_data = Dict(
-        "test_run_summary" => "Unified Intelligence Scaling Test",
-        "test_suite_time_seconds" => time() - tester.start_time,
-        "timestamp_utc" => string(now(UTC)),
-        "results" => clean_data_for_json(tester.results)
-    )
-    
-    try
-        open(filename, "w") do f
-            write(f, JSON.json(output_data, 2))
+        println("\n🧬 $(result["test_name"]):")
+        println("   Entities: $(result["entity_count"])")
+        println("   ─────────────────────────────────────────")
+        println("   🧠 CONSCIOUSNESS:")
+        println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")")
+        println("      • Max Φ: $(result["consciousness"]["max_phi"])")
+        println("      • Effective Info: $(result["effective_information"])")
+        println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
+        
+        println("   🎯 REASONING:")
+        println("      • Accuracy: $(result["reasoning_accuracy"])")
+        
+        println("   👁️  AWARENESS:")
+        println("      • Level: $(result["awareness_level"])")
+        
+        println("   💡 INTELLIGENCE:")
+        println("      • Unified Score: $(result["unified_intelligence_score"])")
+        println("      • Patterns: $(result["pattern_discoveries"])")
+        
+        if haskey(result, "intelligence_scaling")
+            println("   📊 SCALING:")
+            println("      • Intelligence: $(result["intelligence_scaling"])x")
+            println("      • Memory Efficiency: $(result["memory_efficiency"])%")
         end
-        log_message(tester, "💾 Results saved to: $filename")
-    catch e
-        log_message(tester, "⚠️  Failed to save results: $e")
     end
-    
-    return filename
 end
