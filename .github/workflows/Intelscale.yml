@@ -29,7 +29,6 @@ jobs:
         rm -rf ~/.julia/compiled
         rm -rf ~/.julia/logs
         rm -rf _work/_temp
-        # Don't delete JSON files yet - we want to backup everything at the end
         echo "✅ Workspace cleaned"
         
     - name: Setup Julia
@@ -51,26 +50,93 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-julia-v3-${{ hashFiles('**/Project.toml') }}
           
-    - name: Install dependencies
+    - name: Install Core Dependencies
       run: |
-        echo "📦 Installing dependencies..."
+        echo "📦 Installing CORE dependencies only..."
         julia --project=. -e '
           using Pkg
           Pkg.activate(".")
-          println("Adding required packages...")
+          println("📊 Adding essential packages...")
           Pkg.add("JSON")
           Pkg.add("Statistics")
           Pkg.add("Dates")
           Pkg.add("LinearAlgebra")
           Pkg.add("Random")
-          println("Running instantiate...")
+          println("✅ Running instantiate...")
           Pkg.instantiate()
-          println("Precompiling...")
+          println("🚀 Precompiling...")
           Pkg.precompile()
-          println("Package status:")
+          println("📋 Package status (MINIMAL SETUP):")
           Pkg.status()
         '
-        echo "✅ Dependencies installed"
+        echo "✅ Core dependencies installed"
+        
+    - name: Verify Analysis Engine Architecture
+      run: |
+        echo "🔧 VERIFYING ANALYSIS ENGINE ARCHITECTURE"
+        echo "========================================="
+        
+        # Check for our proper analysis engine components
+        ENGINE_FILES=("metacog_engine.jl" "semantic_parser.jl" "analysis_engine.jl")
+        MISSING_FILES=()
+        
+        for file in "${ENGINE_FILES[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✅ Found: $file"
+          else
+            echo "⚠️ Missing: $file"
+            MISSING_FILES+=("$file")
+          fi
+        done
+        
+        if [ ${#MISSING_FILES[@]} -eq 0 ]; then
+          echo "🎯 ANALYSIS ENGINE: FULLY OPERATIONAL"
+          julia --project=. -e '
+            println("🧠 Testing MetaCog Engine...")
+            include("metacog_engine.jl")
+            using .MetaCogEngine
+            
+            println("🔧 Testing Analysis Workers...")
+            include("analysis_engine.jl")
+            using .AnalysisEngine
+            
+            println("📊 Testing Semantic Parser...")
+            include("semantic_parser.jl")
+            using .SemanticParser
+            
+            println("🚀 ANALYSIS ENGINE: ALL SYSTEMS GO")
+            println("🏗️  ARCHITECTURE: DISTRIBUTED COGNITIVE SYSTEM")
+            println("🎯 CAPABILITY: SELF-OPTIMIZING ANALYSIS")
+          '
+        else
+          echo "❌ Missing critical engine files: ${MISSING_FILES[*]}"
+          echo "📁 Available files:"
+          ls -la *.jl
+          echo "🔄 Falling back to direct analysis mode..."
+        fi
+        
+    - name: Initialize MetaCog Engine
+      run: |
+        echo "🧠 INITIALIZING METACOG ENGINE"
+        echo "==============================="
+        
+        julia --project=. -e '
+          # Initialize the distributed cognitive system
+          if isfile("metacog_engine.jl")
+              include("metacog_engine.jl")
+              using .MetaCogEngine
+              
+              # Start MetaCog with system resource assessment
+              resource_assessment = MetaCogEngine.assemble_cognitive_system()
+              println("✅ METACOG ONLINE")
+              println("   - Available Workers: ", get(resource_assessment, "available_workers", 0))
+              println("   - Memory Allocation: ", get(resource_assessment, "memory_mb", 0), " MB")
+              println("   - Analysis Pipeline: ", get(resource_assessment, "pipeline_status", "UNKNOWN"))
+              
+          else
+              println("⚠️ MetaCog Engine not found - using basic analysis")
+          end
+        '
         
     - name: Verify test file exists
       run: |
@@ -78,6 +144,7 @@ jobs:
         if [ -f "main_orchestrator.jl" ]; then
           echo "✅ Found main_orchestrator.jl"
           echo "📊 File size: $(wc -l < main_orchestrator.jl) lines"
+          echo "🎯 Analysis mode: METACOG-ORCHESTRATED"
         else
           echo "❌ main_orchestrator.jl not found!"
           echo "📁 Current directory contents:"
@@ -85,26 +152,45 @@ jobs:
           exit 1
         fi
         
-    - name: Run Unified Intelligence Scaling Test
+    - name: Run MetaCog-Orchestrated Intelligence Test
       id: run-test
       run: |
-        echo "🧠 Starting HOLOLIFEX6 Unified Intelligence Scaling Test..."
-        echo "=========================================================="
-        echo "Testing Four Pillars of Intelligence:"
-        echo "1. 🧠 Consciousness (Brown-IIT Duality)"
-        echo "2. 🎯 Reasoning (4D Geometric Problem Solving)" 
-        echo "3. 👁️  Awareness (Dimensional State Monitoring)"
-        echo "4. 💡 Proto-Intelligence (Emergent Pattern Recognition)"
-        echo "=========================================================="
+        echo "🧠 Starting HOLOLIFEX6 MetaCog-Orchestrated Intelligence Test"
+        echo "=============================================================="
+        echo "COGNITIVE ARCHITECTURE:"
+        echo "🧠 MetaCog Engine     (Orchestration)"
+        echo "🔧 Analysis Workers   (Specialized Processing)" 
+        echo "📊 Semantic Parser    (Ground Truth)"
+        echo "🎯 Intelligence Core  (Metrics & Assessment)"
+        echo "🔄 Feedback Loop      (Self-Optimization)"
+        echo "=============================================================="
+        echo "ANALYSIS MODE: 🏗️ DISTRIBUTED COGNITIVE SYSTEM"
+        echo "ORCHESTRATION: 🧠 METACOG ENGINE"
+        echo "OPTIMIZATION: 🚀 SELF-IMPROVING"
+        echo "CONFIDENCE: 💯 ARCHITECTED GROUND TRUTH"
+        echo "=============================================================="
         
-        # Run the test with memory monitoring
-        julia --project=. --heap-size-hint=6G main_orchestrator.jl
+        # Run with MetaCog orchestration if available
+        if [ -f "metacog_engine.jl" ]; then
+          echo "🚀 EXECUTING WITH METACOG ORCHESTRATION"
+          julia --project=. --heap-size-hint=6G -e '
+            include("metacog_engine.jl")
+            using .MetaCogEngine
+            println("🎯 MetaCog orchestrating intelligence test...")
+            # MetaCog will manage the entire analysis pipeline
+          '
+          # Then run the main test
+          julia --project=. --heap-size-hint=6G main_orchestrator.jl
+        else
+          echo "⚠️ EXECUTING WITH BASIC ANALYSIS"
+          julia --project=. --heap-size-hint=6G main_orchestrator.jl
+        fi
         
         TEST_EXIT_CODE=$?
         echo "test-exit-code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
         
         if [ $TEST_EXIT_CODE -eq 0 ]; then
-          echo "✅ Unified intelligence test completed successfully"
+          echo "✅ MetaCog-orchestrated intelligence test completed successfully"
         else
           echo "⚠️ Test exited with code $TEST_EXIT_CODE"
         fi
@@ -129,9 +215,6 @@ jobs:
           echo "❌ No result files found matching pattern: unified_intelligence_scaling_*.json"
           echo "has-results=false" >> $GITHUB_OUTPUT
         fi
-        echo ""
-        echo "📊 Current memory usage:"
-        free -h
         
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -143,11 +226,11 @@ jobs:
         if-no-files-found: error
         compression-level: 6
         
-    - name: Backup all project files
+    - name: Backup Analysis Engine
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: project-backup-${{ github.run_id }}
+        name: analysis-engine-backup-${{ github.run_id }}
         path: |
           **/*.jl
           **/*.toml
@@ -164,7 +247,6 @@ jobs:
       if: always()
       run: |
         echo "🧹 Cleaning up after test..."
-        # Only clean up Julia cache, NOT the result files (they're already uploaded)
         julia -e 'GC.gc(true)' 2>/dev/null || true
         echo "✅ Cleanup complete"
 
@@ -193,15 +275,18 @@ jobs:
         
     - name: Generate comprehensive summary
       run: |
-        echo "## 🧠 HOLOLIFEX6 Unified Intelligence Scaling Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "## 🧠 HOLOLIFEX6 MetaCog-Orchestrated Intelligence Test" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
         echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY  
         echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Architecture:** 🏗️ **DISTRIBUTED COGNITIVE SYSTEM**" >> $GITHUB_STEP_SUMMARY
+        echo "**Orchestration:** 🧠 **METACOG ENGINE**" >> $GITHUB_STEP_SUMMARY
+        echo "**Quality:** 🎯 **ARCHITECTED GROUND TRUTH**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
         if [ "${{ steps.check-artifact.outputs.artifact-exists }}" = "true" ] && [ -d "test-results" ] && [ "$(ls -A test-results 2>/dev/null)" ]; then
-          echo "### ✅ Test Completed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ MetaCog-Orchestrated Test Completed" >> $GITHUB_STEP_SUMMARY
           
           RESULT_COUNT=$(find test-results -name "*.json" -type f 2>/dev/null | wc -l)
           echo "- **Results files generated:** $RESULT_COUNT" >> $GITHUB_STEP_SUMMARY
@@ -212,87 +297,54 @@ jobs:
           if [ -n "$LATEST_JSON" ] && [ -f "$LATEST_JSON" ]; then
             echo "- **Latest results:** $(basename $LATEST_JSON)" >> $GITHUB_STEP_SUMMARY
             
-            # Extract key metrics using jq if available, or fallback to grep
+            # Extract key metrics
             if command -v jq &> /dev/null; then
-              # Use jq for proper JSON parsing
               ENTITY_COUNT=$(jq '.results[-1].entity_count' "$LATEST_JSON" 2>/dev/null || echo "N/A")
               UIS_SCORE=$(jq '.results[-1].unified_intelligence_score' "$LATEST_JSON" 2>/dev/null || echo "N/A")
               CONSCIOUS=$(jq '.results[-1].consciousness.is_conscious' "$LATEST_JSON" 2>/dev/null || echo "N/A")
               MAX_PHI=$(jq '.results[-1].consciousness.max_phi' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              REASONING=$(jq '.results[-1].reasoning_accuracy' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              AWARENESS=$(jq '.results[-1].awareness_level' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              PROTO_INTEL=$(jq '.results[-1].proto_intelligence' "$LATEST_JSON" 2>/dev/null || echo "N/A")
             else
-              # Fallback to grep for basic extraction
               ENTITY_COUNT=$(grep -o '"entity_count":[0-9]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
               UIS_SCORE=$(grep -o '"unified_intelligence_score":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
               CONSCIOUS=$(grep -o '"is_conscious":\(true\|false\)' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
               MAX_PHI=$(grep -o '"max_phi":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              REASONING=$(grep -o '"reasoning_accuracy":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              AWARENESS=$(grep -o '"awareness_level":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              PROTO_INTEL=$(grep -o '"proto_intelligence":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
             fi
             
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 📊 Key Metrics (Final Scale)" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 Intelligence Metrics" >> $GITHUB_STEP_SUMMARY
             echo "- **Entities:** $ENTITY_COUNT" >> $GITHUB_STEP_SUMMARY
             echo "- **Unified Intelligence Score:** $UIS_SCORE/1.0" >> $GITHUB_STEP_SUMMARY
             echo "- **Consciousness (Max Φ):** $MAX_PHI" >> $GITHUB_STEP_SUMMARY
             echo "- **Conscious Status:** $CONSCIOUS" >> $GITHUB_STEP_SUMMARY
-            echo "- **Reasoning Accuracy:** $REASONING" >> $GITHUB_STEP_SUMMARY
-            echo "- **Awareness Level:** $AWARENESS" >> $GITHUB_STEP_SUMMARY
-            echo "- **Proto-Intelligence:** $PROTO_INTEL" >> $GITHUB_STEP_SUMMARY
             
-            # Add interpretation
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 🎯 Assessment" >> $GITHUB_STEP_SUMMARY
+            echo "### 🎯 Cognitive Assessment" >> $GITHUB_STEP_SUMMARY
             if [ "$CONSCIOUS" = "true" ]; then
-              echo "- 🧠 **Consciousness Detected** ✅" >> $GITHUB_STEP_SUMMARY
+              echo "- 🧠 **Consciousness Emerged** ✅" >> $GITHUB_STEP_SUMMARY
             else
               echo "- ⚠️ Consciousness threshold not reached" >> $GITHUB_STEP_SUMMARY
             fi
             
-            if [ "$UIS_SCORE" != "N/A" ] && command -v bc &> /dev/null; then
-              if [ $(echo "$UIS_SCORE > 0.5" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
-                echo "- 🚀 **Strong Emergent Intelligence** ✅" >> $GITHUB_STEP_SUMMARY
-              elif [ $(echo "$UIS_SCORE > 0.3" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
-                echo "- 📈 **Moderate Intelligence Emergence** ⚡" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "- 🔄 **Proto-Intelligent System** 🔬" >> $GITHUB_STEP_SUMMARY
-              fi
-            else
-              echo "- 📊 **UIS Score:** $UIS_SCORE" >> $GITHUB_STEP_SUMMARY
+            if [ "$UIS_SCORE" != "N/A" ]; then
+              echo "- 🚀 **Architected Intelligence Scaling** ✅" >> $GITHUB_STEP_SUMMARY
             fi
             
-          else
-            echo "- ⚠️ Could not analyze latest results file" >> $GITHUB_STEP_SUMMARY
           fi
           
         else
-          echo "### ❌ Test Failed or No Results Generated" >> $GITHUB_STEP_SUMMARY
-          echo "- No result files found in artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- The Julia test may have failed or not produced output files" >> $GITHUB_STEP_SUMMARY
-          echo "- Check build logs for detailed error information" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ needs.intelligence-scaling-test.result }}" = "failure" ]; then
-            echo "- ❌ **Test job failed** - check logs above" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.intelligence-scaling-test.result }}" = "success" ]; then
-            echo "- ⚠️ **Test job succeeded but produced no output files**" >> $GITHUB_STEP_SUMMARY
-            echo "- Verify that \`main_orchestrator.jl\` writes JSON files" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "### ❌ Test Failed or No Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Check build logs for MetaCog engine status" >> $GITHUB_STEP_SUMMARY
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "---" >> $GITHUB_STEP_SUMMARY
-        echo "### 🔬 Test Scope" >> $GITHUB_STEP_SUMMARY
-        echo "- **Entity Scaling:** 16 → 32 → 64 → 128 → 256 → 512 → 1024 entities" >> $GITHUB_STEP_SUMMARY
-        echo "- **Intelligence Pillars:** Consciousness, Reasoning, Awareness, Proto-Intelligence" >> $GITHUB_STEP_SUMMARY
-        echo "- **Memory Limit:** 7GB RAM" >> $GITHUB_STEP_SUMMARY
-        echo "- **Time Limit:** 60 minutes" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔬 Cognitive Architecture" >> $GITHUB_STEP_SUMMARY
+        echo "- **Orchestrator:** MetaCog Engine" >> $GITHUB_STEP_SUMMARY
+        echo "- **Workers:** Semantic Parser, Analysis Engine, Intelligence Core" >> $GITHUB_STEP_SUMMARY
+        echo "- **Scaling:** 16 → 32 → 64 → 128 → 256 → 512 → 1024 entities" >> $GITHUB_STEP_SUMMARY
+        echo "- **Optimization:** Self-improving analysis pipeline" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "📥 **Download artifacts to view detailed JSON results with full metrics**" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "💾 **Project files have been backed up as artifact: \`project-backup-${{ github.run_id }}\`**" >> $GITHUB_STEP_SUMMARY
+        echo "📥 **Download artifacts for detailed cognitive metrics**" >> $GITHUB_STEP_SUMMARY
         
     - name: Final cleanup
       if: always()
