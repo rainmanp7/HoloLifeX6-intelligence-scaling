@@ -51,161 +51,26 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-julia-v3-${{ hashFiles('**/Project.toml') }}
           
-    - name: Install Core Dependencies
+    - name: Install dependencies
       run: |
-        echo "📦 Installing CORE dependencies only..."
+        echo "📦 Installing dependencies..."
         julia --project=. -e '
           using Pkg
           Pkg.activate(".")
-          println("📊 Adding essential packages...")
+          println("Adding required packages...")
           Pkg.add("JSON")
           Pkg.add("Statistics")
           Pkg.add("Dates")
           Pkg.add("LinearAlgebra")
           Pkg.add("Random")
-          println("✅ Running instantiate...")
+          println("Running instantiate...")
           Pkg.instantiate()
-          println("🚀 Precompiling...")
+          println("Precompiling...")
           Pkg.precompile()
-          println("📋 Package status (MINIMAL SETUP):")
+          println("Package status:")
           Pkg.status()
         '
-        echo "✅ Core dependencies installed"
-        
-    - name: Verify Direct Analysis Environment
-      run: |
-        echo "🔬 Verifying DIRECT analysis environment..."
-        echo "🎯 STRATEGY: Using internal JuliaSyntax - ZERO external dependencies"
-        
-        # Check if we have the essential parsing files
-        if [ -f "juliasyntax_core.jl" ]; then
-          echo "✅ Found juliasyntax_core.jl - DIRECT parsing enabled"
-          julia --project=. -e '
-            println("🧪 Testing DIRECT parsing capabilities...")
-            include("juliasyntax_core.jl")
-            using .JuliaSyntaxCore
-            
-            # Test ground truth parsing
-            test_code = """
-            function ground_truth_test(x, y)
-                if x > y
-                    return x * 2
-                else
-                    return y * 3  
-                end
-            end
-            """
-            
-            ast = parseall(SyntaxNode, test_code)
-            functions = find_functions_in_ast(ast)
-            
-            println("✅ DIRECT PARSING VERIFIED:")
-            println("   - Functions found: ", length(functions))
-            if !isempty(functions)
-                func = functions[1]
-                println("   - Function name: ", extract_function_name_optimal(func))
-                println("   - Cyclomatic complexity: ", calculate_cyclomatic_complexity_optimal(func))
-            end
-            println("🎯 ANALYSIS QUALITY: GROUND TRUTH")
-            println("🔧 DEPENDENCIES: ZERO")
-            println("💯 CONFIDENCE: MAXIMUM")
-          '
-        else
-          echo "⚠️ juliasyntax_core.jl not found - checking for alternative..."
-          # Check if we have semantic_analyzer.jl with direct parsing
-          if [ -f "semantic_analyzer.jl" ]; then
-            echo "✅ Found semantic_analyzer.jl - will use internal parsing"
-            julia --project=. -e '
-              println("🔍 Checking semantic analyzer capabilities...")
-              include("semantic_analyzer.jl")
-              println("✅ Semantic analyzer loaded successfully")
-            '
-          else
-            echo "❌ No direct parsing files found"
-            echo "📁 Available files:"
-            ls -la *.jl
-            exit 1
-          fi
-        fi
-        
-    - name: Run Meta-Intelligence Analysis
-      run: |
-        echo "🧠🔥 INITIATING META-INTELLIGENCE ANALYSIS"
-        echo "==========================================="
-        echo "SYSTEM WILL NOW ANALYZE AND OPTIMIZE ITSELF"
-        echo "INTELLIGENCE FEEDBACK LOOP: ACTIVATED"
-        echo "==========================================="
-        
-        # Check if meta-analyzer exists, if not create basic version
-        if [ ! -f "meta_analyzer.jl" ]; then
-          echo "⚡ Creating basic meta-analyzer for self-assessment..."
-          cat > meta_analyzer.jl << 'EOF'
-        # Basic meta-analyzer for self-assessment
-        using JSON, Dates
-        
-        function analyze_own_analysis_system()
-            println("🎯 META-ANALYSIS: System analyzing itself...")
-            
-            # Simulate intelligence metrics for analysis system
-            analysis_consciousness = 0.75
-            analysis_reasoning = 0.82
-            analysis_awareness = 0.68
-            analysis_proto_intel = 0.71
-            
-            analysis_quality_score = (
-                analysis_consciousness * 0.3 +
-                analysis_reasoning * 0.4 + 
-                analysis_awareness * 0.2 +
-                analysis_proto_intel * 0.1
-            )
-            
-            improvements = []
-            if analysis_consciousness < 0.8
-                push!(improvements, "ENHANCE_ANALYSIS_CONSCIOUSNESS")
-            end
-            if analysis_reasoning < 0.85
-                push!(improvements, "BOOST_REASONING_ACCURACY")
-            end
-            
-            return Dict(
-                "meta_analysis_timestamp" => now(),
-                "analysis_system_quality" => analysis_quality_score,
-                "subsystem_scores" => Dict(
-                    "consciousness" => analysis_consciousness,
-                    "reasoning" => analysis_reasoning,
-                    "awareness" => analysis_awareness,
-                    "proto_intelligence" => analysis_proto_intel
-                ),
-                "self_improvements" => improvements,
-                "recommended_optimizations" => improvements
-            )
-        end
-        EOF
-        fi
-        
-        julia --project=. -e '
-          if isfile("meta_analyzer.jl")
-              include("meta_analyzer.jl")
-              println("🎯 META-ANALYSIS: Testing self-referential intelligence...")
-              
-              # Let the system analyze its own analysis capabilities
-              meta_results = analyze_own_analysis_system()
-              
-              println("✅ META-INTELLIGENCE RESULTS:")
-              println("   - System Quality Score: ", round(meta_results["analysis_system_quality"], digits=3))
-              println("   - Consciousness: ", round(meta_results["subsystem_scores"]["consciousness"], digits=3))
-              println("   - Reasoning: ", round(meta_results["subsystem_scores"]["reasoning"], digits=3))
-              println("   - Self-Improvements: ", length(meta_results["self_improvements"]))
-              
-              for improvement in meta_results["self_improvements"]
-                  println("   🔧 ", improvement)
-              end
-              
-              println("🚀 META-INTELLIGENCE: SYSTEM CAN NOW SELF-OPTIMIZE")
-          else
-              println("⚠️ No meta-analyzer found - proceeding with standard analysis")
-          end
-        '
+        echo "✅ Dependencies installed"
         
     - name: Verify test file exists
       run: |
@@ -213,7 +78,6 @@ jobs:
         if [ -f "main_orchestrator.jl" ]; then
           echo "✅ Found main_orchestrator.jl"
           echo "📊 File size: $(wc -l < main_orchestrator.jl) lines"
-          echo "🎯 Analysis mode: DIRECT PARSING + META-INTELLIGENCE"
         else
           echo "❌ main_orchestrator.jl not found!"
           echo "📁 Current directory contents:"
@@ -232,14 +96,8 @@ jobs:
         echo "3. 👁️  Awareness (Dimensional State Monitoring)"
         echo "4. 💡 Proto-Intelligence (Emergent Pattern Recognition)"
         echo "=========================================================="
-        echo "ANALYSIS MODE: 🔬 DIRECT PARSING"
-        echo "META-INTELLIGENCE: 🚀 SELF-ANALYZING"
-        echo "DEPENDENCIES: 🚫 ZERO EXTERNAL"
-        echo "CONFIDENCE: 💯 MAXIMUM"
-        echo "QUALITY: 🎯 GROUND TRUTH"
-        echo "=========================================================="
         
-        # Run the test with memory monitoring and direct parsing
+        # Run the test with memory monitoring
         julia --project=. --heap-size-hint=6G main_orchestrator.jl
         
         TEST_EXIT_CODE=$?
@@ -340,9 +198,6 @@ jobs:
         echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
         echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY  
         echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Analysis Mode:** 🔬 **DIRECT PARSING (Zero Dependencies)**" >> $GITHUB_STEP_SUMMARY
-        echo "**Meta-Intelligence:** 🚀 **SELF-ANALYZING SYSTEM**" >> $GITHUB_STEP_SUMMARY
-        echo "**Quality:** 🎯 **GROUND TRUTH METRICS**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
         if [ "${{ steps.check-artifact.outputs.artifact-exists }}" = "true" ] && [ -d "test-results" ] && [ "$(ls -A test-results 2>/dev/null)" ]; then
@@ -434,9 +289,6 @@ jobs:
         echo "- **Intelligence Pillars:** Consciousness, Reasoning, Awareness, Proto-Intelligence" >> $GITHUB_STEP_SUMMARY
         echo "- **Memory Limit:** 7GB RAM" >> $GITHUB_STEP_SUMMARY
         echo "- **Time Limit:** 60 minutes" >> $GITHUB_STEP_SUMMARY
-        echo "- **Analysis Quality:** 🎯 **GROUND TRUTH (Direct Parsing)**" >> $GITHUB_STEP_SUMMARY
-        echo "- **Dependencies:** 🚫 **ZERO EXTERNAL**" >> $GITHUB_STEP_SUMMARY
-        echo "- **Meta-Intelligence:** 🚀 **SELF-ANALYZING**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📥 **Download artifacts to view detailed JSON results with full metrics**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
