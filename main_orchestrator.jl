@@ -15,140 +15,9 @@ include("safe_tester.jl")
 include("light_reflector.jl")
 include("meta_cognitive_engine.jl")
 include("self_awareness_tracker.jl")
-include("semantic_analyzer.jl")
 
 # Global self-model for longitudinal tracking
 const GLOBAL_SELF_MODEL = initialize_self_model()
-
-function execute_meta_cognitive_evolution_cycle()
-    println("\n" * "🔥"^70)
-    println("🔥 META-COGNITIVE EVOLUTION CYCLE INITIATED")
-    println("🔥"^70)
-    
-    # 1. ARCHITECTURAL VISION PHASE
-    println("🔮 PHASE 1: Architectural Vision")
-    enhanced_ast = generate_enhanced_ast()
-    
-    # 2. PERFORMANCE CORRELATION PHASE  
-    println("🔮 PHASE 2: Performance Correlation")
-    performance_metrics = Dict(
-        "test_results" => ["intelligence_emergence_detected"],
-        "success_rate" => 0.85,
-        "entities_tested" => 64
-    )
-    
-    # 3. SEMANTIC ANALYSIS PHASE - NEW
-    println("🔮 PHASE 3: Semantic Analysis")
-    semantic_results = Dict()
-    for module_file in ["safe_tester.jl", "unified_network.jl", "consciousness_core.jl"]
-        if isfile(module_file)
-            semantic_results[module_file] = analyze_module_semantics(module_file)
-        end
-    end
-    
-    # 4. META-COGNITIVE ANALYSIS PHASE
-    println("🔮 PHASE 4: Meta-Cognitive Analysis")
-    diagnosis = perform_enhanced_self_diagnosis(enhanced_ast, performance_metrics, semantic_results)
-    
-    # 5. TEMPORAL EVOLUTION PHASE
-    println("🔮 PHASE 5: Temporal Evolution Tracking")
-    update_self_model!(GLOBAL_SELF_MODEL, enhanced_ast, performance_metrics, diagnosis)
-    evolution_insights = generate_evolution_insights(GLOBAL_SELF_MODEL)
-    
-    # 6. ARCHITECTURAL DECISION PHASE
-    println("🔮 PHASE 6: Architectural Decision Generation")
-    decisions = generate_architectural_decisions(diagnosis, evolution_insights)
-    
-    # Save evolution cycle results
-    evolution_cycle = Dict(
-        "evolution_cycle_timestamp" => now(),
-        "architectural_vision" => enhanced_ast,
-        "semantic_analysis" => semantic_results,
-        "meta_cognitive_diagnosis" => diagnosis, 
-        "temporal_evolution" => evolution_insights,
-        "architectural_decisions" => decisions,
-        "system_state" => "META_COGNITIVE_ACTIVE"
-    )
-    
-    # Save evolution cycle to file
-    try
-        json_data = JSON.json(evolution_cycle, 2)
-        open("evolution_cycle.json", "w") do file
-            write(file, json_data)
-        end
-        println("💾 Evolution cycle saved: evolution_cycle.json")
-    catch e
-        println("⚠️  Failed to save evolution cycle: $e")
-    end
-    
-    return evolution_cycle
-end
-
-function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vector{Dict}
-    decisions = []
-    
-    # Decision 1: Address high complexity in unified_network.jl
-    high_complexity_bottlenecks = filter(b -> occursin("unified_network", get(b, "module", "")), get(diagnosis, "bottlenecks", []))
-    if !isempty(high_complexity_bottlenecks)
-        push!(decisions, Dict(
-            "decision_id" => "ARCH_REFACTOR_001",
-            "type" => "COMPLEXITY_REDUCTION",
-            "target_module" => "unified_network.jl", 
-            "action" => "Decompose orchestration logic into specialized sub-modules",
-            "rationale" => "High control flow density indicates architectural bottleneck",
-            "expected_impact" => "Reduce maintenance complexity by 40%",
-            "priority" => "HIGH",
-            "estimated_effort" => "MEDIUM"
-        ))
-    end
-    
-    # Decision 2: Enhance documentation based on low comment coverage
-    low_doc_bottlenecks = filter(b -> occursin("safe_tester", get(b, "module", "")), get(diagnosis, "bottlenecks", []))
-    if !isempty(low_doc_bottlenecks)
-        push!(decisions, Dict(
-            "decision_id" => "DOC_IMPROVE_001", 
-            "type" => "DOCUMENTATION_ENHANCEMENT",
-            "target_module" => "safe_tester.jl",
-            "action" => "Add comprehensive function documentation and test cases",
-            "rationale" => "Critical test infrastructure has low comment coverage",
-            "expected_impact" => "Improve maintainability and onboarding efficiency",
-            "priority" => "MEDIUM", 
-            "estimated_effort" => "LOW"
-        ))
-    end
-    
-    # Decision 3: Preserve architectural strengths
-    low_coupling_strengths = filter(s -> occursin("LOW_COUPLING", get(s, "assessment", "")), get(diagnosis, "strengths", []))
-    if !isempty(low_coupling_strengths)
-        push!(decisions, Dict(
-            "decision_id" => "ARCH_PRESERVE_001",
-            "type" => "ARCHITECTURAL_PRESERVATION", 
-            "target_module" => "system_architecture",
-            "action" => "Maintain current modular design with zero dependencies",
-            "rationale" => "Low coupling architecture enables emergent intelligence scaling",
-            "expected_impact" => "Preserve system stability and testability",
-            "priority" => "HIGH",
-            "estimated_effort" => "NONE"
-        ))
-    end
-    
-    # Decision 4: Monitor complexity trends
-    momentum = get(evolution, "momentum_analysis", Dict())
-    if get(momentum, "complexity_trend", "") == "INCREASING"
-        push!(decisions, Dict(
-            "decision_id" => "MONITOR_001",
-            "type" => "COMPLEXITY_MONITORING",
-            "target_module" => "all_modules",
-            "action" => "Implement automated complexity tracking with alerts",
-            "rationale" => "Complexity trending upward requires proactive monitoring",
-            "expected_impact" => "Early detection of architectural degradation",
-            "priority" => "MEDIUM",
-            "estimated_effort" => "LOW"
-        ))
-    end
-    
-    return decisions
-end
 
 function main()
     println("🌌 HOLOLIFEX6 PROTOTYPE4 - MODULAR UNIFIED INTELLIGENCE TESTBED")
@@ -194,32 +63,18 @@ function main()
                             "success_rate" => count(r -> get(r, "success", false), sweep_results) / length(sweep_results)
                         )
                         
-                        # NEW: SEMANTIC ANALYSIS
-                        semantic_results = Dict()
-                        try
-                            println("   🔬 Running semantic analysis on core modules...")
-                            for module_file in ["safe_tester.jl", "unified_network.jl", "consciousness_core.jl"]
-                                if isfile(module_file)
-                                    semantic_results[module_file] = analyze_module_semantics(module_file)
-                                    println("      📊 $(module_file): $(semantic_results[module_file]["functions_analyzed"]) functions analyzed")
-                                end
-                            end
-                        catch e
-                            println("   ⚠️  Semantic analysis skipped: $e")
-                        end
-                        
-                        # Perform enhanced meta-cognitive diagnosis
-                        diagnosis = perform_enhanced_self_diagnosis(enhanced_analysis, performance_metrics, semantic_results)
+                        # Perform meta-cognitive diagnosis
+                        diagnosis = perform_self_diagnosis(enhanced_analysis, performance_metrics)
                         meta_save = save_meta_cognitive_analysis(diagnosis, "meta_cognitive_analysis.json")
                         
                         if meta_save
-                            println("   🧠 Enhanced meta-cognitive analysis completed:")
+                            println("   🧠 Meta-cognitive analysis completed:")
                             println("      📊 Self-Reflection Score: $(diagnosis["self_reflection_score"])")
                             println("      ⚠️  Bottlenecks: $(length(diagnosis["bottlenecks"]))")
                             println("      ✅ Strengths: $(length(diagnosis["strengths"]))")
                             println("      💡 Recommendations: $(length(diagnosis["recommendations"]))")
                             
-                            # SELF-AWARENESS TRACKING
+                            # SELF-AWARENESS TRACKING - NEW
                             try
                                 update_self_model!(GLOBAL_SELF_MODEL, enhanced_analysis, performance_metrics, diagnosis)
                                 evolution_insights = generate_evolution_insights(GLOBAL_SELF_MODEL)
@@ -231,17 +86,6 @@ function main()
                                     println("      📈 Complexity trend: $(evolution_insights["momentum_analysis"]["complexity_trend"])")
                                     println("      🔍 Evolution insights: $(length(evolution_insights["evolution_insights"]))")
                                     println("      📁 Output: self_awareness_model.json")
-                                    
-                                    # META-COGNITIVE EVOLUTION CYCLE - NEW
-                                    try
-                                        evolution_cycle = execute_meta_cognitive_evolution_cycle()
-                                        println("   🚀 Meta-cognitive evolution cycle completed:")
-                                        println("      🔥 Architectural decisions: $(length(evolution_cycle["architectural_decisions"]))")
-                                        println("      📊 System state: $(evolution_cycle["system_state"])")
-                                        println("      📁 Output: evolution_cycle.json")
-                                    catch e
-                                        println("   ⚠️  Evolution cycle skipped: $e")
-                                    end
                                 end
                             catch e
                                 println("   ⚠️  Self-awareness tracking skipped: $e")
