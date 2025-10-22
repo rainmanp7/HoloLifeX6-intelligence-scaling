@@ -8,7 +8,21 @@ using JSON
 using Dates
 using Statistics
 
+# Configurable thresholds
+const COMPLEXITY_THRESHOLD = 3.0
+const MIN_COMMENT_COVERAGE = 0.01
+const MAX_CYCLOMATIC = 20
+const CRITICAL_MODULES = ["unified_network.jl", "consciousness_core.jl", "safe_tester.jl"]
+
 function perform_self_diagnosis(architecture_scan::Dict, performance_metrics::Dict)::Dict
+    # Input validation
+    if isempty(architecture_scan)
+        return create_error_diagnosis("Architecture scan cannot be empty")
+    end
+    if isempty(performance_metrics)
+        return create_error_diagnosis("Performance metrics cannot be empty")
+    end
+    
     println("   🔍 Performing meta-cognitive analysis...")
     
     # Cross-reference architecture with performance
@@ -17,7 +31,7 @@ function perform_self_diagnosis(architecture_scan::Dict, performance_metrics::Di
     recommendations = generate_improvement_recommendations(bottlenecks, strengths)
     
     diagnosis = Dict(
-        "timestamp" => now(),
+        "timestamp" => string(now()),
         "bottlenecks" => bottlenecks,
         "strengths" => strengths, 
         "recommendations" => recommendations,
@@ -27,30 +41,41 @@ function perform_self_diagnosis(architecture_scan::Dict, performance_metrics::Di
     return diagnosis
 end
 
+function create_error_diagnosis(message::String)::Dict
+    return Dict(
+        "timestamp" => string(now()),
+        "error" => message,
+        "bottlenecks" => [],
+        "strengths" => [],
+        "recommendations" => [],
+        "self_reflection_score" => 0.0
+    )
+end
+
 function identify_bottlenecks(arch::Dict, perf::Dict)::Vector{Dict}
     bottlenecks = []
     
-    # Analyze unified_network.jl - high complexity (3.5) 
-    if get(arch, "average_complexity", 0.0) > 3.0
+    # Analyze unified_network.jl - high complexity
+    if get(arch, "average_complexity", 0.0) > COMPLEXITY_THRESHOLD
         push!(bottlenecks, Dict(
             "module" => "unified_network.jl",
             "function" => "orchestration_logic",
-            "problem" => "High control flow density (3.5)",
+            "problem" => "High control flow density ($(get(arch, "average_complexity", 0.0)))",
             "impact" => "Potential maintenance complexity in core orchestrator",
             "suggested_fix" => "Consider breaking into smaller, focused functions"
         ))
     end
     
-    # Analyze safe_tester.jl - low comment coverage (0.006)
+    # Analyze safe_tester.jl - low comment coverage
     if haskey(arch, "modules_analyzed") && haskey(arch["modules_analyzed"], "safe_tester.jl")
         tester_metrics = arch["modules_analyzed"]["safe_tester.jl"]
         if haskey(tester_metrics, "complexity_metrics")
             comment_cov = get(tester_metrics["complexity_metrics"], "comment_coverage", 1.0)
-            if comment_cov < 0.01
+            if comment_cov < MIN_COMMENT_COVERAGE
                 push!(bottlenecks, Dict(
                     "module" => "safe_tester.jl", 
                     "function" => "test_infrastructure",
-                    "problem" => "Extremely low comment coverage (0.6%)",
+                    "problem" => "Extremely low comment coverage ($(round(comment_cov * 100, digits=1))%)",
                     "impact" => "Difficult to maintain and extend test infrastructure",
                     "suggested_fix" => "Add comprehensive documentation for test functions"
                 ))
@@ -63,7 +88,7 @@ function identify_bottlenecks(arch::Dict, perf::Dict)::Vector{Dict}
         for (module_name, module_data) in arch["modules_analyzed"]
             if haskey(module_data, "complexity_metrics")
                 cyclomatic = get(module_data["complexity_metrics"], "cyclomatic_indicators", 0)
-                if cyclomatic > 20
+                if cyclomatic > MAX_CYCLOMATIC
                     push!(bottlenecks, Dict(
                         "module" => module_name,
                         "function" => "multiple_functions",
@@ -97,7 +122,7 @@ function identify_strengths(arch::Dict, perf::Dict)::Vector{Dict}
         push!(strengths, Dict(
             "module" => "codebase",
             "aspect" => "Complexity distribution", 
-            "assessment" => "Well-balanced complexity across modules (avg: $avg_complexity)"
+            "assessment" => "Well-balanced complexity across modules (avg: $(round(avg_complexity, digits=2)))"
         ))
     end
     
@@ -119,7 +144,7 @@ function identify_strengths(arch::Dict, perf::Dict)::Vector{Dict}
     # Good function distribution
     total_funcs = get(arch, "total_functions", 0)
     module_count = get(arch, "module_count", 1)
-    avg_funcs_per_module = total_funcs / module_count
+    avg_funcs_per_module = module_count > 0 ? total_funcs / module_count : 0.0
     if 3.0 <= avg_funcs_per_module <= 8.0
         push!(strengths, Dict(
             "module" => "system_architecture", 
@@ -134,15 +159,13 @@ end
 function generate_improvement_recommendations(bottlenecks::Vector{Dict}, strengths::Vector{Dict})::Vector{Dict}
     recommendations = []
     
-    # Prioritize based on bottleneck severity
+    # Prioritize based on bottleneck severity and critical modules
     for bottleneck in bottlenecks
+        module_name = get(bottleneck, "module", "")
         priority = "MEDIUM"
-        if occursin("unified_network", get(bottleneck, "module", ""))
+        
+        if any(critical -> occursin(critical, module_name), CRITICAL_MODULES)
             priority = "HIGH"
-        elseif occursin("safe_tester", get(bottleneck, "module", "")) 
-            priority = "MEDIUM"
-        else
-            priority = "LOW"
         end
         
         push!(recommendations, Dict(
@@ -182,7 +205,7 @@ function calculate_self_reflection_score(bottlenecks::Vector{Dict}, strengths::V
     return round(score, digits=3)
 end
 
-function save_meta_cognitive_analysis(diagnosis::Dict, filename::String="meta_cognitive_analysis.json")
+function save_meta_cognitive_analysis(diagnosis::Dict, filename::String="meta_cognitive_analysis.json")::Bool
     try
         json_data = JSON.json(diagnosis, 2)
         open(filename, "w") do file
@@ -206,7 +229,7 @@ function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vec
             "type" => "COMPLEXITY_REDUCTION",
             "target_module" => "unified_network.jl", 
             "action" => "Decompose orchestration logic into specialized sub-modules",
-            "rationale" => "High control flow density (3.5) indicates architectural bottleneck",
+            "rationale" => "High control flow density indicates architectural bottleneck",
             "expected_impact" => "Reduce maintenance complexity by 40%",
             "priority" => "HIGH",
             "estimated_effort" => "MEDIUM"
@@ -221,7 +244,7 @@ function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vec
             "type" => "DOCUMENTATION_ENHANCEMENT",
             "target_module" => "safe_tester.jl",
             "action" => "Add comprehensive function documentation and test cases",
-            "rationale" => "Critical test infrastructure has only 0.6% comment coverage",
+            "rationale" => "Critical test infrastructure has low comment coverage",
             "expected_impact" => "Improve maintainability and onboarding efficiency",
             "priority" => "MEDIUM", 
             "estimated_effort" => "LOW"
@@ -261,5 +284,6 @@ function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vec
     return decisions
 end
 
-# Export ALL functions
-export perform_self_diagnosis, save_meta_cognitive_analysis, generate_architectural_decisions
+# Export ALL functions and constants
+export perform_self_diagnosis, save_meta_cognitive_analysis, generate_architectural_decisions,
+       COMPLEXITY_THRESHOLD, MIN_COMMENT_COVERAGE, MAX_CYCLOMATIC, CRITICAL_MODULES
