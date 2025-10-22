@@ -58,8 +58,11 @@ function get_real_truth_about_architecture()
     if !isempty(unreliable_modules)
         println("\n⚠️  REGEX LIED ABOUT THESE MODULES:")
         for module in unreliable_modules
-            comparison = filter(c -> c["module"] == module, ast_truth["comparison_with_regex"]["comparisons"])[1]
-            println("   📍 $module: Regex said $(comparison["regex_guess"]), but AST truth is $(comparison["ast_truth"])")
+            comparisons = filter(c -> c["module"] == module, ast_truth["comparison_with_regex"]["comparisons"])
+            if !isempty(comparisons)
+                comparison = first(comparisons)
+                println("   📍 $module: Regex said $(comparison["regex_guess"]), but AST truth is $(comparison["ast_truth"])")
+            end
         end
     end
     
