@@ -2,7 +2,7 @@
 """
 🎯 SEMANTIC ANALYZER (GitHub-Remote Optimized)
 AST-like function-level analysis without external dependencies.
-Fixed to match meta_cognitive_engine.jl patterns for proper metric extraction.
+Fixed to match meta_cognitive_engine.jl data structure expectations.
 """
 
 using JSON
@@ -203,7 +203,7 @@ function group_tokens_by_function(tokens::Vector{PseudoNode})::Vector{Dict}
                     func_tokens = tokens[func_start_index:i]
                     name = "anonymous"
 
-                    if func_tokens[2].kind == :identifier
+                    if length(func_tokens) >= 2 && func_tokens[2].kind == :identifier
                         name = func_tokens[2].value
                     end
 
@@ -227,16 +227,16 @@ end
 
 function analyze_function_from_tokens(func::Dict)::Dict
     tokens = get(func, "tokens", PseudoNode[])
+    func_name = get(func, "name", "unknown")
+    start_line = get(func, "start_line", 0)
+    end_line = get(func, "end_line", 0)
+    
     if isempty(tokens) 
-        return create_empty_function_analysis(
-            get(func, "name", "unknown"),
-            get(func, "start_line", 0),
-            get(func, "end_line", 0)
-        )
+        return create_empty_function_analysis(func_name, start_line, end_line)
     end
 
     # Enhanced metrics using tokens (with proper defaults like meta_cognitive_engine)
-    line_count = get(func, "end_line", 0) - get(func, "start_line", 0) + 1
+    line_count = end_line - start_line + 1
     param_count = count_parameters_from_tokens(tokens)
     complexity = calculate_complexity_from_tokens(tokens)
     nesting = calculate_nesting_from_tokens(tokens)
@@ -244,7 +244,7 @@ function analyze_function_from_tokens(func::Dict)::Dict
     # Semantic analysis
     responsibilities = identify_responsibilities_from_tokens(tokens)
     dependencies = extract_dependencies_from_tokens(tokens)
-    category = categorize_function_from_tokens(get(func, "name", ""), tokens, responsibilities)
+    category = categorize_function_from_tokens(func_name, tokens, responsibilities)
     smells = detect_code_smells_from_metrics(line_count, param_count, nesting, responsibilities)
     
     # Calculate numerical refactoring priority (matching meta_cognitive_engine pattern)
@@ -252,8 +252,8 @@ function analyze_function_from_tokens(func::Dict)::Dict
     priority_level = determine_priority_level(priority_score)
     
     return Dict(
-        "name" => get(func, "name", "unknown"),
-        "location" => "$(get(func, "start_line", 0))-$(get(func, "end_line", 0))",
+        "name" => func_name,
+        "location" => "$(start_line)-$(end_line)",
         "metrics" => Dict(
             "line_count" => line_count,
             "parameter_count" => param_count,
@@ -278,7 +278,7 @@ function create_empty_function_analysis(name::String, start_line::Int, end_line:
         "name" => name,
         "location" => "$start_line-$end_line",
         "metrics" => Dict(
-            "line_count" => end_line - start_line + 1,
+            "line_count" => max(1, end_line - start_line + 1),
             "parameter_count" => 0,
             "nesting_depth" => 0,
             "complexity_score" => 1
@@ -299,11 +299,13 @@ end
 function count_parameters_from_tokens(tokens::Vector{PseudoNode})::Int
     start_paren_idx = findfirst(t -> t.value == "(", tokens)
     if start_paren_idx === nothing return 0 end
+    
     end_paren_idx = findfirst(t -> t.value == ")", tokens[start_paren_idx:end])
     if end_paren_idx === nothing return 0 end
     
     param_tokens = tokens[start_paren_idx : start_paren_idx + end_paren_idx - 1]
-    return count(t -> t.kind == :identifier, param_tokens)
+    # Count identifiers that are not keywords
+    return count(t -> t.kind == :identifier && !(t.value in ["function", "end"]), param_tokens)
 end
 
 function calculate_complexity_from_tokens(tokens::Vector{PseudoNode})::Int
@@ -327,7 +329,7 @@ function calculate_nesting_from_tokens(tokens::Vector{PseudoNode})::Int
                 max_depth = max(max_depth, current_depth)
             end
             if token.value == "end"
-                current_depth -= 1
+                current_depth = max(0, current_depth - 1)
             end
         end
     end
@@ -337,7 +339,7 @@ end
 function extract_dependencies_from_tokens(tokens::Vector{PseudoNode})::Set{String}
     deps = Set{String}()
     for i in 1:(length(tokens)-1)
-        if tokens[i].kind == :identifier && tokens[i+1].value == "("
+        if tokens[i].kind == :identifier && i + 1 <= length(tokens) && tokens[i+1].value == "("
             push!(deps, tokens[i].value)
         end
     end
@@ -352,17 +354,16 @@ function identify_responsibilities_from_tokens(tokens::Vector{PseudoNode})::Set{
     init_keywords = Set(["new", "create", "initialize", "setup"])
     
     for token in tokens
-        if token.kind == :identifier && token.value in io_keywords
-            push!(resp, "io_operations")
-        end
-        if token.kind == :identifier && token.value in val_keywords
-            push!(resp, "validation")
-        end
-        if token.kind == :keyword && token.value in comp_keywords
+        if token.kind == :identifier
+            if token.value in io_keywords
+                push!(resp, "io_operations")
+            elseif token.value in val_keywords
+                push!(resp, "validation")
+            elseif token.value in init_keywords
+                push!(resp, "initialization")
+            end
+        elseif token.kind == :keyword && token.value in comp_keywords
             push!(resp, "computation")
-        end
-        if token.kind == :identifier && token.value in init_keywords
-            push!(resp, "initialization")
         end
     end
     return resp
@@ -413,45 +414,76 @@ function determine_priority_level(score::Float64)::String
 end
 
 # ==============================================================================
-# MODULE-LEVEL ANALYSIS (FIXED TO RETURN PROPER METRICS)
+# MODULE-LEVEL ANALYSIS (FIXED TO MATCH META_COGNITIVE_ENGINE EXPECTATIONS)
 # ==============================================================================
 
 function analyze_module_semantics(module_path::String)::Dict
     println("   🔬 Performing enhanced token-based semantic analysis: $module_path")
+    
     if !isfile(module_path)
         return Dict(
             "error" => "File not found: $module_path",
             "functions_analyzed" => 0,
             "function_details" => [],
-            "module_smells" => String[]
+            "module_smells" => String[],
+            "aggregate_metrics" => Dict(
+                "total_lines" => 0,
+                "average_complexity" => 0.0,
+                "high_priority_functions" => 0
+            )
         )
     end
 
-    source_code = read(module_path, String)
-    tokens = tokenize_code(source_code)
-    function_groups = group_tokens_by_function(tokens)
-    
-    analyzed_functions = [analyze_function_from_tokens(f) for f in function_groups]
-    
-    # Calculate aggregate metrics (matching meta_cognitive_engine pattern)
-    total_lines = sum(get(get(f, "metrics", Dict()), "line_count", 0) for f in analyzed_functions)
-    avg_complexity = length(analyzed_functions) > 0 ? 
-        mean(get(get(f, "metrics", Dict()), "complexity_score", 1) for f in analyzed_functions) : 0.0
-    high_priority_count = count(f -> get(get(f, "issues", Dict()), "refactoring_priority", "LOW") == "HIGH", analyzed_functions)
-    
-    return Dict(
-        "module" => module_path,
-        "functions_analyzed" => length(analyzed_functions),
-        "function_details" => analyzed_functions,
-        "module_smells" => detect_module_smells(analyzed_functions),
-        "aggregate_metrics" => Dict(
-            "total_lines" => total_lines,
-            "average_complexity" => round(avg_complexity, digits=2),
-            "high_priority_functions" => high_priority_count
-        ),
-        "analysis_timestamp" => string(now(UTC)),
-        "analysis_method" => "enhanced_tokenizer"
-    )
+    try
+        source_code = read(module_path, String)
+        tokens = tokenize_code(source_code)
+        function_groups = group_tokens_by_function(tokens)
+        
+        analyzed_functions = [analyze_function_from_tokens(f) for f in function_groups]
+        
+        # Calculate aggregate metrics (matching meta_cognitive_engine pattern)
+        total_lines = sum(get(get(f, "metrics", Dict()), "line_count", 0) for f in analyzed_functions)
+        
+        # Safe average calculation
+        avg_complexity = if length(analyzed_functions) > 0
+            complexities = [get(get(f, "metrics", Dict()), "complexity_score", 1) for f in analyzed_functions]
+            round(mean(complexities), digits=2)
+        else
+            0.0
+        end
+        
+        high_priority_count = count(f -> get(get(f, "issues", Dict()), "refactoring_priority", "LOW") == "HIGH", analyzed_functions)
+        
+        module_smells = detect_module_smells(analyzed_functions)
+        
+        # CRITICAL: Return structure that meta_cognitive_engine expects
+        return Dict(
+            "module" => module_path,
+            "functions_analyzed" => length(analyzed_functions),
+            "function_details" => analyzed_functions,
+            "module_smells" => module_smells,
+            "aggregate_metrics" => Dict(
+                "total_lines" => total_lines,
+                "average_complexity" => avg_complexity,
+                "high_priority_functions" => high_priority_count
+            ),
+            "analysis_timestamp" => string(now(UTC)),
+            "analysis_method" => "enhanced_tokenizer"
+        )
+    catch e
+        println("   ⚠️  Error during analysis: $e")
+        return Dict(
+            "error" => "Analysis failed: $e",
+            "functions_analyzed" => 0,
+            "function_details" => [],
+            "module_smells" => String[],
+            "aggregate_metrics" => Dict(
+                "total_lines" => 0,
+                "average_complexity" => 0.0,
+                "high_priority_functions" => 0
+            )
+        )
+    end
 end
 
 function detect_module_smells(analyses::Vector{Dict})::Vector{String}
@@ -462,21 +494,34 @@ function detect_module_smells(analyses::Vector{Dict})::Vector{String}
     all_names = Set(get(f, "name", "") for f in analyses)
     all_deps = Set{String}()
     for f in analyses
-        deps = get(get(f, "semantic", Dict()), "dependencies", String[])
-        union!(all_deps, deps)
+        semantic = get(f, "semantic", Dict())
+        deps = get(semantic, "dependencies", String[])
+        for dep in deps
+            push!(all_deps, dep)
+        end
     end
     
     dead_code = setdiff(all_names, all_deps)
-    # Exclude entry points
-    filter!(f -> f != "analyze_module_semantics" && !startswith(f, "main"), dead_code)
+    # Exclude entry points and exported functions
+    filter!(f -> f != "analyze_module_semantics" && 
+                 !startswith(f, "main") && 
+                 !isempty(f) &&
+                 f != "anonymous", dead_code)
+    
     if !isempty(dead_code)
-        push!(smells, "Potential Dead Code: $(join(collect(dead_code), ", "))")
+        push!(smells, "Potential Dead Code: $(join(sort(collect(dead_code)), ", "))")
     end
     
     # High complexity concentration
     high_complexity_funcs = filter(f -> get(get(f, "metrics", Dict()), "complexity_score", 0) > 10, analyses)
-    if length(high_complexity_funcs) > length(analyses) / 3
-        push!(smells, "High Complexity Concentration: $(length(high_complexity_funcs)) functions")
+    if length(analyses) > 0 && length(high_complexity_funcs) > length(analyses) / 3
+        push!(smells, "High Complexity Concentration: $(length(high_complexity_funcs))/$(length(analyses)) functions exceed complexity threshold")
+    end
+    
+    # Long methods concentration
+    long_methods = filter(f -> get(get(f, "metrics", Dict()), "line_count", 0) > LONG_METHOD_THRESHOLD, analyses)
+    if !isempty(long_methods)
+        push!(smells, "Long Methods Detected: $(length(long_methods)) functions exceed $(LONG_METHOD_THRESHOLD) lines")
     end
 
     return smells
