@@ -1,6 +1,6 @@
 # meta_cognitive_engine.jl
 """
-ðŸ§  META-COGNITIVE ENGINE
+🧠 META-COGNITIVE ENGINE
 Analyzes architecture-performance correlations and generates improvement insights
 """
 
@@ -23,7 +23,7 @@ function perform_self_diagnosis(architecture_scan::Dict, performance_metrics::Di
         return create_error_diagnosis("Performance metrics cannot be empty")
     end
     
-    println("   ðŸ” Performing meta-cognitive analysis...")
+    println("   🔍 Performing meta-cognitive analysis...")
     
     # Cross-reference architecture with performance
     bottlenecks = identify_bottlenecks(architecture_scan, performance_metrics)
@@ -39,6 +39,141 @@ function perform_self_diagnosis(architecture_scan::Dict, performance_metrics::Di
     )
     
     return diagnosis
+end
+
+function perform_enhanced_self_diagnosis(architecture_scan::Dict, performance_metrics::Dict, semantic_analysis::Dict)::Dict
+    # Input validation
+    if isempty(architecture_scan)
+        return create_error_diagnosis("Architecture scan cannot be empty")
+    end
+    if isempty(performance_metrics)
+        return create_error_diagnosis("Performance metrics cannot be empty")
+    end
+    
+    println("   🔍 Performing enhanced meta-cognitive analysis...")
+    
+    # Cross-reference architecture with performance
+    bottlenecks = identify_bottlenecks(architecture_scan, performance_metrics)
+    strengths = identify_strengths(architecture_scan, performance_metrics)
+    
+    # NEW: Semantic analysis integration
+    semantic_bottlenecks = identify_semantic_bottlenecks(semantic_analysis)
+    semantic_strengths = identify_semantic_strengths(semantic_analysis)
+    
+    # Combine insights
+    all_bottlenecks = vcat(bottlenecks, semantic_bottlenecks)
+    all_strengths = vcat(strengths, semantic_strengths)
+    
+    recommendations = generate_semantic_recommendations(all_bottlenecks, all_strengths, semantic_analysis)
+    
+    return Dict(
+        "timestamp" => string(now()),
+        "bottlenecks" => all_bottlenecks,
+        "strengths" => all_strengths,
+        "recommendations" => recommendations,
+        "self_reflection_score" => calculate_self_reflection_score(all_bottlenecks, all_strengths),
+        "semantic_insights" => extract_semantic_insights(semantic_analysis)
+    )
+end
+
+function identify_semantic_bottlenecks(semantic_analysis::Dict)::Vector{Dict}
+    bottlenecks = []
+    
+    for (module_path, analysis) in semantic_analysis
+        if haskey(analysis, "function_details")
+            for func in analysis["function_details"]
+                if get(func, "issues", Dict())["refactoring_priority"] == "HIGH"
+                    push!(bottlenecks, Dict(
+                        "module" => module_path,
+                        "function" => func["name"],
+                        "problem" => "High refactoring priority from semantic analysis",
+                        "impact" => "Multiple code smells detected: $(join(get(func["issues"], "code_smells", []), ", "))",
+                        "suggested_fix" => "Refactor function to address: $(join(get(func["issues"], "code_smells", []), ", "))"
+                    ))
+                end
+            end
+        end
+    end
+    
+    return bottlenecks
+end
+
+function identify_semantic_strengths(semantic_analysis::Dict)::Vector{Dict}
+    strengths = []
+    
+    for (module_path, analysis) in semantic_analysis
+        if haskey(analysis, "function_details")
+            clean_functions = [func for func in analysis["function_details"] if get(func, "issues", Dict())["refactoring_priority"] == "LOW"]
+            
+            if !isempty(clean_functions)
+                push!(strengths, Dict(
+                    "module" => module_path,
+                    "aspect" => "Clean function design",
+                    "assessment" => "$(length(clean_functions)) functions with low refactoring priority"
+                ))
+            end
+        end
+    end
+    
+    return strengths
+end
+
+function generate_semantic_recommendations(bottlenecks::Vector{Dict}, strengths::Vector{Dict}, semantic_analysis::Dict)::Vector{Dict}
+    recommendations = []
+    
+    # Prioritize based on bottleneck severity and critical modules
+    for bottleneck in bottlenecks
+        module_name = get(bottleneck, "module", "")
+        priority = "MEDIUM"
+        
+        if any(critical -> occursin(critical, module_name), CRITICAL_MODULES)
+            priority = "HIGH"
+        end
+        
+        push!(recommendations, Dict(
+            "priority" => priority,
+            "action" => get(bottleneck, "suggested_fix", "Review code structure"),
+            "expected_impact" => get(bottleneck, "impact", "Improved maintainability"),
+            "estimated_effort" => priority == "HIGH" ? "Medium" : "Low"
+        ))
+    end
+    
+    # Add strategic recommendations based on strengths
+    if any(s -> occursin("LOW_COUPLING", get(s, "assessment", "")), strengths)
+        push!(recommendations, Dict(
+            "priority" => "LOW",
+            "action" => "Maintain current modular architecture",
+            "expected_impact" => "Preserve system stability and testability",
+            "estimated_effort" => "None"
+        ))
+    end
+    
+    return recommendations
+end
+
+function extract_semantic_insights(semantic_analysis::Dict)::Dict
+    insights = Dict(
+        "total_functions_analyzed" => 0,
+        "high_priority_functions" => 0,
+        "module_smells" => []
+    )
+    
+    for (module_path, analysis) in semantic_analysis
+        if haskey(analysis, "functions_analyzed")
+            insights["total_functions_analyzed"] += analysis["functions_analyzed"]
+        end
+        
+        if haskey(analysis, "function_details")
+            high_priority = count(func -> get(func, "issues", Dict())["refactoring_priority"] == "HIGH", analysis["function_details"])
+            insights["high_priority_functions"] += high_priority
+        end
+        
+        if haskey(analysis, "module_smells") && !isempty(analysis["module_smells"])
+            append!(insights["module_smells"], analysis["module_smells"])
+        end
+    end
+    
+    return insights
 end
 
 function create_error_diagnosis(message::String)::Dict
@@ -213,7 +348,7 @@ function save_meta_cognitive_analysis(diagnosis::Dict, filename::String="meta_co
         end
         return true
     catch e
-        println("   âš ï¸  Failed to save meta-cognitive analysis: $e")
+        println("   ⚠️  Failed to save meta-cognitive analysis: $e")
         return false
     end
 end
@@ -285,5 +420,5 @@ function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vec
 end
 
 # Export ALL functions and constants
-export perform_self_diagnosis, save_meta_cognitive_analysis, generate_architectural_decisions,
+export perform_self_diagnosis, perform_enhanced_self_diagnosis, save_meta_cognitive_analysis, generate_architectural_decisions,
        COMPLEXITY_THRESHOLD, MIN_COMMENT_COVERAGE, MAX_CYCLOMATIC, CRITICAL_MODULES
