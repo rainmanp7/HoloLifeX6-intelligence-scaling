@@ -18,6 +18,14 @@ include("neural_code_embeddings.jl")
 include("semantic_code_graph.jl")
 include("metacognitive_advisor.jl")
 
+# Add JSON save function
+function save_json(filename::String, data::Any)
+    using JSON
+    open(filename, "w") do f
+        JSON.print(f, data, 2)
+    end
+end
+
 function main()
     println("🌌 HOLOLIFEX6 PROTOTYPE4 - MODULAR UNIFIED INTELLIGENCE TESTBED")
     println("="^70)
@@ -64,14 +72,15 @@ function main()
             
             println("   💡 Generating architectural insights...")
             latest_results = isempty(sweep_results) ? Dict() : sweep_results[end]
-            insights = generate_architectural_insights(graph, latest_results)
+            insights = generate_architectural_analysis(graph, [latest_results])
             
             # Save metacognition results
             metacognition_file = "metacognition_results.json"
-            save_json(metacognition_file, insights)
+            health_report = export_health_report(insights)
+            save_json(metacognition_file, health_report)
             
             println("✅ METACOGNITION COMPLETE")
-            println("   📊 Insights generated: $(length(get(insights, "insights", [])))")
+            println("   📊 Insights generated: $(length(insights))")
             println("   💾 Saved to: $metacognition_file")
             
         catch e
