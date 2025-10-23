@@ -414,4 +414,4 @@ function simulate_regex_score(filename::String)::Float64
     end
 end
 
-function generate_overall_advice(prescriptions
+function generate_overall_advice(prescriptions::Vector{Dict})::String
