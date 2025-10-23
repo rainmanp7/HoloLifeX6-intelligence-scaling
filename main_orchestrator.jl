@@ -1,10 +1,9 @@
-# enhanced_main_orchestrator.jl
+# main_orchestrator.jl
 """
-🎯 HOLOLIFEX6 ENHANCED ORCHESTRATOR - SAFE VERSION
-OPTIONAL AST Truth Teller integration - preserves all existing functionality
+🎯 HOLOLIFEX6 MAIN ORCHESTRATOR
+Modular architecture for unified intelligence testing with full meta-cognitive capabilities
 """
 
-# Include ALL original files (NO CHANGES to existing code)
 include("consciousness_core.jl")
 include("geometric_reasoning.jl") 
 include("phase_synchronization.jl")
@@ -17,20 +16,11 @@ include("light_reflector.jl")
 include("meta_cognitive_engine.jl")
 include("self_awareness_tracker.jl")
 include("semantic_analyzer.jl")
+include("ast_truth_teller.jl")  # NEW: AST analysis integration
 
-# OPTIONAL: Include AST Truth Teller (safe to skip if file doesn't exist)
-try
-    include("ast_truth_teller.jl")
-    println("✅ AST Truth Teller loaded (optional second opinion)")
-catch e
-    println("⚠️  AST Truth Teller not available: $e")
-    println("   Continuing with original analysis only...")
-end
-
-# Global self-model for longitudinal tracking (EXACTLY AS ORIGINAL)
+# Global self-model for longitudinal tracking
 const GLOBAL_SELF_MODEL = initialize_self_model()
 
-# ORIGINAL FUNCTION: Completely unchanged
 function execute_meta_cognitive_evolution_cycle()
     println("\n" * "🔥"^70)
     println("🔥 META-COGNITIVE EVOLUTION CYCLE INITIATED")
@@ -48,7 +38,7 @@ function execute_meta_cognitive_evolution_cycle()
         "entities_tested" => 64
     )
     
-    # 3. SEMANTIC ANALYSIS PHASE
+    # 3. SEMANTIC ANALYSIS PHASE - NEW
     println("🔮 PHASE 3: Semantic Analysis")
     semantic_results = Dict()
     for module_file in ["safe_tester.jl", "unified_network.jl", "consciousness_core.jl"]
@@ -56,6 +46,10 @@ function execute_meta_cognitive_evolution_cycle()
             semantic_results[module_file] = analyze_module_semantics(module_file)
         end
     end
+    
+    # 3.5 AST TRUTH TELLER PHASE - NEW
+    println("🔮 PHASE 3.5: AST Truth Teller Analysis")
+    ast_analysis = execute_ast_truth_teller_analysis()
     
     # 4. META-COGNITIVE ANALYSIS PHASE
     println("🔮 PHASE 4: Meta-Cognitive Analysis")
@@ -70,18 +64,19 @@ function execute_meta_cognitive_evolution_cycle()
     println("🔮 PHASE 6: Architectural Decision Generation")
     decisions = generate_architectural_decisions(diagnosis, evolution_insights)
     
-    # Save evolution cycle results (ORIGINAL FORMAT)
+    # Save evolution cycle results
     evolution_cycle = Dict(
         "evolution_cycle_timestamp" => now(),
         "architectural_vision" => enhanced_ast,
         "semantic_analysis" => semantic_results,
+        "ast_truth_teller_analysis" => ast_analysis,  # NEW: Include AST analysis
         "meta_cognitive_diagnosis" => diagnosis, 
         "temporal_evolution" => evolution_insights,
         "architectural_decisions" => decisions,
         "system_state" => "META_COGNITIVE_ACTIVE"
     )
     
-    # Save evolution cycle to file (ORIGINAL)
+    # Save evolution cycle to file
     try
         json_data = JSON.json(evolution_cycle, 2)
         open("evolution_cycle.json", "w") do file
@@ -95,7 +90,45 @@ function execute_meta_cognitive_evolution_cycle()
     return evolution_cycle
 end
 
-# ORIGINAL FUNCTION: Completely unchanged
+function execute_ast_truth_teller_analysis()
+    println("\n" * "🔮"^70)
+    println("🔮 AST TRUTH TELLER ANALYSIS - SECOND OPINION")
+    println("🔮"^70)
+    
+    try
+        # Generate AST analysis
+        ast_report = ASTTruthTeller.generate_ast_second_opinion()
+        
+        # Generate health prescriptions
+        prescriptions = ASTTruthTeller.create_health_prescription(ast_report["modules_analyzed"])
+        
+        # Save AST report
+        ast_output = Dict(
+            "ast_analysis" => ast_report,
+            "health_prescriptions" => prescriptions,
+            "analysis_timestamp" => now()
+        )
+        
+        json_data = JSON.json(ast_output, 2)
+        open("ast_truth_teller_report.json", "w") do file
+            write(file, json_data)
+        end
+        
+        println("✅ AST Truth Teller analysis completed:")
+        println("   📊 Modules analyzed: $(ast_report["summary"]["total_modules"])")
+        println("   ⚠️  Total issues: $(ast_report["summary"]["total_issues"])")
+        println("   🏥 Overall health: $(ast_report["summary"]["overall_assessment"])")
+        println("   💊 Prescriptions: $(prescriptions["total_prescriptions"])")
+        println("   📁 Output: ast_truth_teller_report.json")
+        
+        return ast_output
+        
+    catch e
+        println("❌ AST Truth Teller analysis failed: $e")
+        return Dict("error" => string(e))
+    end
+end
+
 function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vector{Dict}
     decisions = []
     
@@ -162,56 +195,6 @@ function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vec
     return decisions
 end
 
-# NEW OPTIONAL FUNCTION: Only runs if AST Truth Teller is available
-function get_ast_second_opinion()
-    try
-        println("\n" * "🌟"^60)
-        println("🌟 OPTIONAL: AST TRUTH TELLER SECOND OPINION")
-        println("🌟"^60)
-        
-        # Get second opinion from AST parser
-        ast_truth = generate_ast_second_opinion()
-        
-        # Get actual prescriptions based on real code structure
-        prescriptions = create_health_prescription(ast_truth["modules_analyzed"])
-        
-        # Save the truth as SEPARATE file (doesn't interfere with original)
-        truth_report = Dict(
-            "ast_truth" => ast_truth,
-            "health_prescriptions" => prescriptions,
-            "timestamp" => now(),
-            "analysis_note" => "OPTIONAL second opinion - original analysis remains unchanged"
-        )
-        
-        json_data = JSON.json(truth_report, 2)
-        open("ast_truth_report.json", "w") do file
-            write(file, json_data)
-        end
-        
-        println("✅ AST Truth Report saved: ast_truth_report.json")
-        println("📊 Overall Health: $(ast_truth["summary"]["overall_assessment"])")
-        println("🔍 Regex Reliability: $(round(ast_truth["comparison_with_regex"]["overall_regex_reliability"] * 100, digits=1))%")
-        println("💊 Prescriptions: $(prescriptions["total_prescriptions"]) total, $(prescriptions["high_priority_fixes"]) high-priority")
-        
-        # Print critical differences
-        unreliable_modules = ast_truth["comparison_with_regex"]["unreliable_regex_modules"]
-        if !isempty(unreliable_modules)
-            println("\n⚠️  REGEX MAY BE INACCURATE FOR:")
-            for module in unreliable_modules
-                comparison = filter(c -> c["module"] == module, ast_truth["comparison_with_regex"]["comparisons"])[1]
-                println("   📍 $module: Regex said $(comparison["regex_guess"]), but AST truth is $(comparison["ast_truth"])")
-            end
-        end
-        
-        return (ast_truth, prescriptions)
-    catch e
-        println("⚠️  AST Truth Teller unavailable: $e")
-        println("   Continuing with original analysis only...")
-        return (Dict(), Dict())
-    end
-end
-
-# ORIGINAL MAIN FUNCTION: Completely unchanged until the very end where we optionally add AST
 function main()
     println("🌌 HOLOLIFEX6 PROTOTYPE4 - MODULAR UNIFIED INTELLIGENCE TESTBED")
     println("="^70)
@@ -232,14 +215,14 @@ function main()
         results_file = save_results(tester)
         print_summary(tester)
         
-        # 🪞 FULL META-COGNITIVE SELF-REFLECTION STACK (ORIGINAL)
+        # 🪞 FULL META-COGNITIVE SELF-REFLECTION STACK
         if !isempty(sweep_results) && length(sweep_results) >= 1
             println("\n" * "="^70)
             println("🪞 FULL META-COGNITIVE SELF-REFLECTION")
             println("="^70)
             
             try
-                # Enhanced architectural scan (ORIGINAL)
+                # Enhanced architectural scan
                 enhanced_ast = generate_enhanced_ast()
                 enhanced_analysis = analyze_architecture_health_v2(enhanced_ast)
                 save_success = save_enhanced_blueprint(enhanced_analysis, "architecture_scan.json")
@@ -247,7 +230,7 @@ function main()
                 if save_success
                     println("✅ Architectural scan completed")
                     
-                    # META-COGNITIVE ANALYSIS (ORIGINAL)
+                    # META-COGNITIVE ANALYSIS
                     try
                         # Use test results as performance metrics
                         performance_metrics = Dict(
@@ -256,7 +239,7 @@ function main()
                             "success_rate" => count(r -> get(r, "success", false), sweep_results) / length(sweep_results)
                         )
                         
-                        # SEMANTIC ANALYSIS (ORIGINAL)
+                        # NEW: SEMANTIC ANALYSIS
                         semantic_results = Dict()
                         try
                             println("   🔬 Running semantic analysis on core modules...")
@@ -270,7 +253,16 @@ function main()
                             println("   ⚠️  Semantic analysis skipped: $e")
                         end
                         
-                        # Perform enhanced meta-cognitive diagnosis (ORIGINAL)
+                        # NEW: AST TRUTH TELLER ANALYSIS
+                        ast_analysis = nothing
+                        try
+                            println("   🔮 Running AST Truth Teller analysis...")
+                            ast_analysis = execute_ast_truth_teller_analysis()
+                        catch e
+                            println("   ⚠️  AST analysis skipped: $e")
+                        end
+                        
+                        # Perform enhanced meta-cognitive diagnosis
                         diagnosis = perform_enhanced_self_diagnosis(enhanced_analysis, performance_metrics, semantic_results)
                         meta_save = save_meta_cognitive_analysis(diagnosis, "meta_cognitive_analysis.json")
                         
@@ -281,7 +273,7 @@ function main()
                             println("      ✅ Strengths: $(length(diagnosis["strengths"]))")
                             println("      💡 Recommendations: $(length(diagnosis["recommendations"]))")
                             
-                            # SELF-AWARENESS TRACKING (ORIGINAL)
+                            # SELF-AWARENESS TRACKING
                             try
                                 update_self_model!(GLOBAL_SELF_MODEL, enhanced_analysis, performance_metrics, diagnosis)
                                 evolution_insights = generate_evolution_insights(GLOBAL_SELF_MODEL)
@@ -294,24 +286,13 @@ function main()
                                     println("      🔍 Evolution insights: $(length(evolution_insights["evolution_insights"]))")
                                     println("      📁 Output: self_awareness_model.json")
                                     
-                                    # META-COGNITIVE EVOLUTION CYCLE (ORIGINAL)
+                                    # META-COGNITIVE EVOLUTION CYCLE - NEW
                                     try
                                         evolution_cycle = execute_meta_cognitive_evolution_cycle()
                                         println("   🚀 Meta-cognitive evolution cycle completed:")
                                         println("      🔥 Architectural decisions: $(length(evolution_cycle["architectural_decisions"]))")
                                         println("      📊 System state: $(evolution_cycle["system_state"])")
                                         println("      📁 Output: evolution_cycle.json")
-                                        
-                                        # OPTIONAL: AST SECOND OPINION (NEW - SAFE ADDITION)
-                                        try
-                                            ast_truth, prescriptions = get_ast_second_opinion()
-                                            if !isempty(ast_truth)
-                                                println("   🔮 AST Second Opinion Available: ast_truth_report.json")
-                                            end
-                                        catch e
-                                            println("   💡 AST Second Opinion skipped: $e")
-                                        end
-                                        
                                     catch e
                                         println("   ⚠️  Evolution cycle skipped: $e")
                                     end
