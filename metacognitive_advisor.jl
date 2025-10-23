@@ -1,10 +1,11 @@
+# metacognitive_advisor.jl
 """
 🎯 METACOGNITIVE ADVISOR
 The system's internal architect - identifies improvements without breaking execution
 """
-module MetacognitiveAdvisor
 
-using .NeuralCodeEmbeddings, .SemanticCodeGraph
+# Remove module wrapper to avoid import issues
+# module MetacognitiveAdvisor
 
 struct ArchitecturalInsight
     priority::Symbol  # :critical, :high, :medium  
@@ -15,8 +16,49 @@ struct ArchitecturalInsight
     expected_impact::String
 end
 
+function has_high_complexity(entity::Any)::Bool
+    # Simplified complexity check
+    return length(get(entity.embeddings, 1, [])) > 10
+end
+
+function has_strong_semantic_similarity(entity1::Any, entity2::Any)::Bool
+    # Simplified similarity check
+    return true  # Placeholder
+end
+
+function priority_weight(priority::Symbol)::Int
+    weights = Dict(:critical => 3, :high => 2, :medium => 1, :low => 0)
+    return get(weights, priority, 0)
+end
+
+function calculate_health_score(insights::Vector{ArchitecturalInsight})::Float64
+    # Simplified health score calculation
+    critical_count = count(i -> i.priority == :critical, insights)
+    return max(0.0, 1.0 - critical_count * 0.2)
+end
+
+function identify_strengths(insights::Vector{ArchitecturalInsight})::Vector{String}
+    # Simplified strength identification
+    return ["System shows good architectural cohesion", "Consciousness core well-structured"]
+end
+
+function generate_evolution_plan(insights::Vector{ArchitecturalInsight})::Vector{Dict}
+    # Simplified evolution plan
+    plan = []
+    for insight in insights
+        if insight.priority == :high
+            push!(plan, Dict(
+                "action" => insight.suggested_action,
+                "priority" => string(insight.priority),
+                "module" => insight.module_affected
+            ))
+        end
+    end
+    return plan
+end
+
 function generate_architectural_analysis(
-    graph::Dict{String, CodeEntity}, 
+    graph::Dict{String, Any}, 
     recent_performance::Vector{Dict}
 )::Vector{ArchitecturalInsight}
     
@@ -35,7 +77,7 @@ function generate_architectural_analysis(
         end
         
         # Pattern 2: Identify integration opportunities
-        if has_strong_semantic_similarity(entity, graph["consciousness_core.jl"])
+        if has_strong_semantic_similarity(entity, get(graph, "consciousness_core.jl", nothing))
             push!(insights, ArchitecturalInsight(
                 :medium, name,
                 "High semantic alignment with consciousness core",
@@ -53,9 +95,13 @@ function export_health_report(insights::Vector{ArchitecturalInsight})::Dict
     return Dict(
         "timestamp" => now(),
         "system_health_score" => calculate_health_score(insights),
-        "critical_insights" => filter(i -> i.priority == :critical, insights),
-        "optimization_opportunities" => filter(i -> i.priority in [:high, :medium], insights),
+        "critical_insights" => [i for i in insights if i.priority == :critical],
+        "optimization_opportunities" => [i for i in insights if i.priority in [:high, :medium]],
         "architectural_strengths" => identify_strengths(insights),
         "evolution_recommendations" => generate_evolution_plan(insights)
     )
 end
+
+# Remove exports and end module
+# export generate_architectural_analysis, export_health_report, ArchitecturalInsight
+# end  # end module
