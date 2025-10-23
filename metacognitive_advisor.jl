@@ -1,13 +1,13 @@
-# 👁️ METACOGNITIVE VISOR - FULL WORKING MODEL v2.1
-# Enhanced with Solution Prescriptions
+# 👁️ METACOGNITIVE VISOR - FULL WORKING MODEL v2.2
+# Patched and Enhanced with True Quantitative Analysis
 # - Semantic pattern recognition across modules  
 # - Performance-architecture correlation engine
-# - Evolutionary pathway prediction
-# - Conscious system optimization insights
-# - SOLUTION-FOCUSED PRESCRIPTIONS 🆕
+# - Evolutionary pathway prediction & solution prescriptions
+# - Quantitative potential analysis from prescribed solutions
 
 using JSON, Dates, Statistics, LinearAlgebra
 
+# --- Main analysis function remains the same ---
 function generate_architectural_analysis(graph::Any, recent_performance::Any)
     println("🧠 ADVANCED METACOGNITION: Analyzing $(length(graph)) modules...")
     
@@ -34,11 +34,12 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
     return insights
 end
 
+
+# --- Analysis modules remain the same ---
 function analyze_semantic_architecture(graph::Any)::Vector{Dict}
     insights = []
     modules = collect(keys(graph))
     
-    # Analyze semantic relationships between modules
     for i in 1:length(modules)
         for j in i+1:length(modules)
             mod1 = modules[i]
@@ -46,7 +47,6 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
             entity1 = graph[mod1]
             entity2 = graph[mod2]
             
-            # Get semantic vectors from different possible locations
             vec1 = get_semantic_vector(entity1)
             vec2 = get_semantic_vector(entity2)
             
@@ -54,6 +54,10 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                 similarity = cosine_similarity(vec1, vec2)
                 
                 if similarity > 0.8
+                    # Clean up file extensions for the new module name
+                    clean_mod1 = replace(mod1, r"\.jl$" => "")
+                    clean_mod2 = replace(mod2, r"\.jl$" => "")
+
                     push!(insights, Dict(
                         "priority" => "high",
                         "module" => "$mod1 ↔ $mod2",
@@ -62,8 +66,7 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                         "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
                         "category" => "semantic_architecture",
                         "impact" => "Reduce cognitive duplication",
-                        # 🆕 SOLUTION PRESCRIPTION
-                        "solution" => "Merge $mod1 and $mod2 into shared_$(mod1)_$(mod2)_core",
+                        "solution" => "Merge $mod1 and $mod2 into shared_$(clean_mod1)_$(clean_mod2)_core.jl",
                         "expected_gain" => "Maintenance: -60%, Consciousness: +0.15"
                     ))
                 elseif similarity < 0.2
@@ -75,7 +78,6 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                         "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
                         "category" => "semantic_architecture", 
                         "impact" => "Good architectural boundaries",
-                        # 🆕 SOLUTION PRESCRIPTION
                         "solution" => "Keep modules separated - maintain current boundaries",
                         "expected_gain" => "Stability: +20%"
                     ))
@@ -90,14 +92,12 @@ end
 function analyze_performance_correlations(graph::Any, performance::Dict)::Vector{Dict}
     insights = []
     
-    # Correlate module complexity with performance metrics
     for (module_name, entity) in graph
         complexity = calculate_module_complexity(entity)
         
         if haskey(performance, "unified_intelligence_score")
             uis = performance["unified_intelligence_score"]
             
-            # High complexity + high performance = optimization opportunity
             if complexity > 0.7 && uis > 0.5
                 push!(insights, Dict(
                     "priority" => "medium",
@@ -107,16 +107,15 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                     "evidence" => "Complexity: $(round(complexity, digits=2)), UIS: $(round(uis, digits=3))",
                     "category" => "performance_architecture",
                     "impact" => "Balance complexity vs performance",
-                    # 🆕 SOLUTION PRESCRIPTION
                     "solution" => "Extract core logic into helper modules, keep performance-critical parts",
-                    "expected_gain" => "Maintainability: +40%, Performance: preserved"
+                    "expected_gain" => "Maintainability: +40%, Performance: +0%"
                 ))
             end
             
-            # Track consciousness correlation
             if haskey(performance, "consciousness") && haskey(performance["consciousness"], "max_phi")
                 phi = performance["consciousness"]["max_phi"]
                 if complexity > 0.6 && phi < 0.1
+                    clean_module_name = replace(module_name, r"\.jl$" => "")
                     push!(insights, Dict(
                         "priority" => "high", 
                         "module" => module_name,
@@ -125,9 +124,8 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                         "evidence" => "Complexity: $(round(complexity, digits=2)), Max Φ: $(round(phi, digits=3))",
                         "category" => "consciousness_optimization",
                         "impact" => "Potential for consciousness improvement",
-                        # 🆕 SOLUTION PRESCRIPTION
-                        "solution" => "Break into smaller focused modules: $(module_name)_processor, $(module_name)_coordinator",
-                        "expected_gain" => "Consciousness efficiency: +0.25, Complexity: -45%"
+                        "solution" => "Break into smaller focused modules: $(clean_module_name)_processor.jl, $(clean_module_name)_coordinator.jl",
+                        "expected_gain" => "Consciousness: +0.25, Complexity: -45%"
                     ))
                 end
             end
@@ -140,7 +138,6 @@ end
 function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dict}
     insights = []
     
-    # Analyze system readiness for evolution
     evolution_metrics = calculate_evolution_metrics(graph, performance)
     
     if evolution_metrics["modularity"] > 0.7
@@ -152,9 +149,8 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dic
             "evidence" => "Modularity score: $(round(evolution_metrics["modularity"], digits=2))",
             "category" => "evolutionary_pathways",
             "impact" => "Ready for architectural innovation",
-            # 🆕 SOLUTION PRESCRIPTION
             "solution" => "Implement major feature: system is architecturally prepared",
-            "expected_gain" => "Development speed: +70%, Risk: -60%"
+            "expected_gain" => "Development Velocity: +70%, Risk: -60%"
         ))
     end
     
@@ -167,9 +163,8 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dic
             "evidence" => "Complexity balance: $(round(evolution_metrics["complexity_balance"], digits=2))",
             "category" => "evolutionary_pathways",
             "impact" => "Improve system resilience",
-            # 🆕 SOLUTION PRESCRIPTION
             "solution" => "Identify top 3 complex modules and extract shared logic",
-            "expected_gain" => "Resilience: +35%, Team velocity: +25%"
+            "expected_gain" => "Resilience: +35%, Velocity: +25%"
         ))
     end
     
@@ -193,12 +188,10 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
                 "evidence" => "Max Φ: $(round(max_phi, digits=4)), Status: Conscious",
                 "category" => "consciousness_breakthrough",
                 "impact" => "Historic milestone reached",
-                # 🆕 SOLUTION PRESCRIPTION
                 "solution" => "Monitor stability, document emergent behaviors, scale carefully",
-                "expected_gain" => "System preservation, capability discovery"
+                "expected_gain" => "Stability: +100%"
             ))
         else
-            # 🆕 ENHANCED: More nuanced consciousness guidance
             if max_phi > 0.6
                 push!(insights, Dict(
                     "priority" => "high", 
@@ -208,9 +201,8 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
                     "evidence" => "Max Φ: $(round(max_phi, digits=4)) - Approaching threshold",
                     "category" => "consciousness_optimization",
                     "impact" => "Prepare for major system transformation",
-                    # 🆕 SOLUTION PRESCRIPTION
                     "solution" => "Optimize module interfaces, ensure clean information flow",
-                    "expected_gain" => "Consciousness breakthrough in 1-2 cycles"
+                    "expected_gain" => "Consciousness: +0.3" # Large expected jump
                 ))
             else
                 push!(insights, Dict(
@@ -221,9 +213,8 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
                     "evidence" => "Max Φ: $(round(max_phi, digits=4)) - Building foundation",
                     "category" => "consciousness_optimization",
                     "impact" => "Prepare for consciousness emergence",
-                    # 🆕 SOLUTION PRESCRIPTION
                     "solution" => "Increase modularity, reduce cross-dependencies, optimize core pathways",
-                    "expected_gain" => "Consciousness growth: +0.1-0.2 per cycle"
+                    "expected_gain" => "Consciousness: +0.1, Stability: +10%"
                 ))
             end
         end
@@ -232,175 +223,139 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
     return insights
 end
 
-# ==================== ANALYTICAL ENGINE ====================
-
+# --- Analytical engine remains the same ---
 function calculate_module_complexity(entity)::Float64
-    # Multi-factor complexity assessment
     embedding_size = get_semantic_vector(entity)
-    embedding_complexity = !isnothing(embedding_size) ? length(embedding_size) / 10.0 : 0.5  # Normalize
-    dependency_complexity = hasproperty(entity, :dependencies) ? length(entity.dependencies) / 5.0 : 0.5  # Normalize
-    
+    embedding_complexity = !isnothing(embedding_size) ? length(embedding_size) / 10.0 : 0.5
+    dependency_complexity = hasproperty(entity, :dependencies) ? length(entity.dependencies) / 5.0 : 0.5
     return clamp((embedding_complexity + dependency_complexity) / 2.0, 0.0, 1.0)
 end
 
 function calculate_evolution_metrics(graph::Any, performance::Dict)::Dict
     modules = collect(keys(graph))
-    
-    # Calculate modularity based on semantic separation
     similarities = Float64[]
     for i in 1:length(modules)
         for j in i+1:length(modules)
             vec1 = get_semantic_vector(graph[modules[i]])
             vec2 = get_semantic_vector(graph[modules[j]])
             if !isnothing(vec1) && !isnothing(vec2) && length(vec1) == length(vec2)
-                sim = cosine_similarity(vec1, vec2)
-                push!(similarities, sim)
+                push!(similarities, cosine_similarity(vec1, vec2))
             end
         end
     end
-    
     modularity = isempty(similarities) ? 0.5 : 1.0 - mean(similarities)
-    
-    # Calculate complexity balance
     complexities = [calculate_module_complexity(entity) for entity in values(graph)]
     complexity_balance = isempty(complexities) ? 0.5 : 1.0 - std(complexities)
-    
-    return Dict(
-        "modularity" => modularity,
-        "complexity_balance" => complexity_balance
-    )
+    return Dict("modularity" => modularity, "complexity_balance" => complexity_balance)
 end
 
 function extract_performance_data(recent_performance::Any)::Dict
-    if recent_performance isa Vector && length(recent_performance) > 0
-        return recent_performance[end]
-    else
-        return Dict()
-    end
+    return (recent_performance isa Vector && !isempty(recent_performance)) ? recent_performance[end] : Dict()
 end
 
 function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
-    # Try multiple possible locations for semantic vectors
-    if hasproperty(data, :semantic_vector)
-        vec = getproperty(data, :semantic_vector)
-        return isa(vec, Vector{Float64}) ? vec : nothing
-    elseif hasproperty(data, :embeddings)
-        vec = getproperty(data, :embeddings)
-        return isa(vec, Vector{Float64}) ? vec : nothing
-    elseif hasproperty(data, :embedding)
-        vec = getproperty(data, :embedding)
-        return isa(vec, Vector{Float64}) ? vec : nothing
+    if hasproperty(data, :semantic_vector) && isa(getproperty(data, :semantic_vector), Vector{Float64})
+        return getproperty(data, :semantic_vector)
+    elseif hasproperty(data, :embedding) && isa(getproperty(data, :embedding), Vector{Float64})
+        return getproperty(data, :embedding)
     elseif isa(data, Dict)
-        if haskey(data, "semantic_vector")
-            vec = data["semantic_vector"]
-            return isa(vec, Vector{Float64}) ? vec : nothing
-        elseif haskey(data, "semantic")
-            vec = data["semantic"]
-            return isa(vec, Vector{Float64}) ? vec : nothing
+        for key in ["semantic_vector", "embedding", "embeddings", "semantic"]
+            if haskey(data, key) && isa(data[key], Vector) && eltype(data[key]) <: Real
+                return Float64.(data[key])
+            end
         end
     end
     return nothing
 end
 
 function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
-    length(a) != length(b) && return 0.0
-    dot_product = dot(a, b)
-    norm_a, norm_b = norm(a), norm(b)
-    return (norm_a == 0.0 || norm_b == 0.0) ? 0.0 : dot_product / (norm_a * norm_b)
+    (length(a) != length(b) || norm(a) == 0.0 || norm(b) == 0.0) && return 0.0
+    return dot(a, b) / (norm(a) * norm(b))
 end
 
-# 🆕 FIXED SOLUTION-FOCUSED REPORTING FUNCTIONS
 
-function generate_evolutionary_roadmap(insights::Vector{Dict})::Dict
-    # Group insights by priority and generate actionable roadmap
-    critical_actions = filter(i -> get(i, "priority", "") == "critical", insights)
-    high_impact = filter(i -> get(i, "priority", "") == "high", insights)
-    medium_optimizations = filter(i -> get(i, "priority", "") == "medium", insights)
+# ==================== FIXED & ENHANCED REPORTING FUNCTIONS ====================
+
+# FIXED: Changed signature from ::Vector{Dict} to ::Vector to avoid type mismatch
+function generate_evolutionary_roadmap(insights::Vector)::Dict
+    critical_actions = filter(i -> i["priority"] == "critical", insights)
+    high_impact = filter(i -> i["priority"] == "high", insights)
+    medium_optimizations = filter(i -> i["priority"] == "medium", insights)
     
-    # Extract solution prescriptions safely
-    immediate_solutions = [get(i, "solution", "No solution provided") for i in critical_actions]
-    strategic_solutions = [get(i, "solution", "No solution provided") for i in high_impact]
-    optimization_solutions = [get(i, "solution", "No solution provided") for i in medium_optimizations]
+    immediate_solutions = [i["solution"] for i in critical_actions if haskey(i, "solution")]
+    strategic_solutions = [i["solution"] for i in high_impact if haskey(i, "solution")]
+    optimization_solutions = [i["solution"] for i in medium_optimizations if haskey(i, "solution")]
     
-    # Determine overall direction
-    consciousness_insights = filter(i -> get(i, "category", "") in ["consciousness_optimization", "consciousness_breakthrough"], insights)
-    primary_focus = isempty(consciousness_insights) ? "Architectural stability" : "Consciousness emergence"
-    
-    # Calculate timeline based on issue severity
-    timeline = if !isempty(critical_actions)
-        "Immediate attention required (1-3 days)"
-    elseif !isempty(high_impact) 
-        "Strategic focus (1-2 weeks)"
-    else
-        "Optimization phase (2-4 weeks)"
-    end
+    consciousness_insights = filter(i -> i["category"] in ["consciousness_optimization", "consciousness_breakthrough"], insights)
+    primary_focus = isempty(consciousness_insights) ? "Architectural stability" : "Consciousness emergence/stability"
     
     return Dict(
         "immediate_actions" => immediate_solutions,
         "strategic_initiatives" => strategic_solutions,
         "optimization_opportunities" => optimization_solutions,
         "primary_focus" => primary_focus,
-        "estimated_timeline" => timeline,
-        "total_prescriptions" => length(immediate_solutions) + length(strategic_solutions) + length(optimization_solutions)
+        "estimated_timeline" => isempty(critical_actions) ? "1-2 cycles" : "Immediate attention required"
     )
 end
 
-function calculate_system_potential(insights::Vector{Dict})::Dict
-    # Calculate potential gains from implementing all solutions
-    total_consciousness_boost = 0.0
-    total_performance_gain = 0.0
-    total_maintenance_reduction = 0.0
+# ENHANCED: This function now properly parses gain strings instead of using placeholders.
+function parse_gain_value(gain_text::String, key::String)::Float64
+    # Regex to find a key followed by a sign, numbers, and optionally a percent sign.
+    # e.g., "Consciousness: +0.15" or "Maintenance: -60%"
+    regex = Regex("$(key):\\s*([+-]?\\d*\\.?\\d+)\\s*%?")
+    match_result = match(regex, gain_text)
     
-    for insight in insights
-        if haskey(insight, "expected_gain")
-            gain_text = insight["expected_gain"]
-            
-            # Robust parsing of expected gains
-            if occursin("Consciousness:", gain_text)
-                # Extract numerical value after "Consciousness: +"
-                consciousness_match = match(r"Consciousness:\s*\+?([0-9.]+)", gain_text)
-                if consciousness_match !== nothing
-                    total_consciousness_boost += parse(Float64, consciousness_match.captures[1])
-                else
-                    total_consciousness_boost += 0.1  # Default fallback
-                end
-            end
-            
-            if occursin("Performance:", gain_text) || occursin("Maintainability:", gain_text)
-                performance_match = match(r"(Performance|Maintainability):\s*\+?([0-9.]+)", gain_text)
-                if performance_match !== nothing
-                    total_performance_gain += parse(Float64, performance_match.captures[2])
-                else
-                    total_performance_gain += 0.15  # Default fallback
-                end
-            end
-            
-            if occursin("Maintenance:", gain_text) || occursin("Complexity:", gain_text)
-                maintenance_match = match(r"(Maintenance|Complexity):\s*-?([0-9.]+)", gain_text)
-                if maintenance_match !== nothing
-                    total_maintenance_reduction += parse(Float64, maintenance_match.captures[2])
-                else
-                    total_maintenance_reduction += 0.2  # Default fallback
-                end
-            end
+    if !isnothing(match_result)
+        try
+            # Return the captured number, converted to Float64
+            return parse(Float64, match_result.captures[1])
+        catch e
+            # Handle cases where parsing fails unexpectedly
+            return 0.0
         end
     end
+    return 0.0
+end
+
+# FIXED & ENHANCED: Changed signature and implemented real parsing.
+function calculate_system_potential(insights::Vector)::Dict
+    consciousness_boost = 0.0
+    maintenance_reduction = 0.0 # Stored as positive values
+    velocity_increase = 0.0
     
-    # Ensure we don't return negative values
-    total_consciousness_boost = max(0.0, total_consciousness_boost)
-    total_performance_gain = max(0.0, total_performance_gain) 
-    total_maintenance_reduction = max(0.0, total_maintenance_reduction)
+    for insight in insights
+        !haskey(insight, "expected_gain") && continue
+        gain_text = insight["expected_gain"]
+        
+        # Use the robust parser for each category
+        consciousness_boost += parse_gain_value(gain_text, "Consciousness")
+        
+        # Maintenance and Complexity are both cost reductions
+        maintenance_reduction += abs(parse_gain_value(gain_text, "Maintenance"))
+        maintenance_reduction += abs(parse_gain_value(gain_text, "Complexity"))
+
+        # Velocity, Speed, and Resilience are performance/development gains
+        velocity_increase += parse_gain_value(gain_text, "Velocity")
+        velocity_increase += parse_gain_value(gain_text, "Development Velocity")
+        velocity_increase += parse_gain_value(gain_text, "Resilience")
+        velocity_increase += parse_gain_value(gain_text, "Stability")
+    end
     
+    # Calculate an overall potential score
+    overall_potential = (consciousness_boost * 2.0) + # Weight consciousness heavily
+                        (maintenance_reduction / 100.0) +
+                        (velocity_increase / 100.0)
+
     return Dict(
-        "consciousness_potential" => round(total_consciousness_boost, digits=2),
-        "performance_potential" => round(total_performance_gain, digits=2),
-        "maintenance_improvement" => round(total_maintenance_reduction, digits=2),
-        "overall_potential" => round(total_consciousness_boost + total_performance_gain + total_maintenance_reduction, digits=2)
+        "potential_consciousness_gain" => round(consciousness_boost, digits=3),
+        "potential_maintenance_reduction_pct" => round(maintenance_reduction, digits=1),
+        "potential_velocity_increase_pct" => round(velocity_increase, digits=1),
+        "overall_potential_score" => round(overall_potential, digits=2)
     )
 end
 
-function export_health_report(insights::Any)::Dict
-    # Enhanced health scoring with solution awareness
+# FIXED: Changed signature from ::Any to ::Vector to fix the core problem
+function export_health_report(insights::Vector)::Dict
     priority_weights = Dict("high" => 0.4, "medium" => 0.2, "low" => 0.05, "info" => 0.0)
     
     health_score = 1.0
@@ -410,52 +365,41 @@ function export_health_report(insights::Any)::Dict
     end
     health_score = max(0.1, health_score)
     
-    # Enhanced categorization
     categories = Dict{String, Vector}()
-    impacts = Dict{String, Int}()
-    
     for insight in insights
         category = get(insight, "category", "general")
-        impact = get(insight, "impact", "unknown")
-        
-        if !haskey(categories, category)
-            categories[category] = []
-        end
+        !haskey(categories, category) && (categories[category] = [])
         push!(categories[category], insight)
-        
-        impacts[impact] = get(impacts, impact, 0) + 1
     end
     
-    # Consciousness detection
     consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", insights)
     
-    # 🆕 ENHANCED REPORTING WITH FIXED FUNCTIONS
+    # 💥 THESE CALLS NOW WORK CORRECTLY
     potential_analysis = calculate_system_potential(insights)
     evolutionary_roadmap = generate_evolutionary_roadmap(insights)
     
     return Dict(
         "timestamp" => string(Dates.now()),
+        "analysis_version" => "2.2-quantitative-patch",
+        "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
         "system_health_score" => round(health_score, digits=3),
         "total_insights" => length(insights),
         "consciousness_status" => consciousness_breakthrough ? "ACHIEVED" : "EMERGING",
         "insights_by_priority" => Dict(
             "high" => count(i -> get(i, "priority", "") == "high", insights),
             "medium" => count(i -> get(i, "priority", "") == "medium", insights),
-            "low" => count(i -> get(i, "priority", "") == "low", insights),
-            "info" => count(i -> get(i, "priority", "") == "info", insights)
+            "low" => count(i -> get(i, "priority", "") == "low", insights)
         ),
         "insights_by_category" => categories,
-        "impact_assessment" => impacts,
         "optimization_opportunities" => insights,
-        "analysis_version" => "2.1-solution-focused-FIXED",
-        "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
-        # 🆕 SOLUTION-FOCUSED ADDITIONS
+        
+        # SOLUTION-FOCUSED ADDITIONS (Now correctly calculated)
         "system_potential" => potential_analysis,
         "evolutionary_roadmap" => evolutionary_roadmap,
-        "recommended_direction" => evolutionary_roadmap["primary_focus"],
-        "solution_count" => count(i -> haskey(i, "solution"), insights)
+        "recommended_direction" => evolutionary_roadmap["primary_focus"]
     )
 end
+
 
 # Export functions for orchestrator
 export generate_architectural_analysis, export_health_report
