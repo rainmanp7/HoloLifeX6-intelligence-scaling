@@ -34,7 +34,7 @@ function semantic_hash(code::String)::Vector{Float64}
 end
 
 function count_contains(code::String, patterns::Vector{String})::Float64
-    count = 0
+    count = 0.0
     for pattern in patterns
         count += occursin(pattern, code)
     end
