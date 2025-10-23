@@ -239,16 +239,19 @@ function main()
             println("="^70)
             
             try
-                # Enhanced architectural scan (original)
+                # Enhanced architectural scan (original) - ALWAYS GENERATE
+                println("   📊 Generating regex-based architectural analysis...")
                 enhanced_ast = generate_enhanced_ast()
                 enhanced_analysis = analyze_architecture_health_v2(enhanced_ast)
-                save_success = save_enhanced_blueprint(enhanced_analysis, "architecture_scan.json")
+                save_success = save_enhanced_blueprint(enhanced_analysis, "regex_architecture_scan.json")
                 
                 if save_success
-                    println("✅ Architectural scan completed")
-                    
-                    # GET AST TRUTH - NEW
-                    ast_truth, prescriptions = get_real_truth_about_architecture()
+                    println("✅ Regex architectural scan saved: regex_architecture_scan.json")
+                end
+                
+                # GET AST TRUTH - ALWAYS GENERATE
+                println("   🔬 Generating AST-based architectural truth...")
+                ast_truth, prescriptions = get_real_truth_about_architecture()
                     
                     # META-COGNITIVE ANALYSIS
                     try
@@ -334,9 +337,12 @@ function main()
         println("\n" * "="^70)
         println("✨ ENHANCED MODULAR TESTING COMPLETE")
         println("="^70)
-        println("📁 Results saved to: $results_file")
-        println("🔮 AST Truth Report: ast_truth_report.json")
+        println("📁 Test Results: $results_file")
+        println("📊 Regex Architecture: regex_architecture_scan.json")
+        println("🔬 AST Truth Report: ast_truth_report.json")
         println("💾 Enhanced Evolution: enhanced_evolution_cycle.json")
+        println("🧠 Meta-Cognitive Analysis: enhanced_meta_cognitive_analysis.json")
+        println("📈 Self-Awareness Model: enhanced_self_awareness_model.json")
         println("⏱️  Total time: $(round(time() - tester.start_time, digits=1))s")
         
     catch e
