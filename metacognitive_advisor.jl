@@ -179,7 +179,7 @@ end
 function generate_vision_report(vision::ArchitecturalVision, filename::String="architectural_vision.json")
     """
     Generates the ultimate architectural insight report
-    The kind of document that would cost $250k from a top consulting firm
+    The kind of document that would cost \$250k from a top consulting firm
     """
     report_data = Dict(
         "timestamp" => string(vision.timestamp),
