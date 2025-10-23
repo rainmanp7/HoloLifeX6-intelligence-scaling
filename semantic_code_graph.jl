@@ -4,12 +4,6 @@
 Cross-module relationship mapping - understands architectural patterns
 """
 
-# Remove module wrapper - we're including files sequentially
-# module SemanticCodeGraph
-
-# No using statement needed - files are included in order
-# using .NeuralCodeEmbeddings
-
 mutable struct CodeEntity
     name::String
     entity_type::Symbol  # :function, :module, :data_flow
@@ -67,7 +61,3 @@ function correlate_performance!(graph::Dict, metrics::Dict)
         end
     end
 end
-
-# Remove exports and end module
-# export build_semantic_graph, correlate_performance!, CodeEntity
-# end  # end module
