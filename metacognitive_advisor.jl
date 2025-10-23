@@ -1,14 +1,11 @@
-# metacognitive_advisor.jl
-"""
-🎯 ADVANCED METACOGNITION ENGINE  
-Phase 2: Deep Architectural Intelligence
-- Semantic pattern recognition across modules
-- Performance-architecture correlation engine
-- Evolutionary pathway prediction
-- Conscious system optimization insights
-"""
+# 👁️ METACOGNITIVE VISOR - FULL WORKING MODEL
+# Advanced architectural intelligence system
+# - Semantic pattern recognition across modules  
+# - Performance-architecture correlation engine
+# - Evolutionary pathway prediction
+# - Conscious system optimization insights
 
-using LinearAlgebra
+using JSON, Dates, Statistics, LinearAlgebra
 
 function generate_architectural_analysis(graph::Any, recent_performance::Any)
     println("🧠 ADVANCED METACOGNITION: Analyzing $(length(graph)) modules...")
@@ -48,28 +45,34 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
             entity1 = graph[mod1]
             entity2 = graph[mod2]
             
-            similarity = cosine_similarity(entity1.embeddings, entity2.embeddings)
+            # Get semantic vectors from different possible locations
+            vec1 = get_semantic_vector(entity1)
+            vec2 = get_semantic_vector(entity2)
             
-            if similarity > 0.8
-                push!(insights, Dict(
-                    "priority" => "high",
-                    "module" => "$mod1 ↔ $mod2",
-                    "issue" => "High semantic similarity detected",
-                    "action" => "Consider integration or interface abstraction",
-                    "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
-                    "category" => "semantic_architecture",
-                    "impact" => "Reduce cognitive duplication"
-                ))
-            elseif similarity < 0.2
-                push!(insights, Dict(
-                    "priority" => "info",
-                    "module" => "$mod1 ↔ $mod2",
-                    "issue" => "Low semantic coupling",
-                    "action" => "Maintain clear separation of concerns",
-                    "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
-                    "category" => "semantic_architecture", 
-                    "impact" => "Good architectural boundaries"
-                ))
+            if !isnothing(vec1) && !isnothing(vec2) && length(vec1) == length(vec2)
+                similarity = cosine_similarity(vec1, vec2)
+                
+                if similarity > 0.8
+                    push!(insights, Dict(
+                        "priority" => "high",
+                        "module" => "$mod1 ↔ $mod2",
+                        "issue" => "High semantic similarity detected",
+                        "action" => "Consider integration or interface abstraction",
+                        "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
+                        "category" => "semantic_architecture",
+                        "impact" => "Reduce cognitive duplication"
+                    ))
+                elseif similarity < 0.2
+                    push!(insights, Dict(
+                        "priority" => "info",
+                        "module" => "$mod1 ↔ $mod2",
+                        "issue" => "Low semantic coupling",
+                        "action" => "Maintain clear separation of concerns",
+                        "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
+                        "category" => "semantic_architecture", 
+                        "impact" => "Good architectural boundaries"
+                    ))
+                end
             end
         end
     end
@@ -192,8 +195,9 @@ end
 
 function calculate_module_complexity(entity)::Float64
     # Multi-factor complexity assessment
-    embedding_complexity = length(entity.embeddings) / 10.0  # Normalize
-    dependency_complexity = length(entity.dependencies) / 5.0  # Normalize
+    embedding_size = get_semantic_vector(entity)
+    embedding_complexity = !isnothing(embedding_size) ? length(embedding_size) / 10.0 : 0.5  # Normalize
+    dependency_complexity = hasproperty(entity, :dependencies) ? length(entity.dependencies) / 5.0 : 0.5  # Normalize
     
     return clamp((embedding_complexity + dependency_complexity) / 2.0, 0.0, 1.0)
 end
@@ -205,8 +209,12 @@ function calculate_evolution_metrics(graph::Any, performance::Dict)::Dict
     similarities = Float64[]
     for i in 1:length(modules)
         for j in i+1:length(modules)
-            sim = cosine_similarity(graph[modules[i]].embeddings, graph[modules[j]].embeddings)
-            push!(similarities, sim)
+            vec1 = get_semantic_vector(graph[modules[i]])
+            vec2 = get_semantic_vector(graph[modules[j]])
+            if !isnothing(vec1) && !isnothing(vec2) && length(vec1) == length(vec2)
+                sim = cosine_similarity(vec1, vec2)
+                push!(similarities, sim)
+            end
         end
     end
     
@@ -228,6 +236,29 @@ function extract_performance_data(recent_performance::Any)::Dict
     else
         return Dict()
     end
+end
+
+function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
+    # Try multiple possible locations for semantic vectors
+    if hasproperty(data, :semantic_vector)
+        vec = getproperty(data, :semantic_vector)
+        return isa(vec, Vector{Float64}) ? vec : nothing
+    elseif hasproperty(data, :embeddings)
+        vec = getproperty(data, :embeddings)
+        return isa(vec, Vector{Float64}) ? vec : nothing
+    elseif hasproperty(data, :embedding)
+        vec = getproperty(data, :embedding)
+        return isa(vec, Vector{Float64}) ? vec : nothing
+    elseif isa(data, Dict)
+        if haskey(data, "semantic_vector")
+            vec = data["semantic_vector"]
+            return isa(vec, Vector{Float64}) ? vec : nothing
+        elseif haskey(data, "semantic")
+            vec = data["semantic"]
+            return isa(vec, Vector{Float64}) ? vec : nothing
+        end
+    end
+    return nothing
 end
 
 function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
@@ -286,4 +317,5 @@ function export_health_report(insights::Any)::Dict
     )
 end
 
+# Export functions for orchestrator
 export generate_architectural_analysis, export_health_report
