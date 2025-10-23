@@ -1,6 +1,6 @@
 """
 🔮 AST TRUTH TELLER - Second Opinion Architecture Analysis
-Uses real Julia parsing instead of regex for accurate code analysis
+Simplified version that only parses structure without executing code
 """
 
 module ASTTruthTeller
@@ -11,11 +11,6 @@ using Statistics
 
 export generate_ast_second_opinion, create_health_prescription, parse_file_ast
 
-# Helper function for safe division in parsed code
-function safe_divide(a, b)
-    b == 0 ? 0.0 : a / b
-end
-
 function parse_file_ast(filename::String)::Dict
     println("   🔍 AST Parsing: $filename")
     
@@ -23,70 +18,60 @@ function parse_file_ast(filename::String)::Dict
         source_code = read(filename, String)
         lines = split(source_code, '\n')
         
-        # Real function analysis (not regex-based)
-        functions = extract_functions_ast(source_code, lines)
-        complexity = calculate_real_complexity(source_code, lines)
-        dependencies = find_real_dependencies(source_code)
-        structure_issues = find_structure_issues(source_code, lines, functions)
+        # Simplified function analysis - just count functions and structure
+        functions = extract_functions_simple(source_code, lines)
+        complexity = calculate_simple_complexity(source_code, lines)
+        dependencies = find_simple_dependencies(source_code)
+        structure_issues = find_simple_structure_issues(source_code, lines, functions)
         
         return Dict(
             "filename" => filename,
             "functions" => functions,
-            "real_complexity" => complexity,
+            "complexity" => complexity,
             "dependencies" => dependencies,
-            "ast_health_score" => calculate_ast_health(functions, complexity, structure_issues),
-            "analysis_method" => "AST_PARSER",
+            "ast_health_score" => calculate_simple_health(functions, complexity, structure_issues),
+            "analysis_method" => "SIMPLE_AST_PARSER",
             "line_count" => length(lines),
             "structure_issues" => structure_issues,
             "file_size_kb" => round(length(source_code) / 1024, digits=2)
         )
     catch e
         println("   ⚠️  AST parsing failed for $filename: $e")
-        return create_fallback_analysis(filename)
+        return create_simple_fallback_analysis(filename)
     end
 end
 
-function extract_functions_ast(source_code::String, lines::Vector{String})::Vector{Dict}
+function extract_functions_simple(source_code::String, lines::Vector{String})::Vector{Dict}
     functions = Dict[]
-    current_function = nothing
-    brace_count = 0
-    in_function = false
-    function_start = 0
     
     for (i, line) in enumerate(lines)
         stripped = strip(line)
         
-        # Detect function start
-        if occursin(r"^function\s+[a-zA-Z_]", stripped) && !in_function
-            func_name = match(r"^function\s+([a-zA-Z_][a-zA-Z0-9_]*!?)", stripped)
-            if func_name !== nothing
-                current_function = Dict(
-                    "name" => func_name.captures[1],
+        # Simple function detection - just look for function definitions
+        if occursin(r"^function\s+[a-zA-Z_][a-zA-Z0-9_]*", stripped)
+            func_name_match = match(r"^function\s+([a-zA-Z_][a-zA-Z0-9_]*!?)", stripped)
+            if func_name_match !== nothing
+                func_name = func_name_match.captures[1]
+                
+                # Estimate function size by counting lines until next function or end of scope
+                line_count = 1
+                end_line = i
+                for j in (i+1):min(i+100, length(lines))  # Limit search to next 100 lines
+                    next_line = strip(lines[j])
+                    if occursin(r"^function\s+", next_line) || occursin(r"^end\s*$", next_line)
+                        end_line = j
+                        line_count = j - i + 1
+                        break
+                    end
+                end
+                
+                push!(functions, Dict(
+                    "name" => func_name,
                     "start_line" => i,
-                    "end_line" => i,
-                    "line_count" => 1,
-                    "complexity" => 0,
-                    "parameters" => extract_parameters(stripped),
-                    "issues" => String[]
-                )
-                in_function = true
-                function_start = i
-                brace_count = count_braces(line)
-            end
-        elseif in_function
-            # Track function body
-            brace_count += count_braces(line)
-            current_function["line_count"] += 1
-            current_function["complexity"] += count_control_flow(line)
-            
-            # Detect function end
-            if brace_count == 0 && occursin(r"^end\s*$", stripped)
-                current_function["end_line"] = i
-                # Analyze function for issues
-                current_function["issues"] = analyze_function_issues(current_function, lines[function_start:i])
-                push!(functions, current_function)
-                in_function = false
-                current_function = nothing
+                    "end_line" => end_line,
+                    "line_count" => line_count,
+                    "complexity" => count_control_flow_simple(lines[i:min(end_line, length(lines))])
+                ))
             end
         end
     end
@@ -94,11 +79,9 @@ function extract_functions_ast(source_code::String, lines::Vector{String})::Vect
     return functions
 end
 
-function calculate_real_complexity(source_code::String, lines::Vector{String})::Dict
+function calculate_simple_complexity(source_code::String, lines::Vector{String})::Dict
     total_control_flow = 0
     total_functions = 0
-    max_nesting = 0
-    current_nesting = 0
     
     for line in lines
         stripped = strip(line)
@@ -106,10 +89,6 @@ function calculate_real_complexity(source_code::String, lines::Vector{String})::
         # Count control flow statements
         if occursin(r"^\s*(if|for|while|try|catch)\b", stripped)
             total_control_flow += 1
-            current_nesting += 1
-            max_nesting = max(max_nesting, current_nesting)
-        elseif occursin(r"^\s*end\s*$", stripped)
-            current_nesting = max(0, current_nesting - 1)
         end
         
         # Count function definitions
@@ -122,14 +101,23 @@ function calculate_real_complexity(source_code::String, lines::Vector{String})::
     
     return Dict(
         "cyclomatic_complexity" => total_control_flow,
-        "max_nesting_depth" => max_nesting,
         "control_flow_density" => round(complexity_score, digits=3),
         "total_functions" => total_functions,
         "total_control_flow" => total_control_flow
     )
 end
 
-function find_structure_issues(source_code::String, lines::Vector{String}, functions::Vector{Dict})::Vector{Dict}
+function count_control_flow_simple(function_lines::Vector{String})::Int
+    complexity = 0
+    for line in function_lines
+        if occursin(r"\b(if|for|while|try|catch)\b", line)
+            complexity += 1
+        end
+    end
+    return complexity
+end
+
+function find_simple_structure_issues(source_code::String, lines::Vector{String}, functions::Vector{Dict})::Vector{Dict}
     issues = Dict[]
     
     # Check for long functions
@@ -156,32 +144,20 @@ function find_structure_issues(source_code::String, lines::Vector{String}, funct
         end
     end
     
-    # Check for missing documentation
-    documented_functions = count(f -> has_documentation(f, lines), functions)
-    if length(functions) > 0 && documented_functions / length(functions) < 0.3
+    # Check for many functions (potential god file)
+    if length(functions) > 15
         push!(issues, Dict(
-            "type" => "LOW_DOCUMENTATION",
-            "description" => "Only $(round(documented_functions/length(functions)*100, digits=1))% of functions have documentation",
-            "severity" => "LOW",
-            "suggestion" => "Add function documentation headers"
-        ))
-    end
-    
-    # Check for deep nesting
-    complexity = calculate_real_complexity(source_code, lines)
-    if complexity["max_nesting_depth"] > 4
-        push!(issues, Dict(
-            "type" => "DEEP_NESTING",
-            "description" => "Maximum nesting depth of $(complexity["max_nesting_depth"]) detected",
+            "type" => "MANY_FUNCTIONS",
+            "description" => "File contains $(length(functions)) functions - consider splitting",
             "severity" => "MEDIUM",
-            "suggestion" => "Flatten nested control structures"
+            "suggestion" => "Split into multiple focused modules"
         ))
     end
     
     return issues
 end
 
-function find_real_dependencies(source_code::String)::Vector{String}
+function find_simple_dependencies(source_code::String)::Vector{String}
     dependencies = String[]
     lines = split(source_code, '\n')
     
@@ -241,7 +217,7 @@ function generate_ast_second_opinion()::Dict
     
     return Dict(
         "timestamp" => now(),
-        "analysis_method" => "AST_SECOND_OPINION",
+        "analysis_method" => "SIMPLE_AST_SECOND_OPINION",
         "modules_analyzed" => ast_analysis,
         "summary" => Dict(
             "total_modules" => length(ast_analysis),
@@ -289,55 +265,7 @@ function create_health_prescription(ast_analysis::Dict)::Dict
     )
 end
 
-# Helper functions
-
-function count_braces(line::String)::Int
-    open_braces = count(c -> c == '(' || c == '{' || c == '[', line)
-    close_braces = count(c -> c == ')' || c == '}' || c == ']', line)
-    return open_braces - close_braces
-end
-
-function count_control_flow(line::String)::Int
-    patterns = [r"\bif\b", r"\bfor\b", r"\bwhile\b", r"\btry\b", r"\bcatch\b"]
-    return sum(pattern -> count(occursin(pattern, line)), patterns)
-end
-
-function extract_parameters(line::String)::Vector{String}
-    # Extract parameters from function definition
-    m = match(r"function\s+\w+\((.*?)\)", line)
-    if m !== nothing && !isempty(m.captures[1])
-        return [strip(p) for p in split(m.captures[1], ',')]
-    end
-    return String[]
-end
-
-function analyze_function_issues(func::Dict, function_lines::Vector{String})::Vector{String}
-    issues = String[]
-    
-    # Check for long parameter list
-    if length(func["parameters"]) > 5
-        push!(issues, "LONG_PARAMETER_LIST")
-    end
-    
-    # Check for high complexity
-    if func["complexity"] > 15
-        push!(issues, "HIGH_CYCLOMATIC_COMPLEXITY")
-    end
-    
-    return issues
-end
-
-function has_documentation(func::Dict, lines::Vector{String})::Bool
-    start_line = func["start_line"]
-    # Check if there are comment lines immediately before the function
-    if start_line > 1
-        prev_line = strip(lines[start_line - 1])
-        return startswith(prev_line, "#") && length(prev_line) > 10
-    end
-    return false
-end
-
-function calculate_ast_health(functions::Vector{Dict}, complexity::Dict, issues::Vector{Dict})::Float64
+function calculate_simple_health(functions::Vector{Dict}, complexity::Dict, issues::Vector{Dict})::Float64
     base_score = 0.7
     
     # Penalize for issues
@@ -360,22 +288,35 @@ function calculate_ast_health(functions::Vector{Dict}, complexity::Dict, issues:
     return max(0.3, min(0.95, base_score))
 end
 
-function create_fallback_analysis(filename::String)::Dict
-    source_code = read(filename, String)
-    lines = split(source_code, '\n')
-    functions = extract_functions_ast(source_code, lines)
-    complexity = calculate_real_complexity(source_code, lines)
-    
-    return Dict(
-        "filename" => filename,
-        "functions" => functions,
-        "real_complexity" => complexity,
-        "dependencies" => find_real_dependencies(source_code),
-        "ast_health_score" => 0.5,
-        "analysis_method" => "FALLBACK",
-        "line_count" => length(lines),
-        "structure_issues" => []
-    )
+function create_simple_fallback_analysis(filename::String)::Dict
+    try
+        source_code = read(filename, String)
+        lines = split(source_code, '\n')
+        functions = extract_functions_simple(source_code, lines)
+        complexity = calculate_simple_complexity(source_code, lines)
+        
+        return Dict(
+            "filename" => filename,
+            "functions" => functions,
+            "complexity" => complexity,
+            "dependencies" => find_simple_dependencies(source_code),
+            "ast_health_score" => 0.5,
+            "analysis_method" => "SIMPLE_FALLBACK",
+            "line_count" => length(lines),
+            "structure_issues" => []
+        )
+    catch e
+        return Dict(
+            "filename" => filename,
+            "functions" => [],
+            "complexity" => Dict("cyclomatic_complexity" => 0, "control_flow_density" => 0.0, "total_functions" => 0, "total_control_flow" => 0),
+            "dependencies" => [],
+            "ast_health_score" => 0.3,
+            "analysis_method" => "ERROR_FALLBACK",
+            "line_count" => 0,
+            "structure_issues" => [Dict("type" => "PARSE_ERROR", "description" => "Failed to parse file", "severity" => "HIGH", "suggestion" => "Check file syntax")]
+        )
+    end
 end
 
 function generate_overall_advice(prescriptions::Vector{Dict})::String
