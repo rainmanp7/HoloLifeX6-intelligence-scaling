@@ -11,6 +11,11 @@ using Statistics
 
 export generate_ast_second_opinion, create_health_prescription, parse_file_ast
 
+# Helper function for safe division in parsed code
+function safe_divide(a, b)
+    b == 0 ? 0.0 : a / b
+end
+
 function parse_file_ast(filename::String)::Dict
     println("   🔍 AST Parsing: $filename")
     
@@ -244,8 +249,7 @@ function generate_ast_second_opinion()::Dict
             "average_health" => round(avg_health, digits=3),
             "overall_assessment" => assess_overall_health(avg_health, total_issues),
             "truth_teller_confidence" => "HIGH"
-        ),
-        "comparison_with_regex" => compare_with_regex_analysis(ast_analysis)
+        )
     )
 end
 
@@ -372,46 +376,6 @@ function create_fallback_analysis(filename::String)::Dict
         "line_count" => length(lines),
         "structure_issues" => []
     )
-end
-
-function compare_with_regex_analysis(ast_analysis::Dict)::Dict
-    comparisons = Dict[]
-    
-    for (filename, ast_data) in ast_analysis
-        # Simulate what regex analyzer would say
-        regex_score = simulate_regex_score(filename)
-        ast_score = get(ast_data, "ast_health_score", 0.5)
-        
-        discrepancy = abs(regex_score - ast_score)
-        
-        push!(comparisons, Dict(
-            "module" => filename,
-            "ast_truth" => ast_score,
-            "regex_guess" => regex_score,
-            "discrepancy" => round(discrepancy, digits=3),
-            "reliable" => discrepancy < 0.2
-        ))
-    end
-    
-    reliable_count = count(c -> c["reliable"], comparisons)
-    total_count = length(comparisons)
-    
-    return Dict(
-        "comparisons" => comparisons,
-        "unreliable_regex_modules" => [c["module"] for c in comparisons if !c["reliable"]],
-        "overall_regex_reliability" => total_count > 0 ? reliable_count / total_count : 0.0
-    )
-end
-
-function simulate_regex_score(filename::String)::Float64
-    # Simulate what the regex-based analyzer would incorrectly report
-    if occursin("safe_tester", filename)
-        return 0.3  # Regex hates safe_tester.jl
-    elseif occursin("unified_network", filename)
-        return 0.4  # Regex thinks unified_network is problematic
-    else
-        return 0.7  # Regex is somewhat OK with other files
-    end
 end
 
 function generate_overall_advice(prescriptions::Vector{Dict})::String
