@@ -55,7 +55,7 @@ function generate_evolution_plan(insights::Vector{ArchitecturalInsight})::Vector
 end
 
 function generate_architectural_analysis(
-    graph::Dict{String, Any}, 
+    graph::Dict,  # Accept any Dict type - FIXED
     recent_performance::Vector{Dict}
 )::Vector{ArchitecturalInsight}
     
@@ -99,7 +99,7 @@ end
 
 function export_health_report(insights::Vector{ArchitecturalInsight})::Dict
     return Dict(
-        "timestamp" => "2024-01-15T10:30:00Z",  # Fixed: using string instead of now() for simplicity
+        "timestamp" => "2024-01-15T10:30:00Z",
         "system_health_score" => calculate_health_score(insights),
         "critical_insights" => [i for i in insights if i.priority == :critical],
         "optimization_opportunities" => [i for i in insights if i.priority in [:high, :medium]],
