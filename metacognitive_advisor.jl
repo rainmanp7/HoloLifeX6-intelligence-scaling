@@ -14,8 +14,8 @@ struct ArchitecturalInsight
 end
 
 function has_high_complexity(entity::Any)::Bool
-    # Simplified complexity check
-    return length(get(entity.embeddings, 1, [])) > 10
+    # Fixed: entity.embeddings is already a Vector{Float64}, not a dict
+    return length(entity.embeddings) > 3  # Simple threshold based on vector length
 end
 
 function has_strong_semantic_similarity(entity1::Any, entity2::Any)::Bool
@@ -61,9 +61,15 @@ function generate_architectural_analysis(
     
     insights = ArchitecturalInsight[]
     
+    println("   DEBUG: Analyzing $(length(graph)) modules in graph")
+    
     # Pattern 1: Identify performance bottlenecks
     for (name, entity) in graph
+        # Debug: Check what we're working with
+        println("   DEBUG: Analyzing $name - embeddings length: $(length(entity.embeddings))")
+        
         if has_high_complexity(entity)
+            println("   DEBUG: $name has high complexity")
             push!(insights, ArchitecturalInsight(
                 :high, name, 
                 "High structural complexity detected",
@@ -74,7 +80,9 @@ function generate_architectural_analysis(
         end
         
         # Pattern 2: Identify integration opportunities
-        if has_strong_semantic_similarity(entity, get(graph, "consciousness_core.jl", nothing))
+        target_entity = get(graph, "consciousness_core.jl", nothing)
+        if target_entity !== nothing && has_strong_semantic_similarity(entity, target_entity)
+            println("   DEBUG: $name has semantic similarity with consciousness core")
             push!(insights, ArchitecturalInsight(
                 :medium, name,
                 "High semantic alignment with consciousness core",
@@ -85,6 +93,7 @@ function generate_architectural_analysis(
         end
     end
     
+    println("   DEBUG: Generated $(length(insights)) total insights")
     return sort(insights, by=x->priority_weight(x.priority))
 end
 
