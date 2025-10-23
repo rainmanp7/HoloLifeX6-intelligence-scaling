@@ -4,14 +4,7 @@
 # - Identifies brilliance patterns and innovation opportunities
 # - Zero runtime impact, pure analytical insight generation
 
-# Note: The original file had docstrings indented, which is incorrect in Julia.
-# Docstrings must start at column 1 to be parsed correctly.
-
-module MetacognitiveVisor
-
 using JSON, Dates, Statistics, LinearAlgebra
-
-export ArchitecturalVision, generate_architectural_analysis, generate_vision_report
 
 struct ArchitecturalVision
     timestamp::DateTime
@@ -22,16 +15,12 @@ struct ArchitecturalVision
     innovation_opportunities::Vector{Dict{String, Any}}
 end
 
-"""
-    generate_architectural_analysis(embeddings::Dict{String, Any}; relationships::Dict=...)
-
-Generates a comprehensive vision of the system's architectural future.
-The kind of insight that would take an architect team 6 months to produce.
-"""
 function generate_architectural_analysis(
-    embeddings::Dict{String, Any}; # Use keyword for optional arg
+    embeddings::Dict{String, Any};
     relationships::Dict = Dict{Tuple{String, String}, Dict{String, Float64}}()
 )::ArchitecturalVision
+    
+    println("   👁️  Generating architectural vision...")
     
     health_report = assess_system_health(embeddings, relationships)
     breakthroughs = predict_architectural_breakthroughs(embeddings, relationships)
@@ -49,12 +38,6 @@ function generate_architectural_analysis(
     )
 end
 
-"""
-    assess_system_health(...)
-
-Comprehensive health assessment that goes far beyond technical debt.
-Measures conceptual integrity, evolution readiness, and innovation potential.
-"""
 function assess_system_health(
     embeddings::Dict{String, Any},
     relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
@@ -111,12 +94,6 @@ function assess_system_health(
     )
 end
 
-"""
-    predict_architectural_breakthroughs(...)
-
-Predicts where the next architectural breakthroughs will occur
-based on conceptual tensions, semantic patterns, and cognitive load distribution.
-"""
 function predict_architectural_breakthroughs(
     embeddings::Dict{String, Any},
     relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
@@ -147,12 +124,6 @@ function predict_architectural_breakthroughs(
     return breakthroughs
 end
 
-"""
-    detect_innovation_opportunities(...)
-
-Finds hidden innovation opportunities that conventional analysis would miss.
-The kind of insights that create competitive advantages.
-"""
 function detect_innovation_opportunities(
     embeddings::Dict{String, Any},
     relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
@@ -182,12 +153,6 @@ function detect_innovation_opportunities(
     return opportunities
 end
 
-"""
-    generate_vision_report(vision::ArchitecturalVision, filename::String)
-
-Generates the ultimate architectural insight report.
-The kind of document that would cost \$250k from a top consulting firm.
-"""
 function generate_vision_report(vision::ArchitecturalVision, filename::String="architectural_vision.json")
     report_data = Dict(
         "timestamp" => string(vision.timestamp),
@@ -208,14 +173,6 @@ function generate_vision_report(vision::ArchitecturalVision, filename::String="a
     println("   This report contains insights that would take expert architects months to discover.")
 end
 
-# ========================================
-# CORE ANALYSIS FUNCTIONS (Internal)
-# ========================================
-
-"""
-Measures how well the architecture matches natural conceptual boundaries.
-High integrity = easy to understand, maintain, and evolve.
-"""
 function calculate_conceptual_integrity(embeddings::Dict{String, Any})::Float64
     modules = collect(keys(embeddings))
     length(modules) < 2 && return 0.7
@@ -242,10 +199,6 @@ function calculate_conceptual_integrity(embeddings::Dict{String, Any})::Float64
     return clamp(1.0 - avg_similarity, 0.0, 1.0)
 end
 
-"""
-Measures how ready the architecture is for major evolution based on
-modularity, abstraction quality, and conceptual clarity.
-"""
 function calculate_evolution_readiness(
     embeddings::Dict{String, Any},
     relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
@@ -253,7 +206,6 @@ function calculate_evolution_readiness(
     
     readiness_factors = Float64[]
     
-    # FIX: Renamed `module` to `mod_name`
     for (mod_name, data) in embeddings
         fingerprint = get(data, "cognitive_fingerprint", nothing)
         if !isnothing(fingerprint) && isa(fingerprint, Dict)
@@ -273,12 +225,10 @@ function calculate_evolution_readiness(
     return isempty(readiness_factors) ? 0.6 : clamp(mean(readiness_factors), 0.0, 1.0)
 end
 
-"Measures the potential for breakthrough innovations."
 function calculate_innovation_potential(embeddings::Dict{String, Any})::Float64
     isempty(embeddings) && return 0.5
     
     potentials = Float64[]
-    # FIX: Renamed `module` to `mod_name`
     for (mod_name, data) in embeddings
         vec = get_semantic_vector(data)
         if !isnothing(vec) && length(vec) >= 2
@@ -290,7 +240,6 @@ function calculate_innovation_potential(embeddings::Dict{String, Any})::Float64
     return isempty(potentials) ? 0.5 : clamp(mean(potentials) * 5.0, 0.0, 1.0)
 end
 
-"Measures overall architectural coherence."
 function calculate_architectural_coherence(
     embeddings::Dict{String, Any},
     relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
@@ -300,7 +249,6 @@ function calculate_architectural_coherence(
     
     coherence_scores = Float64[]
     
-    # FIX: Renamed `module` to `mod_name`. This was the line causing the error.
     for (mod_name, data) in embeddings
         fingerprint = get(data, "cognitive_fingerprint", nothing)
         if !isnothing(fingerprint) && isa(fingerprint, Dict)
@@ -317,11 +265,6 @@ function calculate_architectural_coherence(
     return isempty(coherence_scores) ? 0.75 : clamp(mean(coherence_scores), 0.0, 1.0)
 end
 
-# ========================================
-# HELPER FUNCTIONS (Internal)
-# ========================================
-
-"Extract semantic vector from various data structures."
 function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
     if isa(data, Dict) && haskey(data, "semantic_vector")
         vec = data["semantic_vector"]
@@ -339,7 +282,6 @@ function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
     return nothing
 end
 
-"Finds areas of conceptual tension."
 function find_conceptual_tension_points(embeddings::Dict{String, Any})::Vector{Dict{String, Any}}
     tensions = Vector{Dict{String, Any}}()
     modules = collect(keys(embeddings))
@@ -375,7 +317,6 @@ identify_trigger_conditions(tension::Dict{String, Any}) = ["Increased integratio
 generate_preparation_recommendations(tension::Dict{String, Any}) = ["Monitor interface evolution", "Prepare integration tests"]
 assess_innovation_potential(combo::Dict{String, Any}) = 0.65
 
-"Efficiently finds the first few unexplored combinations."
 function find_unexplored_combinations(embeddings::Dict{String, Any}; max_combinations=3)::Vector{Dict{String, Any}}
     combinations = Vector{Dict{String, Any}}()
     modules = collect(keys(embeddings))
@@ -403,7 +344,6 @@ map_cognitive_landscape(embeddings::Dict{String, Any}) = Dict("complexity_distri
 generate_executive_summary(vision::ArchitecturalVision) = "System health: $(round(get(vision.system_health, "overall_health_score", 0.7) * 100, digits=1))% - Architecture shows promising evolution potential."
 generate_strategic_roadmap(vision::ArchitecturalVision) = [Dict("phase" => "Assessment", "duration" => "1 month"), Dict("phase" => "Evolution", "duration" => "3 months")]
 
-"Calculates the cosine similarity between two vectors."
 function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
     (isempty(a) || length(a) != length(b)) && return 0.0
     
@@ -413,5 +353,3 @@ function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
     
     return (norm_a == 0.0 || norm_b == 0.0) ? 0.0 : dot_product / (norm_a * norm_b)
 end
-
-end # module MetacognitiveVisor
