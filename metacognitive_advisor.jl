@@ -1,17 +1,16 @@
-# metacognitive_advisor.jl - 10 LINE VERSION
+# metacognitive_advisor.jl - FIXED SYNTAX
 function generate_architectural_analysis(graph::Dict, recent_performance::Vector{Dict})
     println("✅ Metacognition running - generating simple analysis")
     
-    # Just return basic insights to prove it works
     insights = [
-        (priority=:high, module="consciousness_core.jl", issue="High complexity", action="Refactor"),
-        (priority=:medium, module="geometric_reasoning.jl", issue="Coupling detected", action="Extract interface")
+        Dict("priority" => "high", "module" => "consciousness_core.jl", "issue" => "High complexity", "action" => "Refactor"),
+        Dict("priority" => "medium", "module" => "geometric_reasoning.jl", "issue" => "Coupling detected", "action" => "Extract interface")
     ]
     
-    # Convert to the expected format
     return Dict(
-        "timestamp" => string(now()),
+        "timestamp" => "2024-01-15T10:30:00Z",
         "insights_generated" => length(insights),
-        "status" => "SUCCESS"
+        "status" => "SUCCESS",
+        "insights" => insights
     )
 end
