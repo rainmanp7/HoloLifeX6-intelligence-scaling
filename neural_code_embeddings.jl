@@ -1,11 +1,8 @@
-# File 1: neural_code_embeddings.jl
+# neural_code_embeddings.jl
 """
 🧠 NEURAL CODE EMBEDDINGS
 Transforms code into semantic vectors that preserve meaning across syntax changes
 """
-module NeuralCodeEmbeddings
-
-using LinearAlgebra, Statistics
 
 struct CodeEmbedding
     semantic_vector::Vector{Float64}
@@ -23,12 +20,11 @@ end
 
 function semantic_hash(code::String)::Vector{Float64}
     # Simple but effective: capture semantic patterns without syntax
-    tokens = split(code, r"\W+")
     features = [
-        length(code) / 1000.0,                    # Size feature
-        count_contains(code, ["function", "if", "for"]), # Control flow density
-        count_contains(code, ["phi", "consciousness"]),  # Domain concepts
-        # Add more semantic features...
+        length(code) / 1000.0,
+        count_contains(code, ["function", "if", "for", "while"]),
+        count_contains(code, ["phi", "consciousness", "intelligence"]),
+        count_contains(code, ["include", "import", "using"])
     ]
     return normalize(features)
 end
@@ -50,9 +46,9 @@ function structural_fingerprint(code::String)::Vector{Float64}
     # Simple structural analysis
     lines = split(code, '\n')
     features = [
-        Float64(length(lines)) / 100.0,           # Number of lines
-        Float64(count(l -> occursin(r"^function", l), lines)), # Function count
-        Float64(count(l -> occursin(r"^#", l), lines)) / max(1.0, length(lines)), # Comment density
+        Float64(length(lines)) / 100.0,
+        Float64(count(l -> occursin(r"^function", l), lines)),
+        Float64(count(l -> occursin(r"^#", l), lines)) / max(1.0, length(lines)),
     ]
     return normalize(features)
 end
@@ -82,8 +78,3 @@ function generate_embeddings_for_modules(modules::Vector{String})::Dict{String, 
     end
     return embeddings
 end
-
-# Export functions
-export generate_embedding, generate_embeddings_for_modules, CodeEmbedding
-
-end  # end module
