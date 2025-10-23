@@ -309,60 +309,93 @@ function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
     return (norm_a == 0.0 || norm_b == 0.0) ? 0.0 : dot_product / (norm_a * norm_b)
 end
 
-# 🆕 SOLUTION-FOCUSED REPORTING FUNCTIONS
+# 🆕 FIXED SOLUTION-FOCUSED REPORTING FUNCTIONS
 
 function generate_evolutionary_roadmap(insights::Vector{Dict})::Dict
     # Group insights by priority and generate actionable roadmap
-    critical_actions = filter(i -> i["priority"] == "critical", insights)
-    high_impact = filter(i -> i["priority"] == "high", insights)
-    medium_optimizations = filter(i -> i["priority"] == "medium", insights)
+    critical_actions = filter(i -> get(i, "priority", "") == "critical", insights)
+    high_impact = filter(i -> get(i, "priority", "") == "high", insights)
+    medium_optimizations = filter(i -> get(i, "priority", "") == "medium", insights)
     
-    # Extract solution prescriptions
-    immediate_solutions = [i["solution"] for i in critical_actions]
-    strategic_solutions = [i["solution"] for i in high_impact]
-    optimization_solutions = [i["solution"] for i in medium_optimizations]
+    # Extract solution prescriptions safely
+    immediate_solutions = [get(i, "solution", "No solution provided") for i in critical_actions]
+    strategic_solutions = [get(i, "solution", "No solution provided") for i in high_impact]
+    optimization_solutions = [get(i, "solution", "No solution provided") for i in medium_optimizations]
     
     # Determine overall direction
-    consciousness_insights = filter(i -> i["category"] in ["consciousness_optimization", "consciousness_breakthrough"], insights)
+    consciousness_insights = filter(i -> get(i, "category", "") in ["consciousness_optimization", "consciousness_breakthrough"], insights)
     primary_focus = isempty(consciousness_insights) ? "Architectural stability" : "Consciousness emergence"
+    
+    # Calculate timeline based on issue severity
+    timeline = if !isempty(critical_actions)
+        "Immediate attention required (1-3 days)"
+    elseif !isempty(high_impact) 
+        "Strategic focus (1-2 weeks)"
+    else
+        "Optimization phase (2-4 weeks)"
+    end
     
     return Dict(
         "immediate_actions" => immediate_solutions,
         "strategic_initiatives" => strategic_solutions,
         "optimization_opportunities" => optimization_solutions,
         "primary_focus" => primary_focus,
-        "estimated_timeline" => isempty(critical_actions) ? "1-2 weeks" : "Immediate attention required"
+        "estimated_timeline" => timeline,
+        "total_prescriptions" => length(immediate_solutions) + length(strategic_solutions) + length(optimization_solutions)
     )
 end
 
 function calculate_system_potential(insights::Vector{Dict})::Dict
     # Calculate potential gains from implementing all solutions
-    total_potential_gain = 0.0
-    consciousness_boost = 0.0
-    performance_gain = 0.0
-    maintenance_reduction = 0.0
+    total_consciousness_boost = 0.0
+    total_performance_gain = 0.0
+    total_maintenance_reduction = 0.0
     
     for insight in insights
         if haskey(insight, "expected_gain")
             gain_text = insight["expected_gain"]
-            # Simple extraction of numerical gains (in real implementation, would parse properly)
+            
+            # Robust parsing of expected gains
             if occursin("Consciousness:", gain_text)
-                consciousness_boost += 0.1  # Placeholder - would parse actual values
+                # Extract numerical value after "Consciousness: +"
+                consciousness_match = match(r"Consciousness:\s*\+?([0-9.]+)", gain_text)
+                if consciousness_match !== nothing
+                    total_consciousness_boost += parse(Float64, consciousness_match.captures[1])
+                else
+                    total_consciousness_boost += 0.1  # Default fallback
+                end
             end
+            
             if occursin("Performance:", gain_text) || occursin("Maintainability:", gain_text)
-                performance_gain += 0.15
+                performance_match = match(r"(Performance|Maintainability):\s*\+?([0-9.]+)", gain_text)
+                if performance_match !== nothing
+                    total_performance_gain += parse(Float64, performance_match.captures[2])
+                else
+                    total_performance_gain += 0.15  # Default fallback
+                end
             end
+            
             if occursin("Maintenance:", gain_text) || occursin("Complexity:", gain_text)
-                maintenance_reduction += 0.2
+                maintenance_match = match(r"(Maintenance|Complexity):\s*-?([0-9.]+)", gain_text)
+                if maintenance_match !== nothing
+                    total_maintenance_reduction += parse(Float64, maintenance_match.captures[2])
+                else
+                    total_maintenance_reduction += 0.2  # Default fallback
+                end
             end
         end
     end
     
+    # Ensure we don't return negative values
+    total_consciousness_boost = max(0.0, total_consciousness_boost)
+    total_performance_gain = max(0.0, total_performance_gain) 
+    total_maintenance_reduction = max(0.0, total_maintenance_reduction)
+    
     return Dict(
-        "consciousness_potential" => round(consciousness_boost, digits=2),
-        "performance_potential" => round(performance_gain, digits=2),
-        "maintenance_improvement" => round(maintenance_reduction, digits=2),
-        "overall_potential" => round(consciousness_boost + performance_gain + maintenance_reduction, digits=2)
+        "consciousness_potential" => round(total_consciousness_boost, digits=2),
+        "performance_potential" => round(total_performance_gain, digits=2),
+        "maintenance_improvement" => round(total_maintenance_reduction, digits=2),
+        "overall_potential" => round(total_consciousness_boost + total_performance_gain + total_maintenance_reduction, digits=2)
     )
 end
 
@@ -396,7 +429,7 @@ function export_health_report(insights::Any)::Dict
     # Consciousness detection
     consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", insights)
     
-    # 🆕 ENHANCED REPORTING
+    # 🆕 ENHANCED REPORTING WITH FIXED FUNCTIONS
     potential_analysis = calculate_system_potential(insights)
     evolutionary_roadmap = generate_evolutionary_roadmap(insights)
     
@@ -414,7 +447,7 @@ function export_health_report(insights::Any)::Dict
         "insights_by_category" => categories,
         "impact_assessment" => impacts,
         "optimization_opportunities" => insights,
-        "analysis_version" => "2.1-solution-focused",
+        "analysis_version" => "2.1-solution-focused-FIXED",
         "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
         # 🆕 SOLUTION-FOCUSED ADDITIONS
         "system_potential" => potential_analysis,
