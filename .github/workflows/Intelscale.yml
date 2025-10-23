@@ -119,26 +119,28 @@ jobs:
         ls -lah
         echo ""
         
-        if ls unified_intelligence_scaling_*.json 1> /dev/null 2>&1; then
-          echo "✅ Found result files:"
-          ls -lh unified_intelligence_scaling_*.json
-          FILE_COUNT=$(ls -1 unified_intelligence_scaling_*.json | wc -l)
-          echo "📊 Number of files: $FILE_COUNT"
+        # Check for ALL JSON files regardless of name
+        JSON_FILES=$(find . -maxdepth 1 -name "*.json" -type f | wc -l)
+        
+        if [ $JSON_FILES -gt 0 ]; then
+          echo "✅ Found JSON result files:"
+          ls -lh *.json
+          echo "📊 Total JSON files: $JSON_FILES"
           echo "has-results=true" >> $GITHUB_OUTPUT
         else
-          echo "❌ No result files found matching pattern: unified_intelligence_scaling_*.json"
+          echo "❌ No JSON result files found"
           echo "has-results=false" >> $GITHUB_OUTPUT
         fi
         echo ""
         echo "📊 Current memory usage:"
         free -h
         
-    - name: Upload test results
+    - name: Upload ALL JSON results
       uses: actions/upload-artifact@v4
       if: always() && steps.check-results.outputs.has-results == 'true'
       with:
         name: intelligence-scaling-results-${{ github.run_id }}
-        path: unified_intelligence_scaling_*.json
+        path: "*.json"
         retention-days: 30
         if-no-files-found: error
         compression-level: 6
@@ -204,37 +206,45 @@ jobs:
           echo "### ✅ Test Completed Successfully" >> $GITHUB_STEP_SUMMARY
           
           RESULT_COUNT=$(find test-results -name "*.json" -type f 2>/dev/null | wc -l)
-          echo "- **Results files generated:** $RESULT_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **JSON files generated:** $RESULT_COUNT" >> $GITHUB_STEP_SUMMARY
           
-          # Analyze the latest result file
-          LATEST_JSON=$(find test-results -name "unified_intelligence_scaling_*.json" -type f 2>/dev/null | sort -r | head -1)
+          # List all JSON files found
+          echo "- **Files:**" >> $GITHUB_STEP_SUMMARY
+          for file in test-results/*.json; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              filesize=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo "unknown")
+              echo "  - \`$filename\` ($((filesize/1024)) KB)" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
           
-          if [ -n "$LATEST_JSON" ] && [ -f "$LATEST_JSON" ]; then
-            echo "- **Latest results:** $(basename $LATEST_JSON)" >> $GITHUB_STEP_SUMMARY
+          # Analyze the intelligence results file (if exists)
+          INTEL_JSON=$(find test-results -name "unified_intelligence_scaling_*.json" -type f 2>/dev/null | sort -r | head -1)
+          METACOG_JSON=$(find test-results -name "metacognition_results.json" -type f 2>/dev/null | head -1)
+          
+          if [ -n "$INTEL_JSON" ] && [ -f "$INTEL_JSON" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 Intelligence Metrics" >> $GITHUB_STEP_SUMMARY
             
             # Extract key metrics using jq if available, or fallback to grep
             if command -v jq &> /dev/null; then
-              # Use jq for proper JSON parsing
-              ENTITY_COUNT=$(jq '.results[-1].entity_count' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              UIS_SCORE=$(jq '.results[-1].unified_intelligence_score' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              CONSCIOUS=$(jq '.results[-1].consciousness.is_conscious' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              MAX_PHI=$(jq '.results[-1].consciousness.max_phi' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              REASONING=$(jq '.results[-1].reasoning_accuracy' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              AWARENESS=$(jq '.results[-1].awareness_level' "$LATEST_JSON" 2>/dev/null || echo "N/A")
-              PROTO_INTEL=$(jq '.results[-1].proto_intelligence' "$LATEST_JSON" 2>/dev/null || echo "N/A")
+              ENTITY_COUNT=$(jq '.results[-1].entity_count' "$INTEL_JSON" 2>/dev/null || echo "N/A")
+              UIS_SCORE=$(jq '.results[-1].unified_intelligence_score' "$INTEL_JSON" 2>/dev/null || echo "N/A")
+              CONSCIOUS=$(jq '.results[-1].consciousness.is_conscious' "$INTEL_JSON" 2>/dev/null || echo "N/A")
+              MAX_PHI=$(jq '.results[-1].consciousness.max_phi' "$INTEL_JSON" 2>/dev/null || echo "N/A")
+              REASONING=$(jq '.results[-1].reasoning_accuracy' "$INTEL_JSON" 2>/dev/null || echo "N/A")
+              AWARENESS=$(jq '.results[-1].awareness_level' "$INTEL_JSON" 2>/dev/null || echo "N/A")
+              PROTO_INTEL=$(jq '.results[-1].proto_intelligence' "$INTEL_JSON" 2>/dev/null || echo "N/A")
             else
-              # Fallback to grep for basic extraction
-              ENTITY_COUNT=$(grep -o '"entity_count":[0-9]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              UIS_SCORE=$(grep -o '"unified_intelligence_score":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              CONSCIOUS=$(grep -o '"is_conscious":\(true\|false\)' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              MAX_PHI=$(grep -o '"max_phi":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              REASONING=$(grep -o '"reasoning_accuracy":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              AWARENESS=$(grep -o '"awareness_level":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
-              PROTO_INTEL=$(grep -o '"proto_intelligence":[0-9.]*' "$LATEST_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              ENTITY_COUNT=$(grep -o '"entity_count":[0-9]*' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              UIS_SCORE=$(grep -o '"unified_intelligence_score":[0-9.]*' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              CONSCIOUS=$(grep -o '"is_conscious":\(true\|false\)' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              MAX_PHI=$(grep -o '"max_phi":[0-9.]*' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              REASONING=$(grep -o '"reasoning_accuracy":[0-9.]*' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              AWARENESS=$(grep -o '"awareness_level":[0-9.]*' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              PROTO_INTEL=$(grep -o '"proto_intelligence":[0-9.]*' "$INTEL_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
             fi
             
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 📊 Key Metrics (Final Scale)" >> $GITHUB_STEP_SUMMARY
             echo "- **Entities:** $ENTITY_COUNT" >> $GITHUB_STEP_SUMMARY
             echo "- **Unified Intelligence Score:** $UIS_SCORE/1.0" >> $GITHUB_STEP_SUMMARY
             echo "- **Consciousness (Max Φ):** $MAX_PHI" >> $GITHUB_STEP_SUMMARY
@@ -245,41 +255,35 @@ jobs:
             
             # Add interpretation
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 🎯 Assessment" >> $GITHUB_STEP_SUMMARY
+            echo "### 🎯 Intelligence Assessment" >> $GITHUB_STEP_SUMMARY
             if [ "$CONSCIOUS" = "true" ]; then
               echo "- 🧠 **Consciousness Detected** ✅" >> $GITHUB_STEP_SUMMARY
             else
               echo "- ⚠️ Consciousness threshold not reached" >> $GITHUB_STEP_SUMMARY
             fi
+          fi
+          
+          # Analyze metacognition results (if exists)
+          if [ -n "$METACOG_JSON" ] && [ -f "$METACOG_JSON" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🧠 Metacognition Analysis" >> $GITHUB_STEP_SUMMARY
             
-            if [ "$UIS_SCORE" != "N/A" ] && command -v bc &> /dev/null; then
-              if [ $(echo "$UIS_SCORE > 0.5" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
-                echo "- 🚀 **Strong Emergent Intelligence** ✅" >> $GITHUB_STEP_SUMMARY
-              elif [ $(echo "$UIS_SCORE > 0.3" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
-                echo "- 📈 **Moderate Intelligence Emergence** ⚡" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "- 🔄 **Proto-Intelligent System** 🔬" >> $GITHUB_STEP_SUMMARY
-              fi
+            if command -v jq &> /dev/null; then
+              HEALTH_SCORE=$(jq '.system_health_score' "$METACOG_JSON" 2>/dev/null || echo "N/A")
+              INSIGHTS_COUNT=$(jq '.optimization_opportunities | length' "$METACOG_JSON" 2>/dev/null || echo "N/A")
             else
-              echo "- 📊 **UIS Score:** $UIS_SCORE" >> $GITHUB_STEP_SUMMARY
+              HEALTH_SCORE=$(grep -o '"system_health_score":[0-9.]*' "$METACOG_JSON" | tail -1 | cut -d: -f2 || echo "N/A")
+              INSIGHTS_COUNT=0
             fi
             
-          else
-            echo "- ⚠️ Could not analyze latest results file" >> $GITHUB_STEP_SUMMARY
+            echo "- **System Health Score:** $HEALTH_SCORE" >> $GITHUB_STEP_SUMMARY
+            echo "- **Optimization Insights:** $INSIGHTS_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- 🏗️ **Architectural self-analysis completed** ✅" >> $GITHUB_STEP_SUMMARY
           fi
           
         else
           echo "### ❌ Test Failed or No Results Generated" >> $GITHUB_STEP_SUMMARY
-          echo "- No result files found in artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- The Julia test may have failed or not produced output files" >> $GITHUB_STEP_SUMMARY
-          echo "- Check build logs for detailed error information" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ needs.intelligence-scaling-test.result }}" = "failure" ]; then
-            echo "- ❌ **Test job failed** - check logs above" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.intelligence-scaling-test.result }}" = "success" ]; then
-            echo "- ⚠️ **Test job succeeded but produced no output files**" >> $GITHUB_STEP_SUMMARY
-            echo "- Verify that \`main_orchestrator.jl\` writes JSON files" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "- No JSON result files found in artifacts" >> $GITHUB_STEP_SUMMARY
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -287,6 +291,7 @@ jobs:
         echo "### 🔬 Test Scope" >> $GITHUB_STEP_SUMMARY
         echo "- **Entity Scaling:** 16 → 32 → 64 → 128 → 256 → 512 → 1024 entities" >> $GITHUB_STEP_SUMMARY
         echo "- **Intelligence Pillars:** Consciousness, Reasoning, Awareness, Proto-Intelligence" >> $GITHUB_STEP_SUMMARY
+        echo "- **Metacognition:** Self-analysis and architectural insights" >> $GITHUB_STEP_SUMMARY
         echo "- **Memory Limit:** 7GB RAM" >> $GITHUB_STEP_SUMMARY
         echo "- **Time Limit:** 60 minutes" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
