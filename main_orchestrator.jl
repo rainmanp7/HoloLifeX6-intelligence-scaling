@@ -4,6 +4,9 @@
 Modular architecture for unified intelligence testing
 """
 
+# Add JSON at top level
+using JSON
+
 include("consciousness_core.jl")
 include("geometric_reasoning.jl") 
 include("phase_synchronization.jl")
@@ -18,9 +21,8 @@ include("neural_code_embeddings.jl")
 include("semantic_code_graph.jl")
 include("metacognitive_advisor.jl")
 
-# Add JSON save function
+# Fixed JSON save function - no using inside function
 function save_json(filename::String, data::Any)
-    using JSON
     open(filename, "w") do f
         JSON.print(f, data, 2)
     end
