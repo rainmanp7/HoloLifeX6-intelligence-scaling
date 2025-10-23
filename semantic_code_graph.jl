@@ -3,9 +3,12 @@
 🏗️ SEMANTIC CODE GRAPH  
 Cross-module relationship mapping - understands architectural patterns
 """
-module SemanticCodeGraph
 
-using .NeuralCodeEmbeddings
+# Remove module wrapper - we're including files sequentially
+# module SemanticCodeGraph
+
+# No using statement needed - files are included in order
+# using .NeuralCodeEmbeddings
 
 mutable struct CodeEntity
     name::String
@@ -39,25 +42,25 @@ end
 function build_semantic_graph(modules::Vector{String})::Dict{String, CodeEntity}
     graph = Dict{String, CodeEntity}()
     
-    for mod in modules  # FIXED: module → mod
-        source = read(mod, String)  # FIXED: module → mod
-        embedding = NeuralCodeEmbeddings.generate_embedding(source)
+    for mod in modules
+        source = read(mod, String)
+        embedding = generate_embedding(source)  # Direct function call
         
         entity = CodeEntity(
-            mod,  # FIXED: module → mod
+            mod,
             :module,
             embedding.semantic_vector,
             extract_dependencies(source),
             Dict()  # Will be populated during runtime
         )
-        graph[mod] = entity  # FIXED: module → mod
+        graph[mod] = entity
     end
     return graph
 end
 
 function correlate_performance!(graph::Dict, metrics::Dict)
     # Link code patterns to performance outcomes
-    for (mod, entity) in graph  # FIXED: module → mod
+    for (mod, entity) in graph
         for (metric_name, value) in metrics
             correlation = compute_correlation(entity.embeddings, value)
             entity.performance_correlations[Symbol(metric_name)] = correlation
@@ -65,7 +68,6 @@ function correlate_performance!(graph::Dict, metrics::Dict)
     end
 end
 
-# Export functions
-export build_semantic_graph, correlate_performance!, CodeEntity
-
-end  # end module
+# Remove exports and end module
+# export build_semantic_graph, correlate_performance!, CodeEntity
+# end  # end module
