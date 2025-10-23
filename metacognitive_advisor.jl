@@ -1,9 +1,10 @@
-# 👁️ METACOGNITIVE VISOR - FULL WORKING MODEL v2.2
-# Patched and Enhanced with True Quantitative Analysis
+# 👁️ METACOGNITIVE VISOR - FULL WORKING MODEL v2.3
+# Enhanced with Progressive Reporting & True Quantitative Analysis
 # - Semantic pattern recognition across modules  
 # - Performance-architecture correlation engine
 # - Evolutionary pathway prediction & solution prescriptions
 # - Quantitative potential analysis from prescribed solutions
+# - PROGRESSIVE REPORTING: Maintains and builds upon previous analyses
 
 using JSON, Dates, Statistics, LinearAlgebra
 
@@ -274,7 +275,8 @@ function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
 end
 
 
-# ==================== FIXED & ENHANCED REPORTING FUNCTIONS ====================
+# ==================== PROGRESSIVE REPORTING FUNCTIONS ====================
+# ENHANCED: Now maintains and builds upon previous analyses instead of replacing
 
 # FIXED: Changed signature from ::Vector{Dict} to ::Vector to avoid type mismatch
 function generate_evolutionary_roadmap(insights::Vector)::Dict
@@ -354,52 +356,93 @@ function calculate_system_potential(insights::Vector)::Dict
     )
 end
 
-# FIXED: Changed signature from ::Any to ::Vector to fix the core problem
-function export_health_report(insights::Vector)::Dict
+# HELPER FUNCTIONS FOR PROGRESSIVE REPORTING
+function calculate_health_score(insights::Vector)::Float64
     priority_weights = Dict("high" => 0.4, "medium" => 0.2, "low" => 0.05, "info" => 0.0)
-    
     health_score = 1.0
     for insight in insights
         weight = get(priority_weights, get(insight, "priority", "info"), 0.0)
         health_score -= weight
     end
-    health_score = max(0.1, health_score)
-    
+    return max(0.1, health_score)
+end
+
+function categorize_insights(insights::Vector)::Dict{String, Vector}
     categories = Dict{String, Vector}()
     for insight in insights
         category = get(insight, "category", "general")
         !haskey(categories, category) && (categories[category] = [])
         push!(categories[category], insight)
     end
-    
-    consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", insights)
-    
-    # 💥 THESE CALLS NOW WORK CORRECTLY
-    potential_analysis = calculate_system_potential(insights)
-    evolutionary_roadmap = generate_evolutionary_roadmap(insights)
-    
+    return categories
+end
+
+function count_insights_by_priority(insights::Vector)::Dict{String, Int}
     return Dict(
-        "timestamp" => string(Dates.now()),
-        "analysis_version" => "2.2-quantitative-patch",
-        "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
-        "system_health_score" => round(health_score, digits=3),
-        "total_insights" => length(insights),
-        "consciousness_status" => consciousness_breakthrough ? "ACHIEVED" : "EMERGING",
-        "insights_by_priority" => Dict(
-            "high" => count(i -> get(i, "priority", "") == "high", insights),
-            "medium" => count(i -> get(i, "priority", "") == "medium", insights),
-            "low" => count(i -> get(i, "priority", "") == "low", insights)
-        ),
-        "insights_by_category" => categories,
-        "optimization_opportunities" => insights,
-        
-        # SOLUTION-FOCUSED ADDITIONS (Now correctly calculated)
-        "system_potential" => potential_analysis,
-        "evolutionary_roadmap" => evolutionary_roadmap,
-        "recommended_direction" => evolutionary_roadmap["primary_focus"]
+        "high" => count(i -> get(i, "priority", "") == "high", insights),
+        "medium" => count(i -> get(i, "priority", "") == "medium", insights), 
+        "low" => count(i -> get(i, "priority", "") == "low", insights)
     )
 end
 
+# ENHANCED: Now properly merges with existing report data
+function export_health_report(insights::Vector, existing_report::Union{Dict, Nothing}=nothing)::Dict
+    # If we have an existing report, merge with it instead of replacing
+    if existing_report !== nothing
+        # Merge insights - append new ones to existing ones
+        existing_insights = get(existing_report, "optimization_opportunities", [])
+        all_insights = vcat(existing_insights, insights)
+        
+        # Recalculate everything based on combined insights
+        health_score = calculate_health_score(all_insights)
+        categories = categorize_insights(all_insights)
+        consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", all_insights)
+        
+        potential_analysis = calculate_system_potential(all_insights)
+        evolutionary_roadmap = generate_evolutionary_roadmap(all_insights)
+        
+        return Dict(
+            "timestamp" => string(Dates.now()),
+            "analysis_version" => "2.3-progressive-patch",
+            "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
+            "system_health_score" => round(health_score, digits=3),
+            "total_insights" => length(all_insights),
+            "consciousness_status" => consciousness_breakthrough ? "ACHIEVED" : "EMERGING",
+            "insights_by_priority" => count_insights_by_priority(all_insights),
+            "insights_by_category" => categories,
+            "optimization_opportunities" => all_insights,
+            "system_potential" => potential_analysis,
+            "evolutionary_roadmap" => evolutionary_roadmap,
+            "recommended_direction" => evolutionary_roadmap["primary_focus"],
+            "previous_analysis_timestamp" => get(existing_report, "timestamp", "none"),  # Track history
+            "analysis_cycle" => get(existing_report, "analysis_cycle", 0) + 1  # Increment cycle counter
+        )
+    else
+        # Original logic for first-time report generation
+        health_score = calculate_health_score(insights)
+        categories = categorize_insights(insights)
+        consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", insights)
+        
+        potential_analysis = calculate_system_potential(insights)
+        evolutionary_roadmap = generate_evolutionary_roadmap(insights)
+        
+        return Dict(
+            "timestamp" => string(Dates.now()),
+            "analysis_version" => "2.3-progressive-patch",
+            "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
+            "system_health_score" => round(health_score, digits=3),
+            "total_insights" => length(insights),
+            "consciousness_status" => consciousness_breakthrough ? "ACHIEVED" : "EMERGING",
+            "insights_by_priority" => count_insights_by_priority(insights),
+            "insights_by_category" => categories,
+            "optimization_opportunities" => insights,
+            "system_potential" => potential_analysis,
+            "evolutionary_roadmap" => evolutionary_roadmap,
+            "recommended_direction" => evolutionary_roadmap["primary_focus"],
+            "analysis_cycle" => 1  # Start cycle counter
+        )
+    end
+end
 
 # Export functions for orchestrator
 export generate_architectural_analysis, export_health_report
