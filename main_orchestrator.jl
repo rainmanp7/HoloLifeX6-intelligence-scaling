@@ -16,7 +16,7 @@ include("light_reflector.jl")
 include("meta_cognitive_engine.jl")
 include("self_awareness_tracker.jl")
 include("semantic_analyzer.jl")
-include("ast_truth_teller.jl")  # NEW: AST analysis integration
+# REMOVE THIS LINE: include("ast_truth_teller.jl")  # AST is causing interference
 
 # Global self-model for longitudinal tracking
 const GLOBAL_SELF_MODEL = initialize_self_model()
@@ -43,10 +43,6 @@ function execute_meta_cognitive_evolution_cycle()
     semantic_results = Dict()
     # Skip semantic analysis if function doesn't exist
     
-    # 3.5 AST TRUTH TELLER PHASE - NEW
-    println("🔮 PHASE 3.5: AST Truth Teller Analysis")
-    ast_analysis = execute_ast_truth_teller_analysis()
-    
     # 4. META-COGNITIVE ANALYSIS PHASE
     println("🔮 PHASE 4: Meta-Cognitive Analysis")
     diagnosis = perform_enhanced_self_diagnosis(enhanced_ast, performance_metrics, semantic_results)
@@ -64,7 +60,6 @@ function execute_meta_cognitive_evolution_cycle()
     evolution_cycle = Dict(
         "evolution_cycle_timestamp" => now(),
         "architectural_vision" => enhanced_ast,
-        "ast_truth_teller_analysis" => ast_analysis,  # NEW: Include AST analysis
         "meta_cognitive_diagnosis" => diagnosis, 
         "temporal_evolution" => evolution_insights,
         "architectural_decisions" => decisions,
@@ -83,45 +78,6 @@ function execute_meta_cognitive_evolution_cycle()
     end
     
     return evolution_cycle
-end
-
-function execute_ast_truth_teller_analysis()
-    println("\n" * "🔮"^70)
-    println("🔮 AST TRUTH TELLER ANALYSIS - SECOND OPINION")
-    println("🔮"^70)
-    
-    try
-        # Generate AST analysis
-        ast_report = ASTTruthTeller.generate_ast_second_opinion()
-        
-        # Generate health prescriptions
-        prescriptions = ASTTruthTeller.create_health_prescription(ast_report["modules_analyzed"])
-        
-        # Save AST report
-        ast_output = Dict(
-            "ast_analysis" => ast_report,
-            "health_prescriptions" => prescriptions,
-            "analysis_timestamp" => now()
-        )
-        
-        json_data = JSON.json(ast_output, 2)
-        open("ast_truth_teller_report.json", "w") do file
-            write(file, json_data)
-        end
-        
-        println("✅ AST Truth Teller analysis completed:")
-        println("   📊 Modules analyzed: $(ast_report["summary"]["total_modules"])")
-        println("   ⚠️  Total issues: $(ast_report["summary"]["total_issues"])")
-        println("   🏥 Overall health: $(ast_report["summary"]["overall_assessment"])")
-        println("   💊 Prescriptions: $(prescriptions["total_prescriptions"])")
-        println("   📁 Output: ast_truth_teller_report.json")
-        
-        return ast_output
-        
-    catch e
-        println("❌ AST Truth Teller analysis failed: $e")
-        return Dict("error" => string(e))
-    end
 end
 
 function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vector{Dict}
@@ -235,15 +191,6 @@ function main()
                             "entities_tested" => length(sweep_results),
                             "success_rate" => count(r -> get(r, "success", false), sweep_results) / length(sweep_results)
                         )
-                        
-                        # NEW: AST TRUTH TELLER ANALYSIS
-                        ast_analysis = nothing
-                        try
-                            println("   🔮 Running AST Truth Teller analysis...")
-                            ast_analysis = execute_ast_truth_teller_analysis()
-                        catch e
-                            println("   ⚠️  AST analysis skipped: $e")
-                        end
                         
                         # Perform enhanced meta-cognitive diagnosis
                         diagnosis = perform_enhanced_self_diagnosis(enhanced_analysis, performance_metrics, Dict())
