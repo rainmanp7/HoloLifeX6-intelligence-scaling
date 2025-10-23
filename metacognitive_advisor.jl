@@ -15,18 +15,36 @@ struct ArchitecturalVision
     innovation_opportunities::Vector{Dict{String, Any}}
 end
 
+# COMPATIBILITY FUNCTION - what orchestrator expects
 function generate_architectural_analysis(
-    embeddings::Dict{String, Any};
-    relationships::Dict = Dict{Tuple{String, String}, Dict{String, Float64}}()
+    graph::Dict,
+    recent_performance::Vector{Dict}
+)::ArchitecturalVision
+    println("   👁️  Generating architectural vision from graph...")
+    
+    # Convert graph to embeddings format
+    embeddings = Dict{String, Any}()
+    for (name, entity) in graph
+        embeddings[name] = Dict(
+            "semantic_vector" => entity.embeddings,
+            "dependencies" => entity.dependencies
+        )
+    end
+    
+    # Call the vision function
+    return generate_architectural_vision(embeddings)
+end
+
+# MAIN VISION FUNCTION
+function generate_architectural_vision(
+    embeddings::Dict{String, Any}
 )::ArchitecturalVision
     
-    println("   👁️  Generating architectural vision...")
-    
-    health_report = assess_system_health(embeddings, relationships)
-    breakthroughs = predict_architectural_breakthroughs(embeddings, relationships)
-    evolution_paths = analyze_evolution_pathways(embeddings, relationships)
+    health_report = assess_system_health(embeddings, Dict())
+    breakthroughs = predict_architectural_breakthroughs(embeddings, Dict())
+    evolution_paths = analyze_evolution_pathways(embeddings, Dict())
     cognitive_map = map_cognitive_landscape(embeddings)
-    innovations = detect_innovation_opportunities(embeddings, relationships)
+    innovations = detect_innovation_opportunities(embeddings, Dict())
     
     return ArchitecturalVision(
         now(),
@@ -40,7 +58,7 @@ end
 
 function assess_system_health(
     embeddings::Dict{String, Any},
-    relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
+    relationships::Dict
 )::Dict{String, Any}
     
     health_metrics = Dict{String, Float64}()
@@ -84,19 +102,14 @@ function assess_system_health(
         "health_metrics" => health_metrics,
         "critical_insights" => critical_insights,
         "overall_health_score" => mean([conceptual_integrity, evolution_readiness, innovation_potential, coherence]),
-        "recommendation_priority" => if conceptual_integrity < 0.6
-                                        "ARCHITECTURAL_EMERGENCY"
-                                    elseif evolution_readiness > 0.8
-                                        "BREAKTHROUGH_IMMINENT"
-                                    else
-                                        "STEADY_EVOLUTION"
-                                    end
+        "recommendation_priority" => conceptual_integrity < 0.6 ? "ARCHITECTURAL_EMERGENCY" : 
+                                   evolution_readiness > 0.8 ? "BREAKTHROUGH_IMMINENT" : "STEADY_EVOLUTION"
     )
 end
 
 function predict_architectural_breakthroughs(
     embeddings::Dict{String, Any},
-    relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
+    relationships::Dict
 )::Vector{Dict{String, Any}}
     
     breakthroughs = Vector{Dict{String, Any}}()
@@ -126,7 +139,7 @@ end
 
 function detect_innovation_opportunities(
     embeddings::Dict{String, Any},
-    relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
+    relationships::Dict
 )::Vector{Dict{String, Any}}
     
     opportunities = Vector{Dict{String, Any}}()
@@ -143,12 +156,6 @@ function detect_innovation_opportunities(
             "strategic_advantage" => "First-mover in cognitive architecture design"
         ))
     end
-    
-    pattern_innovations = find_pattern_innovation_opportunities(embeddings)
-    append!(opportunities, pattern_innovations)
-    
-    capability_expansions = find_capability_expansion_opportunities(embeddings)
-    append!(opportunities, capability_expansions)
     
     return opportunities
 end
@@ -201,24 +208,15 @@ end
 
 function calculate_evolution_readiness(
     embeddings::Dict{String, Any},
-    relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
+    relationships::Dict
 )::Float64
     
     readiness_factors = Float64[]
     
     for (mod_name, data) in embeddings
-        fingerprint = get(data, "cognitive_fingerprint", nothing)
-        if !isnothing(fingerprint) && isa(fingerprint, Dict)
-            coherence = get(fingerprint, "cognitive_coherence", 0.5)
-            sophistication = get(fingerprint, "conceptual_sophistication", 0.5)
-            
-            evolution_score = coherence * (1.0 - abs(sophistication - 0.6))
-            push!(readiness_factors, evolution_score)
-        else
-            vec = get_semantic_vector(data)
-            if !isnothing(vec) && length(vec) >= 4
-                push!(readiness_factors, mean(vec[1:min(4, length(vec))]))
-            end
+        vec = get_semantic_vector(data)
+        if !isnothing(vec) && length(vec) >= 4
+            push!(readiness_factors, mean(vec[1:min(4, length(vec))]))
         end
     end
     
@@ -242,7 +240,7 @@ end
 
 function calculate_architectural_coherence(
     embeddings::Dict{String, Any},
-    relationships::Dict{Tuple{String, String}, Dict{String, Float64}}
+    relationships::Dict
 )::Float64
     
     length(keys(embeddings)) < 2 && return 0.75
@@ -250,15 +248,9 @@ function calculate_architectural_coherence(
     coherence_scores = Float64[]
     
     for (mod_name, data) in embeddings
-        fingerprint = get(data, "cognitive_fingerprint", nothing)
-        if !isnothing(fingerprint) && isa(fingerprint, Dict)
-            coh = get(fingerprint, "cognitive_coherence", 0.7)
-            push!(coherence_scores, coh)
-        else
-            vec = get_semantic_vector(data)
-            if !isnothing(vec) && !isempty(vec)
-                push!(coherence_scores, 1.0 - min(std(vec, corrected=false), 1.0))
-            end
+        vec = get_semantic_vector(data)
+        if !isnothing(vec) && !isempty(vec)
+            push!(coherence_scores, 1.0 - min(std(vec, corrected=false), 1.0))
         end
     end
     
@@ -270,15 +262,6 @@ function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
         vec = data["semantic_vector"]
         return isa(vec, Vector{Float64}) ? vec : nothing
     end
-    
-    if hasproperty(data, :semantic_vector)
-        vec = getproperty(data, :semantic_vector)
-        return isa(vec, Vector{Float64}) ? vec : nothing
-    elseif hasproperty(data, :embedding)
-        vec = getproperty(data, :embedding)
-        return isa(vec, Vector{Float64}) ? vec : nothing
-    end
-    
     return nothing
 end
 
@@ -337,12 +320,28 @@ function find_unexplored_combinations(embeddings::Dict{String, Any}; max_combina
     return combinations
 end
 
-find_pattern_innovation_opportunities(embeddings::Dict{String, Any}) = Vector{Dict{String, Any}}()
-find_capability_expansion_opportunities(embeddings::Dict{String, Any}) = Vector{Dict{String, Any}}()
-analyze_evolution_pathways(embeddings::Dict{String, Any}, relationships) = [Dict("pathway" => "modular_refinement", "confidence" => 0.7)]
-map_cognitive_landscape(embeddings::Dict{String, Any}) = Dict("complexity_distribution" => "BALANCED", "conceptual_clusters" => length(embeddings))
-generate_executive_summary(vision::ArchitecturalVision) = "System health: $(round(get(vision.system_health, "overall_health_score", 0.7) * 100, digits=1))% - Architecture shows promising evolution potential."
-generate_strategic_roadmap(vision::ArchitecturalVision) = [Dict("phase" => "Assessment", "duration" => "1 month"), Dict("phase" => "Evolution", "duration" => "3 months")]
+function analyze_evolution_pathways(embeddings::Dict{String, Any}, relationships::Dict)::Vector{Dict{String, Any}}
+    return [Dict("pathway" => "modular_refinement", "confidence" => 0.7)]
+end
+
+function map_cognitive_landscape(embeddings::Dict{String, Any})::Dict{String, Any}
+    return Dict(
+        "complexity_distribution" => "BALANCED",
+        "conceptual_clusters" => length(embeddings)
+    )
+end
+
+function generate_executive_summary(vision::ArchitecturalVision)::String
+    health_score = get(vision.system_health, "overall_health_score", 0.7)
+    return "System health: $(round(health_score * 100, digits=1))% - Architecture shows promising evolution potential"
+end
+
+function generate_strategic_roadmap(vision::ArchitecturalVision)::Vector{Dict{String, Any}}
+    return [
+        Dict("phase" => "Assessment", "duration" => "1 month"),
+        Dict("phase" => "Evolution", "duration" => "3 months")
+    ]
+end
 
 function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
     (isempty(a) || length(a) != length(b)) && return 0.0
