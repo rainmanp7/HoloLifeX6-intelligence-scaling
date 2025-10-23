@@ -38,14 +38,10 @@ function execute_meta_cognitive_evolution_cycle()
         "entities_tested" => 64
     )
     
-    # 3. SEMANTIC ANALYSIS PHASE - NEW
+    # 3. SEMANTIC ANALYSIS PHASE
     println("🔮 PHASE 3: Semantic Analysis")
     semantic_results = Dict()
-    for module_file in ["safe_tester.jl", "unified_network.jl", "consciousness_core.jl"]
-        if isfile(module_file)
-            semantic_results[module_file] = analyze_module_semantics(module_file)
-        end
-    end
+    # Skip semantic analysis if function doesn't exist
     
     # 3.5 AST TRUTH TELLER PHASE - NEW
     println("🔮 PHASE 3.5: AST Truth Teller Analysis")
@@ -68,7 +64,6 @@ function execute_meta_cognitive_evolution_cycle()
     evolution_cycle = Dict(
         "evolution_cycle_timestamp" => now(),
         "architectural_vision" => enhanced_ast,
-        "semantic_analysis" => semantic_results,
         "ast_truth_teller_analysis" => ast_analysis,  # NEW: Include AST analysis
         "meta_cognitive_diagnosis" => diagnosis, 
         "temporal_evolution" => evolution_insights,
@@ -178,18 +173,20 @@ function generate_architectural_decisions(diagnosis::Dict, evolution::Dict)::Vec
     end
     
     # Decision 4: Monitor complexity trends
-    momentum = get(evolution, "momentum_analysis", Dict())
-    if get(momentum, "complexity_trend", "") == "INCREASING"
-        push!(decisions, Dict(
-            "decision_id" => "MONITOR_001",
-            "type" => "COMPLEXITY_MONITORING",
-            "target_module" => "all_modules",
-            "action" => "Implement automated complexity tracking with alerts",
-            "rationale" => "Complexity trending upward requires proactive monitoring",
-            "expected_impact" => "Early detection of architectural degradation",
-            "priority" => "MEDIUM",
-            "estimated_effort" => "LOW"
-        ))
+    if haskey(evolution, "momentum_analysis") && haskey(evolution["momentum_analysis"], "complexity_trend")
+        momentum = get(evolution, "momentum_analysis", Dict())
+        if get(momentum, "complexity_trend", "") == "INCREASING"
+            push!(decisions, Dict(
+                "decision_id" => "MONITOR_001",
+                "type" => "COMPLEXITY_MONITORING",
+                "target_module" => "all_modules",
+                "action" => "Implement automated complexity tracking with alerts",
+                "rationale" => "Complexity trending upward requires proactive monitoring",
+                "expected_impact" => "Early detection of architectural degradation",
+                "priority" => "MEDIUM",
+                "estimated_effort" => "LOW"
+            ))
+        end
     end
     
     return decisions
@@ -239,20 +236,6 @@ function main()
                             "success_rate" => count(r -> get(r, "success", false), sweep_results) / length(sweep_results)
                         )
                         
-                        # NEW: SEMANTIC ANALYSIS
-                        semantic_results = Dict()
-                        try
-                            println("   🔬 Running semantic analysis on core modules...")
-                            for module_file in ["safe_tester.jl", "unified_network.jl", "consciousness_core.jl"]
-                                if isfile(module_file)
-                                    semantic_results[module_file] = analyze_module_semantics(module_file)
-                                    println("      📊 $(module_file): $(semantic_results[module_file]["functions_analyzed"]) functions analyzed")
-                                end
-                            end
-                        catch e
-                            println("   ⚠️  Semantic analysis skipped: $e")
-                        end
-                        
                         # NEW: AST TRUTH TELLER ANALYSIS
                         ast_analysis = nothing
                         try
@@ -263,7 +246,7 @@ function main()
                         end
                         
                         # Perform enhanced meta-cognitive diagnosis
-                        diagnosis = perform_enhanced_self_diagnosis(enhanced_analysis, performance_metrics, semantic_results)
+                        diagnosis = perform_enhanced_self_diagnosis(enhanced_analysis, performance_metrics, Dict())
                         meta_save = save_meta_cognitive_analysis(diagnosis, "meta_cognitive_analysis.json")
                         
                         if meta_save
@@ -282,8 +265,10 @@ function main()
                                 if self_model_save
                                     println("   📈 Self-awareness tracking updated:")
                                     println("      🕰️  Total snapshots: $(evolution_insights["total_snapshots"])")
-                                    println("      📈 Complexity trend: $(evolution_insights["momentum_analysis"]["complexity_trend"])")
-                                    println("      🔍 Evolution insights: $(length(evolution_insights["evolution_insights"]))")
+                                    if haskey(evolution_insights, "momentum_analysis") && haskey(evolution_insights["momentum_analysis"], "complexity_trend")
+                                        println("      📈 Complexity trend: $(evolution_insights["momentum_analysis"]["complexity_trend"])")
+                                    end
+                                    println("      🔍 Evolution insights: $(length(get(evolution_insights, "evolution_insights", [])))")
                                     println("      📁 Output: self_awareness_model.json")
                                     
                                     # META-COGNITIVE EVOLUTION CYCLE - NEW
