@@ -25,7 +25,7 @@ function semantic_hash(code::String)::Vector{Float64}
     # Simple but effective: capture semantic patterns without syntax
     tokens = split(code, r"\W+")
     features = [
-        length(code) / 1000,                    # Size feature
+        length(code) / 1000.0,                    # Size feature
         count_contains(code, ["function", "if", "for"]), # Control flow density
         count_contains(code, ["phi", "consciousness"]),  # Domain concepts
         # Add more semantic features...
@@ -36,9 +36,9 @@ end
 function count_contains(code::String, patterns::Vector{String})::Float64
     count = 0.0
     for pattern in patterns
-        count += occursin(pattern, code)
+        count += occursin(pattern, code) ? 1.0 : 0.0
     end
-    return Float64(count)
+    return count
 end
 
 function normalize(features::Vector{Float64})::Vector{Float64}
@@ -50,9 +50,9 @@ function structural_fingerprint(code::String)::Vector{Float64}
     # Simple structural analysis
     lines = split(code, '\n')
     features = [
-        Float64(length(lines)) / 100,           # Number of lines
+        Float64(length(lines)) / 100.0,           # Number of lines
         Float64(count(l -> occursin(r"^function", l), lines)), # Function count
-        Float64(count(l -> occursin(r"^#", l), lines)) / max(1, length(lines)), # Comment density
+        Float64(count(l -> occursin(r"^#", l), lines)) / max(1.0, length(lines)), # Comment density
     ]
     return normalize(features)
 end
@@ -69,11 +69,11 @@ end
 
 function generate_embeddings_for_modules(modules::Vector{String})::Dict{String, Any}
     embeddings = Dict{String, Any}()
-    for module in modules
-        if isfile(module)
-            code = read(module, String)
+    for mod in modules
+        if isfile(mod)
+            code = read(mod, String)
             embedding = generate_embedding(code)
-            embeddings[module] = Dict(
+            embeddings[mod] = Dict(
                 "semantic" => embedding.semantic_vector,
                 "structural" => embedding.structural_fingerprint,
                 "functional" => embedding.functional_signature
