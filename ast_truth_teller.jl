@@ -415,3 +415,28 @@ function simulate_regex_score(filename::String)::Float64
 end
 
 function generate_overall_advice(prescriptions::Vector{Dict})::String
+    high_priority = count(p -> p["priority"] == "HIGH", prescriptions)
+    medium_priority = count(p -> p["priority"] == "MEDIUM", prescriptions)
+    
+    if high_priority > 0
+        return "Focus on $(high_priority) high-priority AST-identified issues first"
+    elseif medium_priority > 0
+        return "Address $(medium_priority) medium-priority structural issues"
+    else
+        return "Code structure is generally sound - focus on functionality"
+    end
+end
+
+function assess_overall_health(avg_health::Float64, total_issues::Int)::String
+    if avg_health > 0.8 && total_issues == 0
+        return "EXCELLENT"
+    elseif avg_health > 0.7 && total_issues < 3
+        return "GOOD"
+    elseif avg_health > 0.5
+        return "NEEDS_ATTENTION"
+    else
+        return "CRITICAL"
+    end
+end
+
+end # module ASTTruthTeller
