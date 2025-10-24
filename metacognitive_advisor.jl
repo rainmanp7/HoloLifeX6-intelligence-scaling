@@ -4,6 +4,14 @@
 
 using JSON, Dates, Statistics, LinearAlgebra
 
+# 🚨 METACOGNITION GUARD RAIL - PREVENT EXECUTION AS MAIN PROGRAM
+if abspath(PROGRAM_FILE) == @__FILE__
+    println("🚨 CRITICAL: Metacognition attempting to run as main program")
+    println("🚨 ABORTING: This file should only be imported, not executed directly")
+    println("🚨 EXECUTE main_orchestrator.jl instead")
+    exit(1)
+end
+
 function generate_architectural_analysis(graph::Any, recent_performance::Any)
     println("🧠 EMERGENCE-AWARE METACOGNITION: Analyzing $(length(graph)) modules...")
     
