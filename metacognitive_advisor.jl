@@ -1,16 +1,7 @@
 # 👁️ METACOGNITIVE VISOR - EMERGENCE-AWARE VERSION
 # Fixed to recognize unified intelligence patterns, not false duplication
-# SAFE: Runs post-hoc, writes JSON after system completion
 
 using JSON, Dates, Statistics, LinearAlgebra
-
-# 🚨 METACOGNITION GUARD RAIL - PREVENT EXECUTION AS MAIN PROGRAM
-if abspath(PROGRAM_FILE) == @__FILE__
-    println("🚨 CRITICAL: Metacognition attempting to run as main program")
-    println("🚨 ABORTING: This file should only be imported, not executed directly")
-    println("🚨 EXECUTE main_orchestrator.jl instead")
-    exit(1)
-end
 
 function generate_architectural_analysis(graph::Any, recent_performance::Any)
     println("🧠 EMERGENCE-AWARE METACOGNITION: Analyzing $(length(graph)) modules...")
@@ -323,7 +314,12 @@ function extract_performance_data(recent_performance::Any)::Dict
 end
 
 function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
-    # Try multiple possible locations for semantic vectors
+    # BRIDGE: Handle CodeEntity objects from semantic_code_graph.jl
+    if typeof(data).name.name == :CodeEntity && hasproperty(data, :embeddings)
+        return data.embeddings  # Extract from CodeEntity without modification
+    end
+    
+    # Keep all existing logic exactly as is
     if hasproperty(data, :semantic_vector)
         vec = getproperty(data, :semantic_vector)
         return isa(vec, Vector{Float64}) ? vec : nothing
@@ -428,34 +424,5 @@ function export_health_report(insights::Any)::Dict
     )
 end
 
-# ==================== SAFE JSON EXPORT ====================
-
-function export_metacognition_results(insights::Any, filename::String="metacognition_insights.json")::String
-    """
-    SAFE POST-HOC EXPORT: Writes insights to JSON after system completes
-    Zero interference with main execution
-    """
-    try
-        health_report = export_health_report(insights)
-        
-        # Add completion metadata
-        health_report["analysis_completed_at"] = string(Dates.now())
-        health_report["export_status"] = "POST_HOC_SAFE"
-        health_report["interference_level"] = "ZERO"
-        
-        # Write to file safely
-        open(filename, "w") do f
-            JSON.print(f, health_report, 4)
-        end
-        
-        println("💾 Metacognition results saved to: $filename")
-        return filename
-    catch e
-        # If export fails, system continues unaffected
-        println("⚠️  Metacognition export failed (non-critical): $e")
-        return "export_failed_but_system_ok"
-    end
-end
-
 # Export functions for orchestrator
-export generate_architectural_analysis, export_health_report, export_metacognition_results
+export generate_architectural_analysis, export_health_report
