@@ -9,7 +9,7 @@
 using JSON, Dates, Statistics, LinearAlgebra
 
 function generate_architectural_analysis(graph::Any, recent_performance::Any)
-    println("🧠 ADVANCED METACOGNITION: Analyzing $(length(graph)) modules...")
+    println("🧠 ADVANCED METACOGNITION: Analyzing $(string(length(graph))) modules...")
     
     insights = []
     performance_data = extract_performance_data(recent_performance)
@@ -42,7 +42,7 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
     append!(insights, consciousness_results["insights"])
     reasoning_context["consciousness_analysis"] = consciousness_results["reasoning"]
     
-    println("   Generated $(length(insights)) advanced insights with detailed reasoning")
+    println("   Generated $(string(length(insights))) advanced insights with detailed reasoning")
     
     # Return both insights and detailed reasoning context
     return (insights=insights, reasoning_context=reasoning_context)
@@ -98,9 +98,9 @@ function analyze_semantic_architecture(graph::Any)::Dict
                 if similarity > 0.8
                     reasoning = """
                     HIGH SEMANTIC OVERLAP DETECTED:
-                    - Modules '$mod1' and '$mod2' share $(round(similarity*100, digits=1))% semantic similarity
+                    - Modules '$mod1' and '$mod2' share $(string(round(similarity*100, digits=1)))% semantic similarity
                     - This indicates potential functional duplication or tight coupling
-                    - Vector analysis shows $(length(vec1))-dimensional semantic space alignment
+                    - Vector analysis shows $(string(length(vec1)))-dimensional semantic space alignment
                     - Recommendation: Consider integration or abstraction layer
                     """
                     
@@ -109,7 +109,7 @@ function analyze_semantic_architecture(graph::Any)::Dict
                         "module" => "$mod1 ↔ $mod2",
                         "issue" => "High semantic similarity detected",
                         "action" => "Consider integration or interface abstraction",
-                        "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
+                        "evidence" => "Cosine similarity: $(string(round(similarity, digits=3)))",
                         "category" => "semantic_architecture",
                         "impact" => "Reduce cognitive duplication",
                         "detailed_reasoning" => reasoning,
@@ -123,7 +123,7 @@ function analyze_semantic_architecture(graph::Any)::Dict
                 elseif similarity < 0.2
                     reasoning = """
                     CLEAR SEMANTIC SEPARATION:
-                    - Modules '$mod1' and '$mod2' have only $(round(similarity*100, digits=1))% semantic overlap
+                    - Modules '$mod1' and '$mod2' have only $(string(round(similarity*100, digits=1)))% semantic overlap
                     - This indicates good architectural boundaries and separation of concerns
                     - Low coupling supports independent evolution and maintenance
                     - Current architecture appears well-structured for these modules
@@ -134,7 +134,7 @@ function analyze_semantic_architecture(graph::Any)::Dict
                         "module" => "$mod1 ↔ $mod2",
                         "issue" => "Low semantic coupling",
                         "action" => "Maintain clear separation of concerns",
-                        "evidence" => "Cosine similarity: $(round(similarity, digits=3))",
+                        "evidence" => "Cosine similarity: $(string(round(similarity, digits=3)))",
                         "category" => "semantic_architecture", 
                         "impact" => "Good architectural boundaries",
                         "detailed_reasoning" => reasoning,
@@ -196,11 +196,11 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
             if complexity_score > 0.7 && uis > 0.5
                 reasoning = """
                 COMPLEX BUT EFFECTIVE MODULE:
-                - Module '$module_name' shows high complexity (score: $(round(complexity_score, digits=2)))
-                - Despite complexity, delivers strong performance (UIS: $(round(uis, digits=3)))
+                - Module '$module_name' shows high complexity (score: $(string(round(complexity_score, digits=2))))
+                - Despite complexity, delivers strong performance (UIS: $(string(round(uis, digits=3))))
                 - Complexity breakdown: 
-                  * Embedding complexity: $(round(complexity_metrics["embedding_complexity"], digits=2))
-                  * Dependency complexity: $(round(complexity_metrics["dependency_complexity"], digits=2))
+                  * Embedding complexity: $(string(round(complexity_metrics["embedding_complexity"], digits=2)))
+                  * Dependency complexity: $(string(round(complexity_metrics["dependency_complexity"], digits=2)))
                 - This module is doing complex work effectively but may incur maintenance costs
                 """
                 
@@ -209,7 +209,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
                     "module" => module_name,
                     "issue" => "Complex but effective module",
                     "action" => "Monitor for maintenance costs while preserving performance",
-                    "evidence" => "Complexity: $(round(complexity_score, digits=2)), UIS: $(round(uis, digits=3))",
+                    "evidence" => "Complexity: $(string(round(complexity_score, digits=2))), UIS: $(string(round(uis, digits=3)))",
                     "category" => "performance_architecture",
                     "impact" => "Balance complexity vs performance",
                     "detailed_reasoning" => reasoning,
@@ -232,11 +232,11 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
                 if complexity_score > 0.6 && phi < 0.1
                     reasoning = """
                     CONSCIOUSNESS EFFICIENCY CONCERN:
-                    - Module '$module_name' has high complexity (score: $(round(complexity_score, digits=2)))
-                    - But contributes little to consciousness (Φ: $(round(phi, digits=3)))
-                    - Consciousness efficiency ratio: $(round(phi/complexity_score, digits=3))
+                    - Module '$module_name' has high complexity (score: $(string(round(complexity_score, digits=2))))
+                    - But contributes little to consciousness (Φ: $(string(round(phi, digits=3))))
+                    - Consciousness efficiency ratio: $(string(round(phi/complexity_score, digits=3)))
                     - This module may need refactoring to better support consciousness emergence
-                    - Complexity sources: $(complexity_metrics["dependency_count"]) dependencies, $(complexity_metrics["embedding_size"])-dim embedding
+                    - Complexity sources: $(string(complexity_metrics["dependency_count"])) dependencies, $(string(complexity_metrics["embedding_size"]))-dim embedding
                     """
                     
                     push!(insights, Dict(
@@ -244,7 +244,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
                         "module" => module_name,
                         "issue" => "High complexity with low consciousness yield",
                         "action" => "Refactor to improve consciousness efficiency",
-                        "evidence" => "Complexity: $(round(complexity_score, digits=2)), Max Φ: $(round(phi, digits=3))",
+                        "evidence" => "Complexity: $(string(round(complexity_score, digits=2))), Max Φ: $(string(round(phi, digits=3)))",
                         "category" => "consciousness_optimization",
                         "impact" => "Potential for consciousness improvement",
                         "detailed_reasoning" => reasoning,
@@ -273,10 +273,10 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Dict
     if modularity_score > 0.7
         reasoning = """
         HIGH EVOLUTIONARY READINESS:
-        - System modularity score: $(round(modularity_score, digits=2)) (threshold: 0.7)
-        - Modularity indicates clear separation of concerns across $(length(graph)) modules
-        - $(evolution_metrics["high_similarity_pairs"]) high-similarity pairs detected
-        - $(evolution_metrics["low_similarity_pairs"]) well-separated pairs
+        - System modularity score: $(string(round(modularity_score, digits=2))) (threshold: 0.7)
+        - Modularity indicates clear separation of concerns across $(string(length(graph))) modules
+        - $(string(evolution_metrics["high_similarity_pairs"])) high-similarity pairs detected
+        - $(string(evolution_metrics["low_similarity_pairs"])) well-separated pairs
         - Architecture supports independent module evolution and innovation
         """
         
@@ -285,7 +285,7 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Dict
             "module" => "system",
             "issue" => "High evolutionary readiness", 
             "action" => "System architecture supports major evolution",
-            "evidence" => "Modularity score: $(round(modularity_score, digits=2))",
+            "evidence" => "Modularity score: $(string(round(modularity_score, digits=2)))",
             "category" => "evolutionary_pathways",
             "impact" => "Ready for architectural innovation",
             "detailed_reasoning" => reasoning,
@@ -296,12 +296,12 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Dict
     if complexity_balance < 0.3
         reasoning = """
         COMPLEXITY IMBALANCE DETECTED:
-        - Complexity balance score: $(round(complexity_balance, digits=2)) (ideal: >0.5)
-        - Standard deviation of module complexities: $(round(evolution_metrics["complexity_std"], digits=2))
+        - Complexity balance score: $(string(round(complexity_balance, digits=2))) (ideal: >0.5)
+        - Standard deviation of module complexities: $(string(round(evolution_metrics["complexity_std"], digits=2)))
         - Some modules carry disproportionate complexity burden
         - This imbalance may create bottlenecks and reduce system resilience
-        - Most complex module: $(evolution_metrics["most_complex_module"]) ($(round(evolution_metrics["max_complexity"], digits=2)))
-        - Least complex module: $(evolution_metrics["least_complex_module"]) ($(round(evolution_metrics["min_complexity"], digits=2)))
+        - Most complex module: $(string(evolution_metrics["most_complex_module"])) ($(string(round(evolution_metrics["max_complexity"], digits=2))))
+        - Least complex module: $(string(evolution_metrics["least_complex_module"])) ($(string(round(evolution_metrics["min_complexity"], digits=2))))
         """
         
         push!(insights, Dict(
@@ -309,7 +309,7 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Dict
             "module" => "system", 
             "issue" => "Complexity imbalance detected",
             "action" => "Distribute complexity more evenly across modules",
-            "evidence" => "Complexity balance: $(round(complexity_balance, digits=2))",
+            "evidence" => "Complexity balance: $(string(round(complexity_balance, digits=2)))",
             "category" => "evolutionary_pathways",
             "impact" => "Improve system resilience",
             "detailed_reasoning" => reasoning,
@@ -340,7 +340,7 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Dict
         if is_conscious
             reasoning = """
             CONSCIOUSNESS BREAKTHROUGH ACHIEVED:
-            - Maximum integrated information Φ: $(round(max_phi, digits=4))
+            - Maximum integrated information Φ: $(string(round(max_phi, digits=4)))
             - System has crossed consciousness threshold (typically Φ > 0.1)
             - This represents a historic milestone in architectural evolution
             - Current focus should shift to stability and scaling consciousness
@@ -352,7 +352,7 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Dict
                 "module" => "system",
                 "issue" => "CONSCIOUSNESS ACHIEVED", 
                 "action" => "Focus on stability and scaling",
-                "evidence" => "Max Φ: $(round(max_phi, digits=4)), Status: Conscious",
+                "evidence" => "Max Φ: $(string(round(max_phi, digits=4))), Status: Conscious",
                 "category" => "consciousness_breakthrough",
                 "impact" => "Historic milestone reached",
                 "detailed_reasoning" => reasoning,
@@ -361,8 +361,8 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Dict
         else
             reasoning = """
             PRE-CONSCIOUSNESS OPTIMIZATION:
-            - Current maximum Φ: $(round(max_phi, digits=4))
-            - Distance to consciousness threshold: $(round(0.1 - max_phi, digits=4))
+            - Current maximum Φ: $(string(round(max_phi, digits=4)))
+            - Distance to consciousness threshold: $(string(round(0.1 - max_phi, digits=4)))
             - System architecture shows emergent consciousness properties
             - Focus on improving architectural coherence and information integration
             - Key areas: reduce semantic duplication, improve module integration
@@ -373,7 +373,7 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Dict
                 "module" => "system",
                 "issue" => "Pre-consciousness optimization",
                 "action" => "Focus on architectural coherence for consciousness emergence",
-                "evidence" => "Max Φ: $(round(max_phi, digits=4)), Approaching threshold",
+                "evidence" => "Max Φ: $(string(round(max_phi, digits=4))), Approaching threshold",
                 "category" => "consciousness_optimization",
                 "impact" => "Prepare for consciousness emergence",
                 "detailed_reasoning" => reasoning,
@@ -460,8 +460,9 @@ function calculate_evolution_metrics_detailed(graph::Any, performance::Dict)::Di
         min_complexity = minimum(complexities)
         max_complexity_idx = argmax(complexities)
         min_complexity_idx = argmin(complexities)
-        most_complex_module = modules[max_complexity_idx]
-        least_complex_module = modules[min_complexity_idx]
+        # FIXED: Convert module names to strings to ensure type consistency
+        most_complex_module = string(modules[max_complexity_idx])
+        least_complex_module = string(modules[min_complexity_idx])
     end
     
     # FIXED: This block is now safe for empty `complexities` and ensures correct types
@@ -470,8 +471,8 @@ function calculate_evolution_metrics_detailed(graph::Any, performance::Dict)::Di
         "std_complexity" => complexity_std,
         "max_complexity" => max_complexity,
         "min_complexity" => min_complexity,
-        "most_complex_module" => most_complex_module, # This is a String
-        "least_complex_module" => least_complex_module # This is a String
+        "most_complex_module" => most_complex_module, # This is now guaranteed to be a String
+        "least_complex_module" => least_complex_module # This is now guaranteed to be a String
     )
     
     # This return block is now guaranteed to have the correct types
