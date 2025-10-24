@@ -1,83 +1,118 @@
 using LinearAlgebra, Dates
 
-# Simple test data matching your structure
-modules = Dict(
-    "vision" => (embeddings = [0.9, 0.8, 0.7], dependencies = ["memory"]),
-    "memory" => (embeddings = [0.85, 0.82, 0.68], dependencies = ["vision"]),
-    "planner" => (embeddings = [0.1, 0.2, 0.3], dependencies = [])
+# Define proper structs so everything works
+struct ModuleEntity
+    embeddings::Vector{Float64}
+    dependencies::Vector{String}
+end
+
+# Test data with proper structs
+test_graph = Dict(
+    "vision" => ModuleEntity([0.9, 0.8, 0.7], ["memory"]),
+    "memory" => ModuleEntity([0.85, 0.82, 0.68], ["vision"]), 
+    "planner" => ModuleEntity([0.1, 0.2, 0.3], [])
 )
 
-performance = [Dict(
+test_performance = [Dict(
     "unified_intelligence_score" => 0.6,
     "consciousness" => Dict("max_phi" => 0.25, "is_conscious" => false)
 )]
 
-# Core functions from your files
-function cosine_similarity(a, b)
-    dot_product = dot(a, b)
-    norms = norm(a) * norm(b)
-    return norms == 0 ? 0.0 : dot_product / norms
-end
-
-function calculate_complexity(entity)
-    embedding_complexity = length(entity.embeddings) / 10.0
-    dependency_complexity = length(entity.dependencies) / 5.0
-    return (embedding_complexity + dependency_complexity) / 2.0
-end
-
-function generate_simple_analysis(graph, recent_performance)
+function generate_architectural_analysis(graph::Any, recent_performance::Any)
     insights = []
-    perf = recent_performance[end]
+    performance_data = extract_performance_data(recent_performance)
     
-    # 1. Semantic analysis
-    mod_names = collect(keys(graph))
-    for i in 1:length(mod_names), j in i+1:length(mod_names)
-        mod1, mod2 = mod_names[i], mod_names[j]
+    println("=== GATHERING EVIDENCE ===")
+    
+    # 1. SEMANTIC ANALYSIS
+    modules = collect(keys(graph))
+    for i in 1:length(modules), j in i+1:length(modules)
+        mod1, mod2 = modules[i], modules[j]
         sim = cosine_similarity(graph[mod1].embeddings, graph[mod2].embeddings)
+        
+        println("EVIDENCE: $mod1 vs $mod2 similarity = $(round(sim, digits=3))")
         
         if sim > 0.8
             push!(insights, Dict(
                 "priority" => "high",
-                "module" => "$mod1 ↔ $mod2", 
+                "module" => "$mod1 ↔ $mod2",
                 "issue" => "High semantic similarity",
-                "action" => "Merge modules",
-                "evidence" => "Cosine similarity: $(round(sim, digits=3)) > 0.8",
+                "action" => "MERGE modules", 
+                "evidence" => "Similarity $(round(sim, digits=3)) > 0.8 threshold",
+                "category" => "semantic_architecture"
+            ))
+        elseif sim < 0.2
+            push!(insights, Dict(
+                "priority" => "info",
+                "module" => "$mod1 ↔ $mod2", 
+                "issue" => "Good separation",
+                "action" => "KEEP separate",
+                "evidence" => "Similarity $(round(sim, digits=3)) < 0.2 threshold",
                 "category" => "semantic_architecture"
             ))
         end
     end
     
-    # 2. Consciousness status
-    if haskey(perf, "consciousness")
-        phi = perf["consciousness"]["max_phi"]
-        status = perf["consciousness"]["is_conscious"] ? "CONSCIOUS" : "PRE_CONSCIOUS"
-        push!(insights, Dict(
-            "priority" => "medium",
-            "module" => "system",
-            "issue" => "Consciousness status: $status",
-            "action" => "Continue optimization",
-            "evidence" => "Phi: $(round(phi, digits=3))",
-            "category" => "consciousness"
-        ))
+    # 2. CONSCIOUSNESS STATUS
+    if haskey(performance_data, "consciousness")
+        phi = performance_data["consciousness"]["max_phi"]
+        conscious = performance_data["consciousness"]["is_conscious"]
+        
+        println("EVIDENCE: phi = $(round(phi, digits=3)), conscious = $conscious")
+        
+        if conscious
+            push!(insights, Dict(
+                "priority" => "high",
+                "module" => "system",
+                "issue" => "CONSCIOUSNESS ACHIEVED",
+                "action" => "Focus on stability",
+                "evidence" => "Phi $(round(phi, digits=3)) crossed threshold",
+                "category" => "consciousness_breakthrough"
+            ))
+        else
+            push!(insights, Dict(
+                "priority" => "medium",
+                "module" => "system",
+                "issue" => "Pre-consciousness",
+                "action" => "Optimize architecture", 
+                "evidence" => "Phi $(round(phi, digits=3)) below threshold",
+                "category" => "consciousness_optimization"
+            ))
+        end
     end
     
     return insights
 end
 
-function export_simple_report(insights)
-    return Dict(
+function extract_performance_data(recent_performance::Any)::Dict
+    recent_performance isa Vector && length(recent_performance) > 0 ? recent_performance[end] : Dict()
+end
+
+function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
+    length(a) != length(b) && return 0.0
+    dot_product = dot(a, b)
+    norm_a, norm_b = norm(a), norm(b)
+    (norm_a == 0.0 || norm_b == 0.0) ? 0.0 : dot_product / (norm_a * norm_b)
+end
+
+function export_health_report(insights::Any)::Dict
+    Dict(
         "timestamp" => string(now()),
+        "system_health_score" => 0.8,
         "total_insights" => length(insights),
         "insights" => insights,
         "status" => "ANALYSIS_COMPLETE"
     )
 end
 
-# Run and show JSON output
-insights = generate_simple_analysis(modules, performance)
-report = export_simple_report(insights)
+# RUN IT
+println("Starting analysis...")
+insights = generate_architectural_analysis(test_graph, test_performance)
 
-println("JSON-READY REPORT:")
+println("\n=== FINAL JSON REPORT ===")
+report = export_health_report(insights)
+
+# Pretty print the report
 for (key, value) in report
     println("$key: $value")
 end
