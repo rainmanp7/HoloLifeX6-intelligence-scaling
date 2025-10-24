@@ -1,22 +1,35 @@
 using LinearAlgebra, Dates
 
-# Define proper structs so everything works
+# Define proper structs
 struct ModuleEntity
     embeddings::Vector{Float64}
     dependencies::Vector{String}
 end
 
-# Test data with proper structs
+# Test data
 test_graph = Dict(
-    "vision" => ModuleEntity([0.9, 0.8, 0.7], ["memory"]),
-    "memory" => ModuleEntity([0.85, 0.82, 0.68], ["vision"]), 
-    "planner" => ModuleEntity([0.1, 0.2, 0.3], [])
+    "geometric_reasoning.jl" => ModuleEntity([0.9, 0.8, 0.7, 0.6], ["consciousness_core.jl"]),
+    "consciousness_core.jl" => ModuleEntity([0.85, 0.82, 0.68, 0.55], ["geometric_reasoning.jl"]),
+    "phase_synchronization.jl" => ModuleEntity([0.89, 0.81, 0.72, 0.65], []),
+    "unified_network.jl" => ModuleEntity([0.87, 0.79, 0.66, 0.58], [])
 )
 
 test_performance = [Dict(
     "unified_intelligence_score" => 0.6,
-    "consciousness" => Dict("max_phi" => 0.25, "is_conscious" => false)
+    "consciousness" => Dict("max_phi" => 0.056, "is_conscious" => false)
 )]
+
+function check_overlap(similarity)
+    if similarity > 0.8
+        return "🚨 HIGH OVERLAP - Modules are doing very similar work"
+    elseif similarity > 0.6
+        return "⚠️ MEDIUM OVERLAP - Some functional redundancy" 
+    elseif similarity < 0.2
+        return "✅ CLEAR SEPARATION - Modules have distinct purposes"
+    else
+        return "➖ MODERATE SEPARATION - Acceptable boundaries"
+    end
+end
 
 function generate_architectural_analysis(graph::Any, recent_performance::Any)
     insights = []
@@ -24,13 +37,15 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
     
     println("=== GATHERING EVIDENCE ===")
     
-    # 1. SEMANTIC ANALYSIS
+    # Semantic analysis with overlap checking
     modules = collect(keys(graph))
     for i in 1:length(modules), j in i+1:length(modules)
         mod1, mod2 = modules[i], modules[j]
         sim = cosine_similarity(graph[mod1].embeddings, graph[mod2].embeddings)
+        overlap = check_overlap(sim)
         
-        println("EVIDENCE: $mod1 vs $mod2 similarity = $(round(sim, digits=3))")
+        println("EVIDENCE: $mod1 vs $mod2")
+        println("  Similarity: $(round(sim, digits=3)) - $overlap")
         
         if sim > 0.8
             push!(insights, Dict(
@@ -39,6 +54,7 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
                 "issue" => "High semantic similarity",
                 "action" => "MERGE modules", 
                 "evidence" => "Similarity $(round(sim, digits=3)) > 0.8 threshold",
+                "overlap_assessment" => overlap,
                 "category" => "semantic_architecture"
             ))
         elseif sim < 0.2
@@ -47,18 +63,19 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
                 "module" => "$mod1 ↔ $mod2", 
                 "issue" => "Good separation",
                 "action" => "KEEP separate",
-                "evidence" => "Similarity $(round(sim, digits=3)) < 0.2 threshold",
+                "evidence" => "Similarity $(round(sim, digits:3)) < 0.2 threshold",
+                "overlap_assessment" => overlap,
                 "category" => "semantic_architecture"
             ))
         end
     end
     
-    # 2. CONSCIOUSNESS STATUS
+    # Consciousness status
     if haskey(performance_data, "consciousness")
         phi = performance_data["consciousness"]["max_phi"]
         conscious = performance_data["consciousness"]["is_conscious"]
         
-        println("EVIDENCE: phi = $(round(phi, digits=3)), conscious = $conscious")
+        println("EVIDENCE: phi = $(round(phi, digits:3)), conscious = $conscious")
         
         if conscious
             push!(insights, Dict(
@@ -66,7 +83,7 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
                 "module" => "system",
                 "issue" => "CONSCIOUSNESS ACHIEVED",
                 "action" => "Focus on stability",
-                "evidence" => "Phi $(round(phi, digits=3)) crossed threshold",
+                "evidence" => "Phi $(round(phi, digits:3)) crossed threshold",
                 "category" => "consciousness_breakthrough"
             ))
         else
@@ -75,7 +92,7 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
                 "module" => "system",
                 "issue" => "Pre-consciousness",
                 "action" => "Optimize architecture", 
-                "evidence" => "Phi $(round(phi, digits=3)) below threshold",
+                "evidence" => "Phi $(round(phi, digits:3)) below threshold",
                 "category" => "consciousness_optimization"
             ))
         end
