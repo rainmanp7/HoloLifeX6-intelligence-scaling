@@ -34,7 +34,7 @@ function generate_architectural_analysis(graph::Any, recent_performance::Any)
     return insights
 end
 
-function analyze_semantic_architecture(graph::Any)::Vector{Dict}
+function analyze_semantic_architecture(graph::Any)
     insights = []
     modules = collect(keys(graph))
     
@@ -87,7 +87,7 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
     return insights
 end
 
-function analyze_performance_correlations(graph::Any, performance::Dict)::Vector{Dict}
+function analyze_performance_correlations(graph::Any, performance::Dict)
     insights = []
     
     # Correlate module complexity with performance metrics
@@ -137,7 +137,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
     return insights
 end
 
-function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dict}
+function detect_evolutionary_pathways(graph::Any, performance::Dict)
     insights = []
     
     # Analyze system readiness for evolution
@@ -176,7 +176,7 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dic
     return insights
 end
 
-function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vector{Dict}
+function analyze_consciousness_optimization(graph::Any, performance::Dict)
     insights = []
     
     if haskey(performance, "consciousness")
@@ -234,16 +234,23 @@ end
 
 # ==================== ANALYTICAL ENGINE ====================
 
-function calculate_module_complexity(entity)::Float64
+function calculate_module_complexity(entity)
     # Multi-factor complexity assessment
-    embedding_size = get_semantic_vector(entity)
-    embedding_complexity = !isnothing(embedding_size) ? length(embedding_size) / 10.0 : 0.5  # Normalize
-    dependency_complexity = hasproperty(entity, :dependencies) ? length(entity.dependencies) / 5.0 : 0.5  # Normalize
+    embedding_vec = get_semantic_vector(entity)
+    embedding_complexity = !isnothing(embedding_vec) ? length(embedding_vec) / 10.0 : 0.5  # Normalize
+    
+    # Handle dependencies safely
+    dependency_complexity = 0.5
+    if hasproperty(entity, :dependencies)
+        dependency_complexity = length(entity.dependencies) / 5.0
+    elseif isa(entity, Dict) && haskey(entity, "dependencies")
+        dependency_complexity = length(entity["dependencies"]) / 5.0
+    end
     
     return clamp((embedding_complexity + dependency_complexity) / 2.0, 0.0, 1.0)
 end
 
-function calculate_evolution_metrics(graph::Any, performance::Dict)::Dict
+function calculate_evolution_metrics(graph::Any, performance::Dict)
     modules = collect(keys(graph))
     
     # Calculate modularity based on semantic separation
@@ -271,7 +278,7 @@ function calculate_evolution_metrics(graph::Any, performance::Dict)::Dict
     )
 end
 
-function extract_performance_data(recent_performance::Any)::Dict
+function extract_performance_data(recent_performance::Any)
     if recent_performance isa Vector && length(recent_performance) > 0
         return recent_performance[end]
     else
@@ -279,7 +286,7 @@ function extract_performance_data(recent_performance::Any)::Dict
     end
 end
 
-function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
+function get_semantic_vector(data::Any)
     # Try multiple possible locations for semantic vectors
     if hasproperty(data, :semantic_vector)
         vec = getproperty(data, :semantic_vector)
@@ -294,6 +301,12 @@ function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
         if haskey(data, "semantic_vector")
             vec = data["semantic_vector"]
             return isa(vec, Vector{Float64}) ? vec : nothing
+        elseif haskey(data, "embeddings")
+            vec = data["embeddings"]
+            return isa(vec, Vector{Float64}) ? vec : nothing
+        elseif haskey(data, "embedding")
+            vec = data["embedding"]
+            return isa(vec, Vector{Float64}) ? vec : nothing
         elseif haskey(data, "semantic")
             vec = data["semantic"]
             return isa(vec, Vector{Float64}) ? vec : nothing
@@ -302,50 +315,16 @@ function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
     return nothing
 end
 
-function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
+function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})
     length(a) != length(b) && return 0.0
     dot_product = dot(a, b)
     norm_a, norm_b = norm(a), norm(b)
     return (norm_a == 0.0 || norm_b == 0.0) ? 0.0 : dot_product / (norm_a * norm_b)
 end
 
-# 🆕 FIXED SOLUTION-FOCUSED REPORTING FUNCTIONS
+# ==================== FIXED SOLUTION-FOCUSED REPORTING ====================
 
-function generate_evolutionary_roadmap(insights::Vector{Dict})::Dict
-    # Group insights by priority and generate actionable roadmap
-    critical_actions = filter(i -> get(i, "priority", "") == "critical", insights)
-    high_impact = filter(i -> get(i, "priority", "") == "high", insights)
-    medium_optimizations = filter(i -> get(i, "priority", "") == "medium", insights)
-    
-    # Extract solution prescriptions safely
-    immediate_solutions = [get(i, "solution", "No solution provided") for i in critical_actions]
-    strategic_solutions = [get(i, "solution", "No solution provided") for i in high_impact]
-    optimization_solutions = [get(i, "solution", "No solution provided") for i in medium_optimizations]
-    
-    # Determine overall direction
-    consciousness_insights = filter(i -> get(i, "category", "") in ["consciousness_optimization", "consciousness_breakthrough"], insights)
-    primary_focus = isempty(consciousness_insights) ? "Architectural stability" : "Consciousness emergence"
-    
-    # Calculate timeline based on issue severity
-    timeline = if !isempty(critical_actions)
-        "Immediate attention required (1-3 days)"
-    elseif !isempty(high_impact) 
-        "Strategic focus (1-2 weeks)"
-    else
-        "Optimization phase (2-4 weeks)"
-    end
-    
-    return Dict(
-        "immediate_actions" => immediate_solutions,
-        "strategic_initiatives" => strategic_solutions,
-        "optimization_opportunities" => optimization_solutions,
-        "primary_focus" => primary_focus,
-        "estimated_timeline" => timeline,
-        "total_prescriptions" => length(immediate_solutions) + length(strategic_solutions) + length(optimization_solutions)
-    )
-end
-
-function calculate_system_potential(insights::Vector{Dict})::Dict
+function calculate_system_potential(insights::Vector{Dict})
     # Calculate potential gains from implementing all solutions
     total_consciousness_boost = 0.0
     total_performance_gain = 0.0
@@ -399,7 +378,41 @@ function calculate_system_potential(insights::Vector{Dict})::Dict
     )
 end
 
-function export_health_report(insights::Any)::Dict
+function generate_evolutionary_roadmap(insights::Vector{Dict})
+    # Group insights by priority and generate actionable roadmap
+    critical_actions = filter(i -> get(i, "priority", "") == "critical", insights)
+    high_impact = filter(i -> get(i, "priority", "") == "high", insights)
+    medium_optimizations = filter(i -> get(i, "priority", "") == "medium", insights)
+    
+    # Extract solution prescriptions safely
+    immediate_solutions = [get(i, "solution", "No solution provided") for i in critical_actions]
+    strategic_solutions = [get(i, "solution", "No solution provided") for i in high_impact]
+    optimization_solutions = [get(i, "solution", "No solution provided") for i in medium_optimizations]
+    
+    # Determine overall direction
+    consciousness_insights = filter(i -> get(i, "category", "") in ["consciousness_optimization", "consciousness_breakthrough"], insights)
+    primary_focus = isempty(consciousness_insights) ? "Architectural stability" : "Consciousness emergence"
+    
+    # Calculate timeline based on issue severity
+    timeline = if !isempty(critical_actions)
+        "Immediate attention required (1-3 days)"
+    elseif !isempty(high_impact) 
+        "Strategic focus (1-2 weeks)"
+    else
+        "Optimization phase (2-4 weeks)"
+    end
+    
+    return Dict(
+        "immediate_actions" => immediate_solutions,
+        "strategic_initiatives" => strategic_solutions,
+        "optimization_opportunities" => optimization_solutions,
+        "primary_focus" => primary_focus,
+        "estimated_timeline" => timeline,
+        "total_prescriptions" => length(immediate_solutions) + length(strategic_solutions) + length(optimization_solutions)
+    )
+end
+
+function export_health_report(insights::Any)
     # Enhanced health scoring with solution awareness
     priority_weights = Dict("high" => 0.4, "medium" => 0.2, "low" => 0.05, "info" => 0.0)
     
@@ -429,7 +442,7 @@ function export_health_report(insights::Any)::Dict
     # Consciousness detection
     consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", insights)
     
-    # 🆕 ENHANCED REPORTING WITH FIXED FUNCTIONS
+    # 🆕 ENHANCED REPORTING
     potential_analysis = calculate_system_potential(insights)
     evolutionary_roadmap = generate_evolutionary_roadmap(insights)
     
