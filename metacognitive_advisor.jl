@@ -173,7 +173,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
         complexity_score = complexity_metrics["overall_complexity"]
         
         complexity_detail = Dict(
-            "module" => module_name,
+            "module" => string(module_name),  # FIXED: Convert Symbol to String
             "overall_complexity" => complexity_score,
             "embedding_complexity" => complexity_metrics["embedding_complexity"],
             "dependency_complexity" => complexity_metrics["dependency_complexity"],
@@ -186,7 +186,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
             uis = performance["unified_intelligence_score"]
             
             correlation_detail = Dict(
-                "module" => module_name,
+                "module" => string(module_name),  # FIXED: Convert Symbol to String
                 "complexity" => complexity_score,
                 "UIS" => uis,
                 "correlation_type" => "none"
@@ -196,7 +196,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
             if complexity_score > 0.7 && uis > 0.5
                 reasoning = """
                 COMPLEX BUT EFFECTIVE MODULE:
-                - Module '$module_name' shows high complexity (score: $(string(round(complexity_score, digits=2))))
+                - Module '$(string(module_name))' shows high complexity (score: $(string(round(complexity_score, digits=2))))
                 - Despite complexity, delivers strong performance (UIS: $(string(round(uis, digits=3))))
                 - Complexity breakdown: 
                   * Embedding complexity: $(string(round(complexity_metrics["embedding_complexity"], digits=2)))
@@ -206,7 +206,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
                 
                 push!(insights, Dict(
                     "priority" => "medium",
-                    "module" => module_name,
+                    "module" => string(module_name),  # FIXED: Convert Symbol to String
                     "issue" => "Complex but effective module",
                     "action" => "Monitor for maintenance costs while preserving performance",
                     "evidence" => "Complexity: $(string(round(complexity_score, digits=2))), UIS: $(string(round(uis, digits=3)))",
@@ -222,7 +222,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
             if haskey(performance, "consciousness") && haskey(performance["consciousness"], "max_phi")
                 phi = performance["consciousness"]["max_phi"]
                 consciousness_detail = Dict(
-                    "module" => module_name,
+                    "module" => string(module_name),  # FIXED: Convert Symbol to String
                     "complexity" => complexity_score,
                     "phi" => phi,
                     "efficiency_ratio" => complexity_score > 0 ? phi / complexity_score : 0
@@ -232,7 +232,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
                 if complexity_score > 0.6 && phi < 0.1
                     reasoning = """
                     CONSCIOUSNESS EFFICIENCY CONCERN:
-                    - Module '$module_name' has high complexity (score: $(string(round(complexity_score, digits=2))))
+                    - Module '$(string(module_name))' has high complexity (score: $(string(round(complexity_score, digits=2))))
                     - But contributes little to consciousness (Φ: $(string(round(phi, digits=3))))
                     - Consciousness efficiency ratio: $(string(round(phi/complexity_score, digits=3)))
                     - This module may need refactoring to better support consciousness emergence
@@ -241,7 +241,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Dict
                     
                     push!(insights, Dict(
                         "priority" => "high", 
-                        "module" => module_name,
+                        "module" => string(module_name),  # FIXED: Convert Symbol to String
                         "issue" => "High complexity with low consciousness yield",
                         "action" => "Refactor to improve consciousness efficiency",
                         "evidence" => "Complexity: $(string(round(complexity_score, digits=2))), Max Φ: $(string(round(phi, digits=3)))",
