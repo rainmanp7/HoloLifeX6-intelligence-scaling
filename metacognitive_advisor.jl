@@ -157,6 +157,27 @@ function safe_get(entity::Any, key::Union{String, Symbol}, default::Any=nothing)
     end
 end
 
+function get_file_name(entity::Any)::String
+    """Extract file name from entity (works with both Dict and struct)"""
+    # Try multiple possible field names
+    name = safe_get(entity, "file_name", nothing)
+    if !isnothing(name)
+        return string(name)
+    end
+    
+    name = safe_get(entity, "name", nothing)
+    if !isnothing(name)
+        return string(name)
+    end
+    
+    path = safe_get(entity, "file_path", nothing)
+    if !isnothing(path)
+        return basename(string(path))
+    end
+    
+    return "unknown"
+end
+
 function get_semantic_vector(entity::Any)::Union{Vector{Float64}, Nothing}
     vec = safe_get(entity, "semantic_vector", nothing)
     return vec
@@ -178,25 +199,12 @@ function cosine_similarity(vec1::Vector{Float64}, vec2::Vector{Float64})::Float6
 end
 
 function calculate_module_complexity(entity::Any)::Float64
-    line_count = safe_get(entity, "line_count", nothing)
-    function_count = safe_get(entity, "function_count", nothing)
     dependencies = safe_get(entity, "dependencies", [])
     
-    # If we don't have line_count/function_count (e.g., CodeEntity struct),
-    # estimate complexity just from dependencies
-    if isnothing(line_count) || isnothing(function_count)
-        normalized_deps = min(1.0, length(dependencies) / 10.0)
-        return normalized_deps * 0.5  # Conservative estimate based only on dependencies
-    end
-    
-    # Full calculation if we have all the data
-    normalized_lines = min(1.0, line_count / 500.0)  # 500 lines = high complexity
-    normalized_functions = min(1.0, function_count / 20.0)  # 20 functions = high complexity
+    # Estimate complexity primarily from dependencies
     normalized_deps = min(1.0, length(dependencies) / 10.0)  # 10 deps = high complexity
     
-    complexity = (normalized_lines * 0.4 + normalized_functions * 0.3 + normalized_deps * 0.3)
-    
-    return complexity
+    return normalized_deps
 end
 
 function extract_performance_data(recent_performance::Any)::Dict
@@ -415,13 +423,10 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                     clean_mod1 = replace(mod1, r"\.jl$" => "")
                     clean_mod2 = replace(mod2, r"\.jl$" => "")
                     
-                    # Get file paths or use names as fallback
-                    file1 = safe_get(entity1, "file_path", safe_get(entity1, "name", mod1))
-                    file2 = safe_get(entity2, "file_path", safe_get(entity2, "name", mod2))
-                    line1 = safe_get(entity1, "line_count", "?")
-                    line2 = safe_get(entity2, "line_count", "?")
-                    func1 = safe_get(entity1, "function_count", "?")
-                    func2 = safe_get(entity2, "function_count", "?")
+                    file1 = get_file_name(entity1)
+                    file2 = get_file_name(entity2)
+                    deps1 = length(safe_get(entity1, "dependencies", []))
+                    deps2 = length(safe_get(entity2, "dependencies", []))
 
                     push!(insights, Dict(
                         "priority" => "high",
@@ -436,17 +441,15 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                         "file_insights" => Dict(
                             "file1" => file1,
                             "file2" => file2,
-                            "file1_stats" => "$line1 lines, $func1 functions",
-                            "file2_stats" => "$line2 lines, $func2 functions"
+                            "file1_deps" => deps1,
+                            "file2_deps" => deps2
                         )
                     ))
                 elseif similarity < 0.2
-                    file1 = safe_get(entity1, "file_path", safe_get(entity1, "name", mod1))
-                    file2 = safe_get(entity2, "file_path", safe_get(entity2, "name", mod2))
-                    line1 = safe_get(entity1, "line_count", "?")
-                    line2 = safe_get(entity2, "line_count", "?")
-                    func1 = safe_get(entity1, "function_count", "?")
-                    func2 = safe_get(entity2, "function_count", "?")
+                    file1 = get_file_name(entity1)
+                    file2 = get_file_name(entity2)
+                    deps1 = length(safe_get(entity1, "dependencies", []))
+                    deps2 = length(safe_get(entity2, "dependencies", []))
                     
                     push!(insights, Dict(
                         "priority" => "info",
@@ -461,8 +464,8 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                         "file_insights" => Dict(
                             "file1" => file1,
                             "file2" => file2,
-                            "file1_stats" => "$line1 lines, $func1 functions",
-                            "file2_stats" => "$line2 lines, $func2 functions"
+                            "file1_deps" => deps1,
+                            "file2_deps" => deps2
                         )
                     ))
                 end
@@ -483,9 +486,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
             uis = performance["unified_intelligence_score"]
             
             if complexity > 0.7 && uis > 0.5
-                file_path = safe_get(entity, "file_path", safe_get(entity, "name", module_name))
-                line_count = safe_get(entity, "line_count", "?")
-                func_count = safe_get(entity, "function_count", "?")
+                file_name = get_file_name(entity)
                 deps = safe_get(entity, "dependencies", [])
                 
                 push!(insights, Dict(
@@ -493,17 +494,15 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                     "module" => module_name,
                     "issue" => "Complex but effective module",
                     "action" => "Monitor for maintenance costs while preserving performance",
-                    "evidence" => "Complexity: $(round(complexity, digits=2)), UIS: $(round(uis, digits=3)) | File: $file_path",
+                    "evidence" => "Complexity: $(round(complexity, digits=2)), UIS: $(round(uis, digits=3)) | File: $file_name",
                     "category" => "performance_architecture",
                     "impact" => "Balance complexity vs performance",
                     "solution" => "Extract core logic into helper modules, keep performance-critical parts",
                     "expected_gain" => "Maintainability: +40%, Performance: +0%",
                     "file_insights" => Dict(
-                        "file" => file_path,
-                        "line_count" => line_count,
-                        "function_count" => func_count,
+                        "file" => file_name,
                         "dependencies" => deps,
-                        "complexity_breakdown" => "Lines: $line_count, Functions: $func_count, Dependencies: $(length(deps))"
+                        "dependency_count" => length(deps)
                     )
                 ))
             end
@@ -512,9 +511,7 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                 phi = performance["consciousness"]["max_phi"]
                 if complexity > 0.6 && phi < 0.1
                     clean_module_name = replace(module_name, r"\.jl$" => "")
-                    file_path = safe_get(entity, "file_path", safe_get(entity, "name", module_name))
-                    line_count = safe_get(entity, "line_count", "?")
-                    func_count = safe_get(entity, "function_count", "?")
+                    file_name = get_file_name(entity)
                     deps = safe_get(entity, "dependencies", [])
                     
                     push!(insights, Dict(
@@ -522,16 +519,16 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                         "module" => module_name,
                         "issue" => "High complexity with low consciousness yield",
                         "action" => "Refactor to improve consciousness efficiency",
-                        "evidence" => "Complexity: $(round(complexity, digits=2)), Max Φ: $(round(phi, digits=3)) | File: $file_path",
+                        "evidence" => "Complexity: $(round(complexity, digits=2)), Max Φ: $(round(phi, digits=3)) | File: $file_name",
                         "category" => "consciousness_optimization",
                         "impact" => "Potential for consciousness improvement",
                         "solution" => "Break into smaller focused modules: $(clean_module_name)_processor.jl, $(clean_module_name)_coordinator.jl",
                         "expected_gain" => "Consciousness: +0.25, Complexity: -45%",
                         "file_insights" => Dict(
-                            "file" => file_path,
+                            "file" => file_name,
                             "current_complexity" => "High ($(round(complexity, digits=2)))",
                             "suggested_refactoring" => "Split into $(clean_module_name)_processor.jl and $(clean_module_name)_coordinator.jl",
-                            "current_structure" => "$line_count lines, $func_count functions, $(length(deps)) dependencies"
+                            "dependencies" => length(deps)
                         )
                     ))
                 end
@@ -548,22 +545,8 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dic
     evolution_metrics = calculate_evolution_metrics(graph, performance)
     
     if evolution_metrics["modularity"] > 0.7
-        # Get top 3 largest files for context - handle missing line_count
-        files_with_lines = []
-        for f in values(graph)
-            file_path = safe_get(f, "file_path", safe_get(f, "name", "unknown"))
-            line_count = safe_get(f, "line_count", nothing)
-            if !isnothing(line_count)
-                push!(files_with_lines, (file_path, line_count))
-            end
-        end
-        
-        if !isempty(files_with_lines)
-            files_by_size = sort(files_with_lines, by=x->x[2], rev=true)[1:min(3, length(files_with_lines))]
-        else
-            # If no line counts available, just use first 3 file names
-            files_by_size = [(safe_get(f, "file_path", safe_get(f, "name", "?")), "?") for f in collect(values(graph))[1:min(3, length(graph))]]
-        end
+        # Get file names for context
+        file_names = [get_file_name(f) for f in values(graph)]
         
         push!(insights, Dict(
             "priority" => "info",
@@ -578,15 +561,14 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dic
             "file_insights" => Dict(
                 "total_files_analyzed" => length(graph),
                 "modularity_score" => round(evolution_metrics["modularity"], digits=2),
-                "largest_files" => [f[1] for f in files_by_size],
-                "file_sizes" => ["$(f[1]): $(f[2]) lines" for f in files_by_size]
+                "files" => file_names
             )
         ))
     end
     
     if evolution_metrics["complexity_balance"] < 0.3
         # Find the most complex files
-        complexities = [(name, calculate_module_complexity(entity)) for (name, entity) in graph]
+        complexities = [(get_file_name(entity), calculate_module_complexity(entity)) for (name, entity) in graph]
         top_complex = sort(complexities, by=x->x[2], rev=true)[1:min(3, length(complexities))]
         
         push!(insights, Dict(
@@ -621,7 +603,7 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
         
         # Get system-wide file statistics
         total_files = length(graph)
-        total_lines = sum(f["line_count"] for f in values(graph))
+        file_names = [get_file_name(f) for f in values(graph)]
         avg_complexity = mean([calculate_module_complexity(f) for f in values(graph)])
         
         if is_conscious
@@ -636,10 +618,11 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
                 "solution" => "Monitor stability, document emergent behaviors, scale carefully",
                 "expected_gain" => "Stability: +100%",
                 "file_insights" => Dict(
-                    "system_stats" => "$total_files files, $total_lines total lines",
+                    "system_stats" => "$total_files files",
                     "average_complexity" => round(avg_complexity, digits=2),
                     "consciousness_level" => "ACHIEVED (Φ = $(round(max_phi, digits=4)))",
-                    "recommended_focus" => "Stability and scaling of current architecture"
+                    "recommended_focus" => "Stability and scaling of current architecture",
+                    "files" => file_names
                 )
             ))
         else
@@ -655,10 +638,11 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
                     "solution" => "Optimize module interfaces, ensure clean information flow",
                     "expected_gain" => "Consciousness: +0.3",
                     "file_insights" => Dict(
-                        "system_stats" => "$total_files files, $total_lines total lines",
+                        "system_stats" => "$total_files files",
                         "current_phi" => round(max_phi, digits=4),
                         "threshold_proximity" => "Very close (needs +$(round(0.7 - max_phi, digits=3)))",
-                        "critical_files" => "All module interfaces"
+                        "critical_files" => "All module interfaces",
+                        "files" => file_names
                     )
                 ))
             else
@@ -673,11 +657,12 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
                     "solution" => "Increase modularity, reduce cross-dependencies, optimize core pathways",
                     "expected_gain" => "Consciousness: +0.1, Stability: +10%",
                     "file_insights" => Dict(
-                        "system_stats" => "$total_files files, $total_lines total lines",
+                        "system_stats" => "$total_files files",
                         "average_complexity" => round(avg_complexity, digits=2),
                         "current_phi" => round(max_phi, digits=4),
                         "development_stage" => "Foundation building",
-                        "recommended_focus" => "Architectural coherence and modularity"
+                        "recommended_focus" => "Architectural coherence and modularity",
+                        "files" => file_names
                     )
                 ))
             end
@@ -694,7 +679,6 @@ function export_health_report(graph::Any, insights::Vector{Dict}, output_file::S
         "timestamp" => string(Dates.now()),
         "system_overview" => Dict(
             "total_modules" => length(graph),
-            "total_lines" => sum(safe_get(f, "line_count", 0) for f in values(graph)),
             "health_score" => calculate_health_score(graph, insights)
         ),
         "insights" => insights,
