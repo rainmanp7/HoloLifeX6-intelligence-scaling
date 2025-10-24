@@ -485,6 +485,37 @@ function calculate_evolution_metrics_detailed(graph::Any, performance::Dict)::Di
     )
 end
 
+function extract_performance_data(recent_performance::Any)::Dict
+    if recent_performance isa Vector && length(recent_performance) > 0
+        return recent_performance[end]
+    else
+        return Dict()
+    end
+end
+
+function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
+    # Try multiple possible locations for semantic vectors
+    if hasproperty(data, :semantic_vector)
+        vec = getproperty(data, :semantic_vector)
+        return isa(vec, Vector{Float64}) ? vec : nothing
+    elseif hasproperty(data, :embeddings)
+        vec = getproperty(data, :embeddings)
+        return isa(vec, Vector{Float64}) ? vec : nothing
+    elseif hasproperty(data, :embedding)
+        vec = getproperty(data, :embedding)
+        return isa(vec, Vector{Float64}) ? vec : nothing
+    elseif isa(data, Dict)
+        if haskey(data, "semantic_vector")
+            vec = data["semantic_vector"]
+            return isa(vec, Vector{Float64}) ? vec : nothing
+        elseif haskey(data, "semantic")
+            vec = data["semantic"]
+            return isa(vec, Vector{Float64}) ? vec : nothing
+        end
+    end
+    return nothing
+end
+
 function get_vector_source(data::Any)::String
     # Determine where the semantic vector was found
     if hasproperty(data, :semantic_vector)
@@ -503,8 +534,12 @@ function get_vector_source(data::Any)::String
     return "not_found"
 end
 
-# Keep existing utility functions (extract_performance_data, get_semantic_vector, cosine_similarity, export_health_report)
-# but enhance export_health_report to include reasoning context:
+function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
+    length(a) != length(b) && return 0.0
+    dot_product = dot(a, b)
+    norm_a, norm_b = norm(a), norm(b)
+    return (norm_a == 0.0 || norm_b == 0.0) ? 0.0 : dot_product / (norm_a * norm_b)
+end
 
 function export_health_report(insights::Any, reasoning_context::Dict=Dict())::Dict
     # Enhanced health report with reasoning integration
