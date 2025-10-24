@@ -48,23 +48,26 @@ end
 
 function generate_semantic_embedding(code::String)::Vector{Float64}
     lines = split(code, '\n')
-    line_count = max(1, length(lines))
-    char_count = max(1, length(code))
+    line_count = length(lines)
+    char_count = length(code)
     function_count = count(l -> occursin(r"^function\s+", l), lines)
     comment_count = count(l -> occursin(r"^\s*#", l), lines)
     import_count = count(l -> occursin(r"^using|^import", l), lines)
     
+    # Safe normalization with division protection
+    safe_div(x, y) = y > 0 ? x / y : 0.0
+    
     features = [
-        line_count / line_count,  # Always 1.0, normalized
-        char_count / 10000.0,  # Normalize by typical file size
-        function_count / line_count,
-        comment_count / line_count,
-        import_count / line_count,
-        count(l -> occursin(r"if\s+", l), lines) / line_count,
-        count(l -> occursin(r"for\s+|while\s+", l), lines) / line_count,
-        count(l -> occursin(r"Dict|Array|Vector", l), lines) / line_count,
-        count(l -> occursin(r"export", l), lines) / line_count,
-        count(l -> occursin(r"struct|mutable", l), lines) / line_count
+        safe_div(line_count, max(1, line_count)),
+        safe_div(char_count, max(1, char_count)),  
+        safe_div(function_count, max(1, line_count)),
+        safe_div(comment_count, max(1, line_count)),
+        safe_div(import_count, max(1, line_count)),
+        safe_div(count(l -> occursin(r"if\s+", l), lines), max(1, line_count)),
+        safe_div(count(l -> occursin(r"for\s+|while\s+", l), lines), max(1, line_count)),
+        safe_div(count(l -> occursin(r"Dict|Array|Vector", l), lines), max(1, line_count)),
+        safe_div(count(l -> occursin(r"export", l), lines), max(1, line_count)),
+        safe_div(count(l -> occursin(r"struct|mutable", l), lines), max(1, line_count))
     ]
     
     return Float64.(features)
@@ -103,12 +106,7 @@ function analyze_julia_file(file_path::String)::Dict
             "file_name" => basename(file_path),
             "error" => string(e),
             "semantic_vector" => zeros(10),
-            "dependencies" => [],
-            "line_count" => 0,
-            "function_count" => 0,
-            "comment_count" => 0,
-            "import_count" => 0,
-            "file_size" => 0
+            "dependencies" => []
         )
     end
 end
@@ -126,230 +124,56 @@ function build_module_graph(root_dir::String=".")::Dict
     return graph
 end
 
-# === HELPER FUNCTIONS ===
+# === ANALYTICAL ENGINE CORE FUNCTIONS ===
 
-function safe_get(entity::Any, key::Union{String, Symbol}, default::Any=nothing)::Any
-    """Get a field from either a Dict or a struct"""
-    # Convert string key to symbol for struct access
-    sym_key = isa(key, String) ? Symbol(key) : key
-    str_key = isa(key, Symbol) ? string(key) : key
-    
-    if isa(entity, Dict)
-        # Try both string and symbol keys for Dict
-        if haskey(entity, str_key)
-            return entity[str_key]
-        elseif haskey(entity, sym_key)
-            return entity[sym_key]
-        else
-            return default
+function calculate_module_complexity(entity)::Float64
+    embedding_size = get_semantic_vector(entity)
+    embedding_complexity = !isnothing(embedding_size) ? length(embedding_size) / 10.0 : 0.5
+    dependency_complexity = haskey(entity, "dependencies") ? length(entity["dependencies"]) / 5.0 : 0.5
+    line_complexity = haskey(entity, "line_count") ? min(entity["line_count"] / 200.0, 1.0) : 0.5
+    return clamp((embedding_complexity + dependency_complexity + line_complexity) / 3.0, 0.0, 1.0)
+end
+
+function calculate_evolution_metrics(graph::Any, performance::Dict)::Dict
+    modules = collect(keys(graph))
+    similarities = Float64[]
+    for i in 1:length(modules)
+        for j in i+1:length(modules)
+            vec1 = get_semantic_vector(graph[modules[i]])
+            vec2 = get_semantic_vector(graph[modules[j]])
+            if !isnothing(vec1) && !isnothing(vec2) && length(vec1) == length(vec2)
+                push!(similarities, cosine_similarity(vec1, vec2))
+            end
         end
-    elseif hasfield(typeof(entity), sym_key)
-        return getfield(entity, sym_key)
-    else
-        return default
     end
-end
-
-function get_semantic_vector(entity::Any)::Union{Vector{Float64}, Nothing}
-    vec = safe_get(entity, "semantic_vector", nothing)
-    return vec
-end
-
-function cosine_similarity(vec1::Vector{Float64}, vec2::Vector{Float64})::Float64
-    if length(vec1) != length(vec2) || length(vec1) == 0
-        return 0.0
-    end
-    
-    norm1 = norm(vec1)
-    norm2 = norm(vec2)
-    
-    if norm1 == 0.0 || norm2 == 0.0
-        return 0.0
-    end
-    
-    return dot(vec1, vec2) / (norm1 * norm2)
-end
-
-function calculate_module_complexity(entity::Any)::Float64
-    line_count = safe_get(entity, "line_count", 0)
-    function_count = safe_get(entity, "function_count", 0)
-    dependencies = safe_get(entity, "dependencies", [])
-    
-    # Normalize and combine metrics
-    normalized_lines = min(1.0, line_count / 500.0)  # 500 lines = high complexity
-    normalized_functions = min(1.0, function_count / 20.0)  # 20 functions = high complexity
-    normalized_deps = min(1.0, length(dependencies) / 10.0)  # 10 deps = high complexity
-    
-    complexity = (normalized_lines * 0.4 + normalized_functions * 0.3 + normalized_deps * 0.3)
-    
-    return complexity
+    modularity = isempty(similarities) ? 0.5 : 1.0 - mean(similarities)
+    complexities = [calculate_module_complexity(entity) for entity in values(graph)]
+    complexity_balance = isempty(complexities) ? 0.5 : 1.0 - std(complexities)
+    return Dict("modularity" => modularity, "complexity_balance" => complexity_balance)
 end
 
 function extract_performance_data(recent_performance::Any)::Dict
-    if isa(recent_performance, Dict)
-        return recent_performance
-    else
-        # Return default performance structure
-        return Dict(
-            "unified_intelligence_score" => 0.5,
-            "consciousness" => Dict(
-                "max_phi" => 0.3,
-                "is_conscious" => false
-            )
-        )
-    end
+    return (recent_performance isa Vector && !isempty(recent_performance)) ? recent_performance[end] : Dict()
 end
 
-function calculate_evolution_metrics(graph::Any, performance::Any)::Dict
-    if !isa(graph, Dict) || isempty(graph)
-        return Dict("modularity" => 0.0, "complexity_balance" => 0.0)
-    end
-    
-    # Calculate modularity based on dependency structure
-    total_files = length(graph)
-    
-    # Get dependencies handling both Dict and struct types
-    all_deps_lengths = [length(safe_get(f, "dependencies", [])) for f in values(graph)]
-    
-    avg_dependencies = isempty(all_deps_lengths) ? 0.0 : mean(all_deps_lengths)
-    modularity = 1.0 - min(1.0, avg_dependencies / 5.0)  # Lower dependencies = higher modularity
-    
-    # Calculate complexity balance (how evenly distributed complexity is)
-    complexities = [calculate_module_complexity(f) for f in values(graph)]
-    if isempty(complexities)
-        complexity_balance = 0.0
-    else
-        complexity_std = std(complexities)
-        complexity_balance = 1.0 - min(1.0, complexity_std)
-    end
-    
-    return Dict(
-        "modularity" => modularity,
-        "complexity_balance" => complexity_balance
-    )
-end
-
-function categorize_insights(insights::Vector{Dict})::Dict
-    categories = Dict{String, Vector{Dict}}()
-    
-    for insight in insights
-        category = get(insight, "category", "uncategorized")
-        if !haskey(categories, category)
-            categories[category] = Dict[]
-        end
-        push!(categories[category], insight)
-    end
-    
-    return categories
-end
-
-function count_insights_by_priority(insights::Vector{Dict})::Dict
-    priority_counts = Dict("high" => 0, "medium" => 0, "low" => 0, "info" => 0)
-    
-    for insight in insights
-        priority = get(insight, "priority", "info")
-        if haskey(priority_counts, priority)
-            priority_counts[priority] += 1
-        end
-    end
-    
-    return priority_counts
-end
-
-function parse_gain_value(gain_str::String)::Float64
-    # Parse strings like "+0.25", "-45%", "+70%"
-    if occursin("%", gain_str)
-        # Parse percentage
-        num_str = replace(gain_str, r"[%+]" => "")
-        return parse(Float64, num_str) / 100.0
-    else
-        # Parse decimal
-        num_str = replace(gain_str, "+" => "")
-        return parse(Float64, num_str)
-    end
-end
-
-function calculate_system_potential(insights::Vector{Dict})::Dict
-    total_consciousness_gain = 0.0
-    total_performance_gain = 0.0
-    total_maintainability_gain = 0.0
-    
-    for insight in insights
-        expected_gain = get(insight, "expected_gain", "")
-        
-        # Parse different gain metrics
-        if occursin("Consciousness", expected_gain)
-            match_result = match(r"Consciousness:\s*([+\-\d.]+)", expected_gain)
-            if match_result !== nothing
-                total_consciousness_gain += parse_gain_value(match_result.captures[1])
-            end
-        end
-        
-        if occursin("Performance", expected_gain) || occursin("Velocity", expected_gain)
-            match_result = match(r"(?:Performance|Velocity):\s*([+\-\d.%]+)", expected_gain)
-            if match_result !== nothing
-                total_performance_gain += abs(parse_gain_value(match_result.captures[1]))
-            end
-        end
-        
-        if occursin("Maintainability", expected_gain) || occursin("Maintenance", expected_gain)
-            match_result = match(r"(?:Maintainability|Maintenance):\s*([+\-\d.%]+)", expected_gain)
-            if match_result !== nothing
-                total_maintainability_gain += abs(parse_gain_value(match_result.captures[1]))
+function get_semantic_vector(data::Any)::Union{Vector{Float64}, Nothing}
+    if haskey(data, "semantic_vector") && isa(data["semantic_vector"], Vector{Float64})
+        return data["semantic_vector"]
+    elseif haskey(data, "embedding") && isa(data["embedding"], Vector{Float64})
+        return data["embedding"]
+    elseif isa(data, Dict)
+        for key in ["semantic_vector", "embedding", "embeddings", "semantic"]
+            if haskey(data, key) && isa(data[key], Vector) && eltype(data[key]) <: Real
+                return Float64.(data[key])
             end
         end
     end
-    
-    return Dict(
-        "consciousness_potential" => total_consciousness_gain,
-        "performance_potential" => total_performance_gain,
-        "maintainability_potential" => total_maintainability_gain
-    )
+    return nothing
 end
 
-function calculate_health_score(graph::Any, insights::Vector{Dict})::Float64
-    if !isa(graph, Dict) || isempty(graph)
-        return 0.0
-    end
-    
-    # Base health on complexity and insight priorities
-    avg_complexity = mean([calculate_module_complexity(f) for f in values(graph)])
-    complexity_score = 1.0 - avg_complexity  # Lower complexity = better health
-    
-    # Count critical issues
-    priority_counts = count_insights_by_priority(insights)
-    high_priority = get(priority_counts, "high", 0)
-    medium_priority = get(priority_counts, "medium", 0)
-    
-    # Penalize for critical issues
-    issue_penalty = (high_priority * 0.1 + medium_priority * 0.05)
-    
-    health_score = max(0.0, min(1.0, complexity_score - issue_penalty))
-    
-    return health_score
-end
-
-function generate_evolutionary_roadmap(insights::Vector{Dict})::Vector{Dict}
-    # Sort insights by priority and expected gain
-    priority_order = Dict("high" => 3, "medium" => 2, "low" => 1, "info" => 0)
-    
-    sorted_insights = sort(insights, by = i -> (
-        -get(priority_order, get(i, "priority", "info"), 0),
-        -length(get(i, "expected_gain", ""))
-    ))
-    
-    roadmap = Dict[]
-    for (idx, insight) in enumerate(sorted_insights[1:min(5, length(sorted_insights))])
-        push!(roadmap, Dict(
-            "phase" => idx,
-            "action" => get(insight, "solution", "No solution specified"),
-            "expected_gain" => get(insight, "expected_gain", "Unknown"),
-            "priority" => get(insight, "priority", "info"),
-            "module" => get(insight, "module", "Unknown")
-        ))
-    end
-    
-    return roadmap
+function cosine_similarity(a::Vector{Float64}, b::Vector{Float64})::Float64
+    (length(a) != length(b) || norm(a) == 0.0 || norm(b) == 0.0) && return 0.0
+    return dot(a, b) / (norm(a) * norm(b))
 end
 
 # === MAIN ANALYSIS ENGINE WITH FILE INSIGHTS ===
@@ -406,16 +230,16 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                         "module" => "$mod1 ↔ $mod2",
                         "issue" => "High semantic similarity detected",
                         "action" => "Consider integration or interface abstraction",
-                        "evidence" => "Cosine similarity: $(round(similarity, digits=3)) | Files: $(safe_get(entity1, "file_path", mod1)) ↔ $(safe_get(entity2, "file_path", mod2))",
+                        "evidence" => "Cosine similarity: $(round(similarity, digits=3)) | Files: $(entity1["file_path"]) ↔ $(entity2["file_path"])",
                         "category" => "semantic_architecture",
                         "impact" => "Reduce cognitive duplication",
                         "solution" => "Merge $mod1 and $mod2 into shared_$(clean_mod1)_$(clean_mod2)_core.jl",
                         "expected_gain" => "Maintenance: -60%, Consciousness: +0.15",
                         "file_insights" => Dict(
-                            "file1" => safe_get(entity1, "file_path", mod1),
-                            "file2" => safe_get(entity2, "file_path", mod2),
-                            "file1_stats" => "$(safe_get(entity1, "line_count", 0)) lines, $(safe_get(entity1, "function_count", 0)) functions",
-                            "file2_stats" => "$(safe_get(entity2, "line_count", 0)) lines, $(safe_get(entity2, "function_count", 0)) functions"
+                            "file1" => entity1["file_path"],
+                            "file2" => entity2["file_path"],
+                            "file1_stats" => "$(entity1["line_count"]) lines, $(entity1["function_count"]) functions",
+                            "file2_stats" => "$(entity2["line_count"]) lines, $(entity2["function_count"]) functions"
                         )
                     ))
                 elseif similarity < 0.2
@@ -424,16 +248,16 @@ function analyze_semantic_architecture(graph::Any)::Vector{Dict}
                         "module" => "$mod1 ↔ $mod2",
                         "issue" => "Low semantic coupling",
                         "action" => "Maintain clear separation of concerns",
-                        "evidence" => "Cosine similarity: $(round(similarity, digits=3)) | Files: $(safe_get(entity1, "file_path", mod1)) ↔ $(safe_get(entity2, "file_path", mod2))",
+                        "evidence" => "Cosine similarity: $(round(similarity, digits=3)) | Files: $(entity1["file_path"]) ↔ $(entity2["file_path"])",
                         "category" => "semantic_architecture", 
                         "impact" => "Good architectural boundaries",
                         "solution" => "Keep modules separated - maintain current boundaries",
                         "expected_gain" => "Stability: +20%",
                         "file_insights" => Dict(
-                            "file1" => safe_get(entity1, "file_path", mod1),
-                            "file2" => safe_get(entity2, "file_path", mod2),
-                            "file1_stats" => "$(safe_get(entity1, "line_count", 0)) lines, $(safe_get(entity1, "function_count", 0)) functions",
-                            "file2_stats" => "$(safe_get(entity2, "line_count", 0)) lines, $(safe_get(entity2, "function_count", 0)) functions"
+                            "file1" => entity1["file_path"],
+                            "file2" => entity2["file_path"],
+                            "file1_stats" => "$(entity1["line_count"]) lines, $(entity1["function_count"]) functions",
+                            "file2_stats" => "$(entity2["line_count"]) lines, $(entity2["function_count"]) functions"
                         )
                     ))
                 end
@@ -459,17 +283,17 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                     "module" => module_name,
                     "issue" => "Complex but effective module",
                     "action" => "Monitor for maintenance costs while preserving performance",
-                    "evidence" => "Complexity: $(round(complexity, digits=2)), UIS: $(round(uis, digits=3)) | File: $(safe_get(entity, "file_path", module_name))",
+                    "evidence" => "Complexity: $(round(complexity, digits=2)), UIS: $(round(uis, digits=3)) | File: $(entity["file_path"])",
                     "category" => "performance_architecture",
                     "impact" => "Balance complexity vs performance",
                     "solution" => "Extract core logic into helper modules, keep performance-critical parts",
                     "expected_gain" => "Maintainability: +40%, Performance: +0%",
                     "file_insights" => Dict(
-                        "file" => safe_get(entity, "file_path", module_name),
-                        "line_count" => safe_get(entity, "line_count", 0),
-                        "function_count" => safe_get(entity, "function_count", 0),
-                        "dependencies" => safe_get(entity, "dependencies", []),
-                        "complexity_breakdown" => "Lines: $(safe_get(entity, "line_count", 0)), Functions: $(safe_get(entity, "function_count", 0)), Dependencies: $(length(safe_get(entity, "dependencies", [])))"
+                        "file" => entity["file_path"],
+                        "line_count" => entity["line_count"],
+                        "function_count" => entity["function_count"],
+                        "dependencies" => entity["dependencies"],
+                        "complexity_breakdown" => "Lines: $(entity["line_count"]), Functions: $(entity["function_count"]), Dependencies: $(length(entity["dependencies"]))"
                     )
                 ))
             end
@@ -483,16 +307,16 @@ function analyze_performance_correlations(graph::Any, performance::Dict)::Vector
                         "module" => module_name,
                         "issue" => "High complexity with low consciousness yield",
                         "action" => "Refactor to improve consciousness efficiency",
-                        "evidence" => "Complexity: $(round(complexity, digits=2)), Max Φ: $(round(phi, digits=3)) | File: $(safe_get(entity, "file_path", module_name))",
+                        "evidence" => "Complexity: $(round(complexity, digits=2)), Max Φ: $(round(phi, digits=3)) | File: $(entity["file_path"])",
                         "category" => "consciousness_optimization",
                         "impact" => "Potential for consciousness improvement",
                         "solution" => "Break into smaller focused modules: $(clean_module_name)_processor.jl, $(clean_module_name)_coordinator.jl",
                         "expected_gain" => "Consciousness: +0.25, Complexity: -45%",
                         "file_insights" => Dict(
-                            "file" => safe_get(entity, "file_path", module_name),
+                            "file" => entity["file_path"],
                             "current_complexity" => "High ($(round(complexity, digits=2)))",
                             "suggested_refactoring" => "Split into $(clean_module_name)_processor.jl and $(clean_module_name)_coordinator.jl",
-                            "current_structure" => "$(safe_get(entity, "line_count", 0)) lines, $(safe_get(entity, "function_count", 0)) functions, $(length(safe_get(entity, "dependencies", []))) dependencies"
+                            "current_structure" => "$(entity["line_count"]) lines, $(entity["function_count"]) functions, $(length(entity["dependencies"])) dependencies"
                         )
                     ))
                 end
@@ -510,7 +334,7 @@ function detect_evolutionary_pathways(graph::Any, performance::Dict)::Vector{Dic
     
     if evolution_metrics["modularity"] > 0.7
         # Get top 3 largest files for context
-        files_by_size = sort([(safe_get(f, "file_path", "unknown"), safe_get(f, "line_count", 0)) for f in values(graph)], by=x->x[2], rev=true)[1:min(3, length(graph))]
+        files_by_size = sort([(f["file_path"], f["line_count"]) for f in values(graph)], by=x->x[2], rev=true)[1:min(3, length(graph))]
         
         push!(insights, Dict(
             "priority" => "info",
@@ -634,60 +458,175 @@ function analyze_consciousness_optimization(graph::Any, performance::Dict)::Vect
     return insights
 end
 
-# === REPORTING AND EXPORT ===
+# === PROGRESSIVE REPORTING FUNCTIONS ===
 
-function export_health_report(graph::Any, insights::Vector{Dict}, output_file::String="health_report.json")
-    report = Dict(
-        "timestamp" => string(Dates.now()),
-        "system_overview" => Dict(
-            "total_modules" => length(graph),
-            "total_lines" => sum(safe_get(f, "line_count", 0) for f in values(graph)),
-            "health_score" => calculate_health_score(graph, insights)
-        ),
-        "insights" => insights,
-        "insights_by_category" => categorize_insights(insights),
-        "insights_by_priority" => count_insights_by_priority(insights),
-        "system_potential" => calculate_system_potential(insights),
-        "evolutionary_roadmap" => generate_evolutionary_roadmap(insights)
+function generate_evolutionary_roadmap(insights::Vector)::Dict
+    critical_actions = filter(i -> i["priority"] == "critical", insights)
+    high_impact = filter(i -> i["priority"] == "high", insights)
+    medium_optimizations = filter(i -> i["priority"] == "medium", insights)
+    
+    immediate_solutions = [i["solution"] for i in critical_actions if haskey(i, "solution")]
+    strategic_solutions = [i["solution"] for i in high_impact if haskey(i, "solution")]
+    optimization_solutions = [i["solution"] for i in medium_optimizations if haskey(i, "solution")]
+    
+    consciousness_insights = filter(i -> i["category"] in ["consciousness_optimization", "consciousness_breakthrough"], insights)
+    primary_focus = isempty(consciousness_insights) ? "Architectural stability" : "Consciousness emergence/stability"
+    
+    return Dict(
+        "immediate_actions" => immediate_solutions,
+        "strategic_initiatives" => strategic_solutions,
+        "optimization_opportunities" => optimization_solutions,
+        "primary_focus" => primary_focus,
+        "estimated_timeline" => isempty(critical_actions) ? "1-2 cycles" : "Immediate attention required"
     )
-    
-    open(output_file, "w") do io
-        JSON.print(io, report, 4)
-    end
-    
-    println("📊 Health report exported to $output_file")
-    return report
 end
 
-function run_complete_analysis(root_dir::String=".", performance_data::Any=nothing)
-    println("\n🔬 Starting Complete Metacognitive Analysis...")
-    println("=" ^ 60)
+function parse_gain_value(gain_text::String, key::String)::Float64
+    regex = Regex("$(key):\\s*([+-]?\\d*\\.?\\d+)\\s*%?")
+    match_result = match(regex, gain_text)
     
-    # Build module graph
-    graph = build_module_graph(root_dir)
+    if !isnothing(match_result)
+        try
+            return parse(Float64, match_result.captures[1])
+        catch e
+            return 0.0
+        end
+    end
+    return 0.0
+end
+
+function calculate_system_potential(insights::Vector)::Dict
+    consciousness_boost = 0.0
+    maintenance_reduction = 0.0
+    velocity_increase = 0.0
     
-    # Use default performance if none provided
-    if isnothing(performance_data)
-        performance_data = Dict(
-            "unified_intelligence_score" => 0.5,
-            "consciousness" => Dict(
-                "max_phi" => 0.3,
-                "is_conscious" => false
-            )
-        )
+    for insight in insights
+        !haskey(insight, "expected_gain") && continue
+        gain_text = insight["expected_gain"]
+        
+        consciousness_boost += parse_gain_value(gain_text, "Consciousness")
+        maintenance_reduction += abs(parse_gain_value(gain_text, "Maintenance"))
+        maintenance_reduction += abs(parse_gain_value(gain_text, "Complexity"))
+        velocity_increase += parse_gain_value(gain_text, "Velocity")
+        velocity_increase += parse_gain_value(gain_text, "Development Velocity")
+        velocity_increase += parse_gain_value(gain_text, "Resilience")
+        velocity_increase += parse_gain_value(gain_text, "Stability")
     end
     
-    # Generate insights
+    overall_potential = (consciousness_boost * 2.0) +
+                        (maintenance_reduction / 100.0) +
+                        (velocity_increase / 100.0)
+
+    return Dict(
+        "potential_consciousness_gain" => round(consciousness_boost, digits=3),
+        "potential_maintenance_reduction_pct" => round(maintenance_reduction, digits=1),
+        "potential_velocity_increase_pct" => round(velocity_increase, digits=1),
+        "overall_potential_score" => round(overall_potential, digits=2)
+    )
+end
+
+function calculate_health_score(insights::Vector)::Float64
+    priority_weights = Dict("high" => 0.4, "medium" => 0.2, "low" => 0.05, "info" => 0.0)
+    health_score = 1.0
+    for insight in insights
+        weight = get(priority_weights, get(insight, "priority", "info"), 0.0)
+        health_score -= weight
+    end
+    return max(0.1, health_score)
+end
+
+function categorize_insights(insights::Vector)::Dict{String, Vector}
+    categories = Dict{String, Vector}()
+    for insight in insights
+        category = get(insight, "category", "general")
+        !haskey(categories, category) && (categories[category] = [])
+        push!(categories[category], insight)
+    end
+    return categories
+end
+
+function count_insights_by_priority(insights::Vector)::Dict{String, Int}
+    return Dict(
+        "high" => count(i -> get(i, "priority", "") == "high", insights),
+        "medium" => count(i -> get(i, "priority", "") == "medium", insights), 
+        "low" => count(i -> get(i, "priority", "") == "low", insights)
+    )
+end
+
+function export_health_report(insights::Vector, existing_report::Union{Dict, Nothing}=nothing)::Dict
+    if existing_report !== nothing
+        existing_insights = get(existing_report, "optimization_opportunities", [])
+        all_insights = vcat(existing_insights, insights)
+        
+        health_score = calculate_health_score(all_insights)
+        categories = categorize_insights(all_insights)
+        consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", all_insights)
+        
+        potential_analysis = calculate_system_potential(all_insights)
+        evolutionary_roadmap = generate_evolutionary_roadmap(all_insights)
+        
+        return Dict(
+            "timestamp" => string(Dates.now()),
+            "analysis_version" => "2.5-file-discovery",
+            "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
+            "system_health_score" => round(health_score, digits=3),
+            "total_insights" => length(all_insights),
+            "consciousness_status" => consciousness_breakthrough ? "ACHIEVED" : "EMERGING",
+            "insights_by_priority" => count_insights_by_priority(all_insights),
+            "insights_by_category" => categories,
+            "optimization_opportunities" => all_insights,
+            "system_potential" => potential_analysis,
+            "evolutionary_roadmap" => evolutionary_roadmap,
+            "recommended_direction" => evolutionary_roadmap["primary_focus"],
+            "previous_analysis_timestamp" => get(existing_report, "timestamp", "none"),
+            "analysis_cycle" => get(existing_report, "analysis_cycle", 0) + 1
+        )
+    else
+        health_score = calculate_health_score(insights)
+        categories = categorize_insights(insights)
+        consciousness_breakthrough = any(i -> get(i, "category", "") == "consciousness_breakthrough", insights)
+        
+        potential_analysis = calculate_system_potential(insights)
+        evolutionary_roadmap = generate_evolutionary_roadmap(insights)
+        
+        return Dict(
+            "timestamp" => string(Dates.now()),
+            "analysis_version" => "2.5-file-discovery",
+            "status" => consciousness_breakthrough ? "CONSCIOUS_SYSTEM" : "ADVANCED_ANALYSIS",
+            "system_health_score" => round(health_score, digits=3),
+            "total_insights" => length(insights),
+            "consciousness_status" => consciousness_breakthrough ? "ACHIEVED" : "EMERGING",
+            "insights_by_priority" => count_insights_by_priority(insights),
+            "insights_by_category" => categories,
+            "optimization_opportunities" => insights,
+            "system_potential" => potential_analysis,
+            "evolutionary_roadmap" => evolutionary_roadmap,
+            "recommended_direction" => evolutionary_roadmap["primary_focus"],
+            "analysis_cycle" => 1
+        )
+    end
+end
+
+# === CONVENIENCE FUNCTIONS ===
+
+function run_complete_analysis(root_dir::String=".", performance_data::Dict=Dict())
+    println("🚀 STARTING COMPLETE SYSTEM ANALYSIS")
+    println("📁 Scanning directory: $root_dir")
+    
+    # Build module graph from actual files
+    graph = build_module_graph(root_dir)
+    
+    # Generate architectural insights
     insights = generate_architectural_analysis(graph, performance_data)
     
-    # Export report
-    report = export_health_report(graph, insights)
+    # Create health report
+    report = export_health_report(insights)
     
-    println("=" ^ 60)
-    println("✅ Analysis complete!")
-    println("   Modules analyzed: $(length(graph))")
-    println("   Insights generated: $(length(insights))")
-    println("   Health score: $(round(report["system_overview"]["health_score"], digits=2))")
+    println("✅ ANALYSIS COMPLETE")
+    println("   - Modules analyzed: $(length(graph))")
+    println("   - Insights generated: $(length(insights))")
+    println("   - System health: $(report["system_health_score"])")
+    println("   - Consciousness status: $(report["consciousness_status"])")
     
     return report
 end
