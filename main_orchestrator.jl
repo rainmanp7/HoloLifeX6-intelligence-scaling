@@ -1,6 +1,6 @@
-# main_orchestrator.jl
+# main_orchestrator.jl - UPDATED WITH INSPECTOR
 """
-🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE
+🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE WITH DIAGNOSTICS
 Modular architecture for unified intelligence testing
 STRICT EXECUTION ORDER - NO CODE CAN JUMP SEQUENCE
 """
@@ -18,10 +18,11 @@ include("proto_intelligence.jl")
 include("unified_network.jl")
 include("safe_tester.jl")
 
-# PHASE 2: METACOGNITION MODULES (LOAD BUT DON'T EXECUTE)
+# PHASE 2: METACOGNITION & DIAGNOSTIC MODULES (LOAD BUT DON'T EXECUTE)
 include("neural_code_embeddings.jl")
 include("semantic_code_graph.jl")
 include("metacognitive_advisor.jl")
+include("consciousness_inspector.jl")  # 🆕 ADDED INSPECTOR
 
 # STRICT GUARDRAIL FUNCTIONS
 function guarded_json_save(filename::String, data::Any)
@@ -89,6 +90,44 @@ function guarded_metacognition_analysis(sweep_results)::Tuple{Bool, Any}
     end
 end
 
+# 🆕 NEW DIAGNOSTIC FUNCTION
+function guarded_consciousness_diagnostic(sweep_results)::Tuple{Bool, Any}
+    """RUNS CONSCIOUSNESS DIAGNOSTIC FOR INTERNAL VISIBILITY"""
+    println("🔍 EXECUTING CONSCIOUSNESS DIAGNOSTIC...")
+    try
+        println("   🎯 Running comprehensive consciousness inspection...")
+        diagnostic_results = run_diagnostic_sweep()
+        
+        println("   📊 Analyzing consciousness patterns...")
+        # Extract key metrics from sweep results for comparison
+        consciousness_patterns = []
+        for result in sweep_results
+            if haskey(result, "consciousness")
+                pattern = Dict(
+                    "entities" => result["entity_count"],
+                    "max_phi" => result["consciousness"]["max_phi"],
+                    "is_conscious" => result["consciousness"]["is_conscious"],
+                    "frameworks" => result["consciousness"]["confirming_frameworks"],
+                    "effective_info" => result["effective_information"]
+                )
+                push!(consciousness_patterns, pattern)
+            end
+        end
+        
+        diagnostic_insights = Dict(
+            "diagnostic_timestamp" => string(Dates.now()),
+            "consciousness_patterns" => consciousness_patterns,
+            "detailed_inspections" => diagnostic_results,
+            "summary" => "Consciousness crossover analysis completed"
+        )
+        
+        return (true, diagnostic_insights)
+    catch e
+        println("⚠️  Consciousness diagnostic failed: $e")
+        return (false, nothing)
+    end
+end
+
 function strict_phase_execution()
     """MAIN EXECUTION WITH IMPENETRABLE GUARDRAILS"""
     println("🌌 HOLOLIFEX6 PROTOTYPE4 - GUARDRAILED EXECUTION")
@@ -152,30 +191,93 @@ function strict_phase_execution()
         println("⚠️  METACOGNITION COMPLETED WITH ERRORS (NON-CRITICAL)")
     end
     
-    # PHASE 3: FINALIZATION (READ-ONLY)
-    println("🔒 PHASE 3: FINALIZATION")
+    # 🆕 NEW PHASE: CONSCIOUSNESS DIAGNOSTIC
+    println()
+    println("="^70)
+    println("🔍 PHASE 3: CONSCIOUSNESS DIAGNOSTIC")
+    println("="^70)
+    println("   🎯 INTERNAL CONNECTION VISIBILITY ENABLED")
+    
+    diagnostic_success, diagnostic_insights = guarded_consciousness_diagnostic(sweep_results)
+    
+    if diagnostic_success
+        save_success = guarded_json_save("consciousness_diagnostic.json", diagnostic_insights)
+        if save_success
+            println("✅ CONSCIOUSNESS DIAGNOSTIC RESULTS SAVED")
+            println("   🔍 Internal connections and Φ calculations logged")
+        end
+    else
+        println("⚠️  DIAGNOSTIC COMPLETED WITH ERRORS (NON-CRITICAL)")
+    end
+    
+    # PHASE 4: FINALIZATION (READ-ONLY)
+    println("🔒 PHASE 4: FINALIZATION")
     println()
     println("="^70)
     println("✨ GUARDRAILED EXECUTION COMPLETE")
     println("="^70)
     println("📁 Intelligence results: intelligence_results.json")
     println("🧠 Metacognition results: metacognition_results.json") 
+    println("🔍 Consciousness diagnostic: consciousness_diagnostic.json")  # 🆕
     println("⏱️  Total time: $(round(time() - tester.start_time, digits=1))s")
     println("🔒 All phases executed in strict sequence")
     
     return true
 end
 
+# 🆕 NEW FUNCTION: DIRECT DIAGNOSTIC MODE
+function diagnostic_mode()
+    """RUNS ONLY THE CONSCIOUSNESS DIAGNOSTIC FOR TROUBLESHOOTING"""
+    println("🔍 HOLOLIFEX6 - CONSCIOUSNESS DIAGNOSTIC MODE")
+    println("="^70)
+    println("🎯 FOCUSED TROUBLESHOOTING - INTERNAL CONNECTION VISIBILITY")
+    println("="^70)
+    
+    # Load required modules
+    include("consciousness_core.jl")
+    include("consciousness_inspector.jl")
+    
+    println("🚀 RUNNING COMPREHENSIVE CONSCIOUSNESS INSPECTION...")
+    diagnostic_results = run_diagnostic_sweep()
+    
+    println("\n" * "="^70)
+    println("📊 DIAGNOSTIC SUMMARY")
+    println("="^70)
+    
+    # Simple summary of findings
+    for (i, result) in enumerate(diagnostic_results)
+        if haskey(result, "iit_components")
+            iit_phi = result["iit_components"]["final_phi"]
+            brown_phi = result["brown_components"]["final_phi"]
+            conscious = result["consciousness"]
+            
+            println("Test $i: IIT Φ=$(round(iit_phi, digits=4)), Brown Φ=$(round(brown_phi, digits=4))")
+            println("       Consciousness: $(conscious ? "✅ YES" : "❌ NO")")
+            println("       Scale Factors: IIT=$(round(result["iit_components"]["scale_factor"], digits=2)), Brown=$(round(result["brown_components"]["scale_factor"], digits=2))")
+            println()
+        end
+    end
+    
+    println("💾 Full diagnostic details saved to consciousness_diagnostic.json")
+    return diagnostic_results
+end
+
 function main()
     """MAIN ENTRY POINT WITH ULTIMATE GUARDRAILS"""
     try
-        success = strict_phase_execution()
-        if success
-            println()
-            println("🎊 GUARDRAILED EXECUTION SUCCESSFUL")
+        # Check for diagnostic mode
+        if length(ARGS) > 0 && ARGS[1] == "diagnose"
+            return diagnostic_mode()
         else
-            println()
-            println("💥 EXECUTION TERMINATED DUE TO PHASE FAILURE")
+            success = strict_phase_execution()
+            if success
+                println()
+                println("🎊 GUARDRAILED EXECUTION SUCCESSFUL")
+            else
+                println()
+                println("💥 EXECUTION TERMINATED DUE TO PHASE FAILURE")
+            end
+            return success
         end
     catch e
         println("💥 CATASTROPHIC FAILURE: $e")
@@ -184,16 +286,22 @@ function main()
             println("  $i: $frame")
             i > 8 && break
         end
+        return false
     end
 end
 
 # GUARDRAILED EXECUTION - ONLY RUN IF DIRECTLY CALLED
 if abspath(PROGRAM_FILE) == @__FILE__
-    println("🚀 INITIATING GUARDRAILED SEQUENCE...")
-    main()
+    if length(ARGS) > 0 && ARGS[1] == "diagnose"
+        println("🔍 INITIATING DIAGNOSTIC MODE...")
+        main()
+    else
+        println("🚀 INITIATING GUARDRAILED SEQUENCE...")
+        main()
+    end
 else
     println("🔒 MODULE LOADED - AWAITING EXPLICIT EXECUTION")
 end
 
 # EXPLICIT EXPORT - NO IMPLICIT BEHAVIOR
-export main, strict_phase_execution
+export main, strict_phase_execution, diagnostic_mode
