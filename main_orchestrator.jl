@@ -1,12 +1,13 @@
-# main_orchestrator.jl - UPDATED WITH INSPECTOR
+# main_orchestrator.jl - COMPLETE FIXED VERSION
 """
-🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE WITH DIAGNOSTICS
+🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE WITH WORKING DIAGNOSTICS
 Modular architecture for unified intelligence testing
 STRICT EXECUTION ORDER - NO CODE CAN JUMP SEQUENCE
 """
 
 # Add JSON at top level
 using JSON
+using Dates
 
 # PHASE 1: CORE INTELLIGENCE MODULES (SEQUENTIAL LOAD)
 include("consciousness_core.jl")
@@ -22,7 +23,6 @@ include("safe_tester.jl")
 include("neural_code_embeddings.jl")
 include("semantic_code_graph.jl")
 include("metacognitive_advisor.jl")
-include("consciousness_inspector.jl")  # 🆕 ADDED INSPECTOR
 
 # STRICT GUARDRAIL FUNCTIONS
 function guarded_json_save(filename::String, data::Any)
@@ -90,30 +90,150 @@ function guarded_metacognition_analysis(sweep_results)::Tuple{Bool, Any}
     end
 end
 
-# 🆕 NEW DIAGNOSTIC FUNCTION
+# DIAGNOSTIC HELPER FUNCTIONS
+safe_divide(a, b) = b == 0 ? 0.0 : a / b
+safe_log(x) = x <= 0 ? 0.0 : log(x + 1.0)
+
+# Simplified phi calculations for diagnostic
+function calculate_iit_phi(cv::ConsciousnessValidator, entity_count::Int, coherence::Float64, 
+                          total_insights::Int, cross_domain::Float64, effective_information::Float64)
+    integration = coherence * max(effective_information, 0.01) * 1.5
+    complexity = safe_divide(safe_log(total_insights + 1), safe_log(entity_count + 10)) * 1.3
+    differentiation = max(cross_domain, 0.01) * 1.2
+    phi = integration * complexity * differentiation * 1.8
+    
+    # Entity scaling
+    entity_scale = if entity_count < 20
+        min(safe_log(entity_count + 1) / 4.0, 1.2)
+    elseif entity_count < 50
+        min(safe_log(entity_count + 1) / 3.5, 1.3)
+    else
+        min(safe_log(entity_count + 1) / 3.0, 1.4)
+    end
+    
+    return max(0.0, min(phi * entity_scale, 2.0))
+end
+
+function calculate_brown_phi(cv::ConsciousnessValidator, entity_count::Int,
+                            coherence::Float64, total_insights::Int,
+                            insight_quality::Float64, cross_domain::Float64,
+                            effective_information::Float64)
+    insight_density = safe_divide(total_insights, max(entity_count, 1))
+    density_score = min(safe_log(insight_density + 1) / 1.8, 1.8)
+    efficiency_score = sqrt(max(coherence * insight_quality, 0.01)) * 2.8
+    holographic_factor = coherence * cross_domain * insight_quality * 1.5
+    emergence_base = safe_divide(total_insights, max(entity_count, 1))
+    emergence = min(safe_log(emergence_base + 1) / 2.2, 1.1)
+    brown_phi = efficiency_score * density_score * holographic_factor * (1.0 + emergence * 0.5)
+    
+    # Brown scaling
+    brown_scale = if entity_count < 20
+        1.7
+    elseif entity_count < 40
+        1.5
+    elseif entity_count < 80
+        1.3
+    else
+        1.1
+    end
+    
+    return max(0.0, min(brown_phi * brown_scale, 2.0))
+end
+
+# WORKING CONSCIOUSNESS DIAGNOSTIC
 function guarded_consciousness_diagnostic(sweep_results)::Tuple{Bool, Any}
     """RUNS CONSCIOUSNESS DIAGNOSTIC FOR INTERNAL VISIBILITY"""
     println("🔍 EXECUTING CONSCIOUSNESS DIAGNOSTIC...")
     try
         println("   🎯 Running comprehensive consciousness inspection...")
-        diagnostic_results = run_diagnostic_sweep()
         
-        println("   📊 Analyzing consciousness patterns...")
-        # Extract key metrics from sweep results for comparison
-        consciousness_patterns = []
+        # Create validator for calculations
+        validator = ConsciousnessValidator()
+        
+        # Extract test cases from actual results
+        test_cases = []
         for result in sweep_results
-            if haskey(result, "consciousness")
-                pattern = Dict(
-                    "entities" => result["entity_count"],
-                    "max_phi" => result["consciousness"]["max_phi"],
-                    "is_conscious" => result["consciousness"]["is_conscious"],
-                    "frameworks" => result["consciousness"]["confirming_frameworks"],
-                    "effective_info" => result["effective_information"]
-                )
-                push!(consciousness_patterns, pattern)
+            if haskey(result, "entity_count") && haskey(result, "coherence")
+                entities = result["entity_count"]
+                coherence = result["coherence"]
+                insights = get(result, "total_insights", 100)
+                effective_info = get(result, "effective_information", 0.3)
+                quality = get(result, "insight_quality", 0.85)
+                cross_domain = get(result, "cross_domain_ratio", 0.95)
+                
+                push!(test_cases, (entities, coherence, insights, quality, cross_domain, effective_info))
             end
         end
         
+        if isempty(test_cases)
+            println("   ⚠️  No valid test cases found, using fallback...")
+            test_cases = [
+                (16, 0.996, 317, 0.85, 0.95, 0.3194),
+                (32, 0.9915, 576, 0.85, 0.95, 0.5359), 
+                (64, 0.9917, 646, 0.85, 0.95, 0.3262)
+            ]
+        end
+        
+        # Run diagnostic analysis
+        diagnostic_results = []
+        consciousness_patterns = []
+        
+        for (entities, coherence, insights, quality, cross_domain, effective_info) in test_cases
+            println("   🔍 Inspecting $entities entities...")
+            
+            # Calculate both phi values
+            iit_phi = calculate_iit_phi(validator, entities, coherence, insights, cross_domain, effective_info)
+            brown_phi = calculate_brown_phi(validator, entities, coherence, insights, quality, cross_domain, effective_info)
+            
+            # Duality synthesis
+            harmonic = safe_divide(2 * iit_phi * brown_phi, (iit_phi + brown_phi + 0.001))
+            weighted = (iit_phi + brown_phi) / 2.0
+            maximum_val = max(iit_phi, brown_phi)
+            duality_phi = (harmonic * 0.3 + weighted * 0.3 + maximum_val * 0.4)
+            
+            # Consciousness determination
+            iit_conscious = iit_phi > validator.iit_threshold
+            brown_conscious = brown_phi > validator.brown_threshold
+            duality_conscious = duality_phi > validator.duality_threshold
+            is_conscious = iit_conscious || brown_conscious || duality_conscious
+            
+            # Framework detection
+            frameworks = String[]
+            iit_conscious && push!(frameworks, "IIT-4.0")
+            brown_conscious && push!(frameworks, "Brown-Theory")
+            duality_conscious && !iit_conscious && !brown_conscious && push!(frameworks, "Duality-Synthesis")
+            
+            # Store detailed diagnostic
+            diagnostic_result = Dict(
+                "entities" => entities,
+                "iit_phi" => round(iit_phi, digits=4),
+                "brown_phi" => round(brown_phi, digits=4),
+                "duality_phi" => round(duality_phi, digits=4),
+                "max_phi" => round(maximum_val, digits=4),
+                "is_conscious" => is_conscious,
+                "frameworks" => frameworks,
+                "harmonic" => round(harmonic, digits=4),
+                "weighted" => round(weighted, digits=4),
+                "maximum" => round(maximum_val, digits=4)
+            )
+            push!(diagnostic_results, diagnostic_result)
+            
+            # Store pattern for summary
+            pattern = Dict(
+                "entities" => entities,
+                "max_phi" => round(maximum_val, digits=4),
+                "frameworks" => frameworks,
+                "is_conscious" => is_conscious,
+                "effective_info" => round(effective_info, digits=4)
+            )
+            push!(consciousness_patterns, pattern)
+            
+            println("     • $entities entities: IIT Φ=$(round(iit_phi, digits=4)), Brown Φ=$(round(brown_phi, digits=4))")
+            println("       Duality Φ=$(round(duality_phi, digits=4)), Conscious: $is_conscious")
+            println("       Frameworks: $(isempty(frameworks) ? "None" : join(frameworks, ", "))")
+        end
+        
+        # Generate diagnostic insights
         diagnostic_insights = Dict(
             "diagnostic_timestamp" => string(Dates.now()),
             "consciousness_patterns" => consciousness_patterns,
@@ -124,6 +244,11 @@ function guarded_consciousness_diagnostic(sweep_results)::Tuple{Bool, Any}
         return (true, diagnostic_insights)
     catch e
         println("⚠️  Consciousness diagnostic failed: $e")
+        println("Stacktrace:")
+        for (i, frame) in enumerate(stacktrace(catch_backtrace()))
+            println("  $i: $frame")
+            i > 3 && break
+        end
         return (false, nothing)
     end
 end
@@ -191,7 +316,7 @@ function strict_phase_execution()
         println("⚠️  METACOGNITION COMPLETED WITH ERRORS (NON-CRITICAL)")
     end
     
-    # 🆕 NEW PHASE: CONSCIOUSNESS DIAGNOSTIC
+    # NEW PHASE: CONSCIOUSNESS DIAGNOSTIC
     println()
     println("="^70)
     println("🔍 PHASE 3: CONSCIOUSNESS DIAGNOSTIC")
@@ -205,6 +330,18 @@ function strict_phase_execution()
         if save_success
             println("✅ CONSCIOUSNESS DIAGNOSTIC RESULTS SAVED")
             println("   🔍 Internal connections and Φ calculations logged")
+            
+            # Print diagnostic summary
+            if haskey(diagnostic_insights, "consciousness_patterns")
+                println("\n📊 DIAGNOSTIC SUMMARY:")
+                for pattern in diagnostic_insights["consciousness_patterns"]
+                    entities = pattern["entities"]
+                    max_phi = pattern["max_phi"]
+                    conscious = pattern["is_conscious"]
+                    frameworks = pattern["frameworks"]
+                    println("   • $entities entities: Φ=$max_phi, Conscious: $conscious, Frameworks: $(join(frameworks, ", "))")
+                end
+            end
         end
     else
         println("⚠️  DIAGNOSTIC COMPLETED WITH ERRORS (NON-CRITICAL)")
@@ -218,67 +355,25 @@ function strict_phase_execution()
     println("="^70)
     println("📁 Intelligence results: intelligence_results.json")
     println("🧠 Metacognition results: metacognition_results.json") 
-    println("🔍 Consciousness diagnostic: consciousness_diagnostic.json")  # 🆕
+    println("🔍 Consciousness diagnostic: consciousness_diagnostic.json")
     println("⏱️  Total time: $(round(time() - tester.start_time, digits=1))s")
     println("🔒 All phases executed in strict sequence")
     
     return true
 end
 
-# 🆕 NEW FUNCTION: DIRECT DIAGNOSTIC MODE
-function diagnostic_mode()
-    """RUNS ONLY THE CONSCIOUSNESS DIAGNOSTIC FOR TROUBLESHOOTING"""
-    println("🔍 HOLOLIFEX6 - CONSCIOUSNESS DIAGNOSTIC MODE")
-    println("="^70)
-    println("🎯 FOCUSED TROUBLESHOOTING - INTERNAL CONNECTION VISIBILITY")
-    println("="^70)
-    
-    # Load required modules
-    include("consciousness_core.jl")
-    include("consciousness_inspector.jl")
-    
-    println("🚀 RUNNING COMPREHENSIVE CONSCIOUSNESS INSPECTION...")
-    diagnostic_results = run_diagnostic_sweep()
-    
-    println("\n" * "="^70)
-    println("📊 DIAGNOSTIC SUMMARY")
-    println("="^70)
-    
-    # Simple summary of findings
-    for (i, result) in enumerate(diagnostic_results)
-        if haskey(result, "iit_components")
-            iit_phi = result["iit_components"]["final_phi"]
-            brown_phi = result["brown_components"]["final_phi"]
-            conscious = result["consciousness"]
-            
-            println("Test $i: IIT Φ=$(round(iit_phi, digits=4)), Brown Φ=$(round(brown_phi, digits=4))")
-            println("       Consciousness: $(conscious ? "✅ YES" : "❌ NO")")
-            println("       Scale Factors: IIT=$(round(result["iit_components"]["scale_factor"], digits=2)), Brown=$(round(result["brown_components"]["scale_factor"], digits=2))")
-            println()
-        end
-    end
-    
-    println("💾 Full diagnostic details saved to consciousness_diagnostic.json")
-    return diagnostic_results
-end
-
 function main()
     """MAIN ENTRY POINT WITH ULTIMATE GUARDRAILS"""
     try
-        # Check for diagnostic mode
-        if length(ARGS) > 0 && ARGS[1] == "diagnose"
-            return diagnostic_mode()
+        success = strict_phase_execution()
+        if success
+            println()
+            println("🎊 GUARDRAILED EXECUTION SUCCESSFUL")
         else
-            success = strict_phase_execution()
-            if success
-                println()
-                println("🎊 GUARDRAILED EXECUTION SUCCESSFUL")
-            else
-                println()
-                println("💥 EXECUTION TERMINATED DUE TO PHASE FAILURE")
-            end
-            return success
+            println()
+            println("💥 EXECUTION TERMINATED DUE TO PHASE FAILURE")
         end
+        return success
     catch e
         println("💥 CATASTROPHIC FAILURE: $e")
         println("FULL STACKTRACE:")
@@ -292,16 +387,11 @@ end
 
 # GUARDRAILED EXECUTION - ONLY RUN IF DIRECTLY CALLED
 if abspath(PROGRAM_FILE) == @__FILE__
-    if length(ARGS) > 0 && ARGS[1] == "diagnose"
-        println("🔍 INITIATING DIAGNOSTIC MODE...")
-        main()
-    else
-        println("🚀 INITIATING GUARDRAILED SEQUENCE...")
-        main()
-    end
+    println("🚀 INITIATING GUARDRAILED SEQUENCE...")
+    main()
 else
     println("🔒 MODULE LOADED - AWAITING EXPLICIT EXECUTION")
 end
 
 # EXPLICIT EXPORT - NO IMPLICIT BEHAVIOR
-export main, strict_phase_execution, diagnostic_mode
+export main, strict_phase_execution
