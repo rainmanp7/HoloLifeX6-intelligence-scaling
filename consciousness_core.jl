@@ -64,18 +64,16 @@ function calculate_brown_phi(cv::ConsciousnessValidator, entity_count::Int,
         emergence = min(safe_log(emergence_base + 1) / 2.2, 1.1)
         
         brown_phi = efficiency_score * density_score * holographic_factor * (1.0 + emergence * 0.5)
-        
-        # FIXED: OPTIMIZED BROWN SCALING FOR LARGE SYSTEMS
-        brown_scale = if entity_count < 20
-            1.7  # Small systems - Brown excels
-        elseif entity_count < 40
-            1.5  # Medium systems
-        elseif entity_count < 80
-            1.3  # Large systems - REDUCED PENALTY
-        else
-            1.1  # Very large systems - MINIMAL PENALTY
-        end
-        
+        # FIXED: Better Brown scaling for small systems
+brown_scale = if entity_count < 10
+    2.0  # Major boost for micro-systems
+elseif entity_count < 30  
+    1.8  # High boost for small systems
+elseif entity_count < 60
+    1.5  # Good boost for medium systems
+else
+    1.2  # Moderate for large systems
+end
         return max(0.0, min(brown_phi * brown_scale, 2.0))
     catch e
         return max(0.0, coherence * insight_quality * 0.15)
