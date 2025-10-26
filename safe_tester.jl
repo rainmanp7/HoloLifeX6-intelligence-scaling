@@ -1,7 +1,9 @@
 # safe_tester.jl
 """
-🧪 SAFE TESTER MODULE
+🧪 SAFE TESTER MODULE - EXTENDED SCALING
 Testing framework with memory management and result logging
+Extended entity counts: 16, 24, 32, 64, 128, 512, 1024
+Same cycle count: 50 cycles per test
 """
 
 using JSON
@@ -105,14 +107,17 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)
 end
 
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting scaling sweep...")
+    log_message(tester, "🚀 Starting EXTENDED scaling sweep...")
     
-    entity_counts = [16, 32, 64]  # Simple scaling for reliability
+    # EXTENDED ENTITY COUNTS - SAME 50 CYCLES EACH
+    entity_counts = [16, 24, 32, 64, 128, 512, 1024]  # Full scaling spectrum
+    
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
-            result = run_unified_test(tester, entity_count, 50)
+            result = run_unified_test(tester, entity_count, 50)  # UNCHANGED: 50 CYCLES
+            
             push!(sweep_results, result)
             
             if result["status"] != "completed"
@@ -158,7 +163,7 @@ end
 
 function save_results(tester::SafeTester)::String
     timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
-    filename = "unified_intelligence_scaling_MODULAR_$timestamp.json"
+    filename = "unified_intelligence_scaling_EXTENDED_$timestamp.json"
     
     clean_results = [clean_data_for_json(result) for result in tester.results]
     
@@ -179,7 +184,7 @@ end
 
 function print_summary(tester::SafeTester)
     println("\n" * "="^70)
-    println("📊 MODULAR UNIFIED INTELLIGENCE SCALING SUMMARY")
+    println("📊 EXTENDED UNIFIED INTELLIGENCE SCALING SUMMARY")
     println("="^70)
     
     if isempty(tester.results)
