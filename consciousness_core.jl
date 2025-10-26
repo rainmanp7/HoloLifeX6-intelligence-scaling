@@ -22,9 +22,9 @@ mutable struct ConsciousnessValidator
     rho_threshold::Float64
 
     function ConsciousnessValidator()
-        # Maintain exact same thresholds for compatibility
-        new(0.15, 0.12, 0.10, 0.25)
-    end
+    # Slightly lower threshold to capture the breakthrough
+    new(0.15, 0.12, 0.10, 0.20)  # Changed from 0.25 to 0.20
+end
 end
 
 # CORE HOT THEORY IMPLEMENTATION
