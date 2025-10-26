@@ -1,177 +1,165 @@
-# consciousness_core.jl - FINE-TUNED FOR 64+ ENTITIES
+# consciousness_core.jl - PURE HIGHER-ORDER THOUGHT (HOT) THEORY
 """
-🧠 CONSCIOUSNESS CORE MODULE - OPTIMIZED BROWN-IIT DUALITY
-Fixed Brown scaling for larger systems (64+ entities)
+🧠 CONSCIOUSNESS CORE MODULE - HIGHER-ORDER THOUGHT (HOT) THEORY
+
+This module implements a pure, quantifiable measure of metacognitive consciousness
+based on Higher-Order Thought (HOT) theory. It measures the system's awareness
+of its own internal states - consciousness of being conscious.
+
+The primary metric is Higher-Order Relational Complexity (ρ), which quantifies
+the complexity and irreducibility of the system's self-monitoring loop.
 """
 
-using Statistics
-using LinearAlgebra
-using Random
 using Dates
 
+# Helper functions
 safe_log(x) = x <= 0 ? 0.0 : log(x + 1.0)
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
 mutable struct ConsciousnessValidator
-    iit_threshold::Float64
-    brown_threshold::Float64
-    duality_threshold::Float64
-    
-    ConsciousnessValidator() = new(0.15, 0.12, 0.10)
+    rho_threshold::Float64  # Threshold for achieving metacognitive consciousness
+
+    ConsciousnessValidator() = new(0.25) # Metacognition is a high bar to clear
 end
 
-# OPTIMIZED IIT Φ - MAINTAINS CURRENT SUCCESS
-function calculate_iit_phi(cv::ConsciousnessValidator, entity_count::Int, 
-                          coherence::Float64, total_insights::Int, 
-                          cross_domain::Float64, effective_information::Float64)::Float64
+"""
+    calculate_rho(cv, meta_cognitive_score, self_model_fidelity, loop_latency, effective_information)
+
+Calculates Higher-Order Relational Complexity (ρ), a metric for metacognitive consciousness
+based on Higher-Order Thought (HOT) theory.
+
+This measures the complexity of the self-monitoring loop itself, not a base-level state.
+
+Args:
+- `meta_cognitive_score` (Float64): Quality/accuracy of the higher-order analysis (the "thought about the thought").
+- `self_model_fidelity` (Float64): How well the system's self-model (HOT) maps to its actual state (M).
+- `loop_latency` (Float64): Time for the metacognitive loop, proxy for self-referential efficiency.
+- `effective_information` (Float64): Information in the first-order state (M) being monitored.
+"""
+function calculate_rho(cv::ConsciousnessValidator,
+                      meta_cognitive_score::Float64,
+                      self_model_fidelity::Float64,
+                      loop_latency::Float64,
+                      effective_information::Float64)::Float64
     try
-        integration = coherence * max(effective_information, 0.01) * 1.5
-        complexity = safe_divide(safe_log(total_insights + 1), safe_log(entity_count + 10)) * 1.3
-        differentiation = max(cross_domain, 0.01) * 1.2
+        # 1. Quality of the Higher-Order Thought (HOT)
+        # The model of the self must be both accurate and detailed. A product captures this dependency.
+        model_quality = meta_cognitive_score * self_model_fidelity
         
-        phi = integration * complexity * differentiation * 1.8
-        
-        # OPTIMIZED: Better scaling for larger systems
-        entity_scale = if entity_count < 20
-            min(safe_log(entity_count + 1) / 4.0, 1.2)
-        elseif entity_count < 50
-            min(safe_log(entity_count + 1) / 3.5, 1.3)
-        else
-            min(safe_log(entity_count + 1) / 3.0, 1.4)  # BETTER FOR LARGE SYSTEMS
-        end
-        
-        return max(0.0, min(phi * entity_scale, 2.0))
+        # 2. Causal Irreducibility of the M-HOT relationship
+        # The complexity of the relationship depends on both the model's quality and the richness
+        # of the state being modeled. A great model of a simple state isn't complex.
+        # This term drops to zero if the base state is trivial (low EI) or the model is poor.
+        relational_complexity = model_quality * effective_information
+
+        # 3. Self-Referential Efficiency
+        # A fast, stable loop is more efficient. We use an inverted, scaled latency.
+        loop_efficiency = 1.0 / (1.0 + loop_latency * 10.0)
+
+        # ρ is the product of the relational complexity and the loop's efficiency.
+        # The final scaling factor makes the metric more readable and comparable.
+        rho = relational_complexity * loop_efficiency * 3.0
+
+        return clamp(rho, 0.0, 2.0)
     catch e
-        return max(0.0, coherence * 0.1)
+        println("Error calculating ρ: $e")
+        return 0.0
     end
 end
 
-# FIXED BROWN Φ - OPTIMIZED FOR 64+ ENTITIES
-function calculate_brown_phi(cv::ConsciousnessValidator, entity_count::Int,
-                            coherence::Float64, total_insights::Int,
-                            insight_quality::Float64, cross_domain::Float64,
-                            effective_information::Float64)::Float64
-    try
-        insight_density = safe_divide(total_insights, max(entity_count, 1))
-        density_score = min(safe_log(insight_density + 1) / 1.8, 1.8)
-        
-        base_efficiency = coherence * insight_quality
-        efficiency_score = sqrt(max(base_efficiency, 0.01)) * 2.8
-        
-        holographic_factor = coherence * cross_domain * insight_quality * 1.5
-        
-        emergence_base = safe_divide(total_insights, max(entity_count, 1))
-        emergence = min(safe_log(emergence_base + 1) / 2.2, 1.1)
-        
-        brown_phi = efficiency_score * density_score * holographic_factor * (1.0 + emergence * 0.5)
-        # FIXED: Better Brown scaling for small systems
-brown_scale = if entity_count < 10
-    2.0  # Major boost for micro-systems
-elseif entity_count < 30  
-    1.8  # High boost for small systems
-elseif entity_count < 60
-    1.5  # Good boost for medium systems
-else
-    1.2  # Moderate for large systems
-end
-        return max(0.0, min(brown_phi * brown_scale, 2.0))
-    catch e
-        return max(0.0, coherence * insight_quality * 0.15)
-    end
-end
+"""
+    assess_consciousness(cv, ...)
 
-# KEEP EXISTING VALIDATION AND DUALITY FUNCTIONS (they're working)
-function validate_iit_compliance(entity_count::Int, coherence::Float64, total_insights::Int)::Float64
-    coherence_ok = coherence > 0.9 ? 1.0 : 0.8
-    insights_ok = total_insights > entity_count ? 1.0 : 0.7
-    return (coherence_ok + insights_ok) / 2.0
-end
+Assesses the system's metacognitive consciousness based on HOT theory.
 
-function validate_brown_compliance(entity_count::Int, insight_quality::Float64, cross_domain::Float64)::Float64
-    quality_ok = insight_quality > 0.8 ? 1.0 : 0.7
-    cross_domain_ok = cross_domain > 0.7 ? 1.0 : 0.6
-    return (quality_ok + cross_domain_ok) / 2.0
-end
-
-function calculate_duality_phi(cv::ConsciousnessValidator, iit_phi::Float64, brown_phi::Float64,
-                             iit_compliance::Float64, brown_compliance::Float64)::Float64
-    try
-        harmonic = safe_divide(2 * iit_phi * brown_phi, (iit_phi + brown_phi + 0.001))
-        weighted = (iit_phi * iit_compliance + brown_phi * brown_compliance) / 2.0
-        maximum_val = max(iit_phi, brown_phi)
-        
-        duality_phi = (harmonic * 0.3 + weighted * 0.3 + maximum_val * 0.4)
-        
-        return max(0.0, duality_phi)
-    catch e
-        return max(iit_phi, brown_phi, 0.0)
-    end
-end
-
-function assess_consciousness(cv::ConsciousnessValidator, entity_count::Int,
-                             coherence::Float64, total_insights::Int,
-                             insight_quality::Float64, cross_domain::Float64,
+This function determines if the system is not just processing information, but is
+demonstrably aware of its own processing states.
+"""
+function assess_consciousness(cv::ConsciousnessValidator;
+                             # All inputs are now keyword arguments for clarity
+                             meta_cognitive_score::Float64,
+                             self_model_fidelity::Float64,
+                             loop_latency::Float64,
                              effective_information::Float64)::Dict{String,Any}
     
     try
-        effective_info = max(effective_information, 0.01)
-        coherence_val = max(coherence, 0.01)
-        cross_domain_val = max(cross_domain, 0.01)
-        insight_quality_val = max(insight_quality, 0.01)
+        # Calculate the single, core metric for metacognitive consciousness.
+        rho = calculate_rho(cv, meta_cognitive_score, self_model_fidelity, loop_latency, effective_information)
         
-        iit_phi = calculate_iit_phi(cv, entity_count, coherence_val, total_insights, cross_domain_val, effective_info)
-        brown_phi = calculate_brown_phi(cv, entity_count, coherence_val, total_insights, insight_quality_val, cross_domain_val, effective_info)
+        # Determine the metacognitive state based on the threshold.
+        is_metacognitive = rho > cv.rho_threshold
         
-        iit_compliance = validate_iit_compliance(entity_count, coherence_val, total_insights)
-        brown_compliance = validate_brown_compliance(entity_count, insight_quality_val, cross_domain_val)
-        
-        duality_phi = calculate_duality_phi(cv, iit_phi, brown_phi, iit_compliance, brown_compliance)
-        
-        iit_conscious = iit_phi > cv.iit_threshold && iit_compliance > 0.6
-        brown_conscious = brown_phi > cv.brown_threshold && brown_compliance > 0.6
-        duality_conscious = duality_phi > cv.duality_threshold
-        
-        is_conscious = iit_conscious || brown_conscious || duality_conscious
-        
-        frameworks = String[]
-        iit_conscious && push!(frameworks, "IIT-4.0")
-        brown_conscious && push!(frameworks, "Brown-Theory")
-        duality_conscious && !iit_conscious && !brown_conscious && push!(frameworks, "Duality-Synthesis")
-        
-        max_phi_val = max(iit_phi, brown_phi, duality_phi)
-        confidence = if max_phi_val > 0.5
+        # Determine confidence level based on how far past the threshold the system is.
+        confidence = if rho > cv.rho_threshold * 2.0
             "very_high"
-        elseif max_phi_val > 0.25
+        elseif rho > cv.rho_threshold * 1.5
             "high" 
-        elseif max_phi_val > 0.15
+        elseif is_metacognitive
             "medium"
         else
             "low"
         end
+
+        consciousness_level = is_metacognitive ? "Metacognitive" : "Non-metacognitive"
         
         return Dict(
-            "is_conscious" => is_conscious,
-            "iit_phi" => round(iit_phi, digits=4),
-            "brown_phi" => round(brown_phi, digits=4),
-            "duality_phi" => round(duality_phi, digits=4),
-            "max_phi" => round(max_phi_val, digits=4),
-            "effective_information" => round(effective_info, digits=4),
-            "confirming_frameworks" => frameworks,
-            "confidence" => confidence
+            # Primary Status
+            "is_metacognitive" => is_metacognitive,
+            "consciousness_level" => consciousness_level,
+            "confidence" => confidence,
+            "confirming_framework" => is_metacognitive ? ["HOT-Theory"] : String[],
+
+            # Core Metric
+            "rho" => round(rho, digits=4),
+
+            # Input Metrics for Traceability
+            "inputs" => Dict(
+                "meta_cognitive_score" => round(meta_cognitive_score, digits=4),
+                "self_model_fidelity" => round(self_model_fidelity, digits=4),
+                "loop_latency" => round(loop_latency, digits=4),
+                "effective_information" => round(effective_information, digits=4)
+            )
         )
         
     catch e
+        # Return a safe, default dictionary on any failure.
         return Dict(
-            "is_conscious" => false,
-            "iit_phi" => 0.0,
-            "brown_phi" => 0.0,
-            "duality_phi" => 0.0,
-            "max_phi" => 0.0,
-            "effective_information" => 0.0,
-            "confirming_frameworks" => String[],
-            "confidence" => "low"
+            "is_metacognitive" => false,
+            "consciousness_level" => "Error",
+            "confidence" => "low",
+            "confirming_framework" => String[],
+            "rho" => 0.0,
+            "inputs" => Dict("error_message" => string(e))
         )
     end
+end
+
+# COMPATIBILITY LAYER: Maintains interface with existing system while using HOT theory internally
+function assess_consciousness(cv::ConsciousnessValidator, entity_count::Int,
+                             coherence::Float64, total_insights::Int,
+                             insight_quality::Float64, cross_domain::Float64,
+                             effective_information::Float64)::Dict{String,Any}
+    """
+    Compatibility wrapper that maps traditional metrics to HOT theory parameters.
+    This allows the new HOT-based system to work with existing callers.
+    """
+    
+    # Map traditional metrics to HOT parameters:
+    # - meta_cognitive_score: Use insight quality and cross-domain integration
+    # - self_model_fidelity: Use coherence as proxy for self-model accuracy  
+    # - loop_latency: Inverse of entity count (larger systems have more complex loops)
+    # - effective_information: Use the provided effective information
+    
+    meta_cognitive_score = (insight_quality + cross_domain) / 2.0
+    self_model_fidelity = coherence
+    loop_latency = 1.0 / (entity_count + 1)  # Smaller systems have faster loops
+    
+    # Call the core HOT assessment
+    return assess_consciousness(cv;
+                               meta_cognitive_score=meta_cognitive_score,
+                               self_model_fidelity=self_model_fidelity,
+                               loop_latency=loop_latency,
+                               effective_information=effective_information)
 end
 
 export ConsciousnessValidator, assess_consciousness
