@@ -199,13 +199,13 @@ function detect_consciousness_anomalies(optimizer::LearningCalculusOptimizer, an
     return anomalies
 end
 
-function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector{Dict})
+function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector)
     """Update knowledge base with new patterns and insights"""
     patterns = optimizer.knowledge_base["consciousness_patterns"]
     
     # Update pattern detection counts
     for anomaly in anomalies
-        anomaly_type = anomaly["type"]
+        anomaly_type = get(anomaly, "type", "")
         if anomaly_type == "consciousness_collapse"
             patterns["consciousness_collapse"]["detection_count"] += 1
         elseif anomaly_type == "meta_cognitive_instability"
@@ -213,8 +213,8 @@ function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis
             volatility_issues = get(optimizer.knowledge_base["meta_cognitive_insights"], "volatility_issues", [])
             push!(volatility_issues, Dict(
                 "timestamp" => string(Dates.now()),
-                "volatility" => anomaly["volatility"],
-                "entity_count" => anomaly["entity_count"]
+                "volatility" => get(anomaly, "volatility", 0.0),
+                "entity_count" => get(anomaly, "entity_count", 0)
             ))
             optimizer.knowledge_base["meta_cognitive_insights"]["volatility_issues"] = volatility_issues
         end
@@ -247,7 +247,7 @@ function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis
     optimizer.knowledge_base["learning_confidence"] = min(1.0, total_analyses / 10.0)
 end
 
-function generate_learned_recommendations(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector{Dict})
+function generate_learned_recommendations(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector)
     """Generate recommendations based on learned knowledge"""
     recommendations = []
     knowledge = optimizer.knowledge_base
@@ -257,10 +257,10 @@ function generate_learned_recommendations(optimizer::LearningCalculusOptimizer, 
         push!(recommendations, Dict(
             "priority" => "high",
             "source" => "learned_pattern",
-            "anomaly_type" => anomaly["type"],
-            "action" => anomaly["recommendation"],
-            "evidence" => anomaly["learned_pattern"],
-            "confidence" => anomaly["confidence"],
+            "anomaly_type" => get(anomaly, "type", "unknown"),
+            "action" => get(anomaly, "recommendation", "Review system behavior"),
+            "evidence" => get(anomaly, "learned_pattern", "Pattern detected"),
+            "confidence" => get(anomaly, "confidence", "medium"),
             "entity_count" => get(anomaly, "entity_count", 0)
         ))
     end
@@ -284,7 +284,7 @@ function generate_learned_recommendations(optimizer::LearningCalculusOptimizer, 
         # Meta-cognitive volatility pattern
         volatility_issues = get(knowledge["meta_cognitive_insights"], "volatility_issues", [])
         if length(volatility_issues) >= 2
-            avg_volatility = mean([v["volatility"] for v in volatility_issues])
+            avg_volatility = mean([get(v, "volatility", 0.0) for v in volatility_issues])
             push!(recommendations, Dict(
                 "priority" => "medium",
                 "source" => "historical_pattern", 
@@ -392,8 +392,8 @@ function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, in
             all_recommendations = []
             
             for (i, result) in enumerate(results_data)
-                entity_count = result["entity_count"]
-                snapshots = [Dict(s) for s in result["snapshots"]]
+                entity_count = get(result, "entity_count", 0)
+                snapshots = [Dict(s) for s in get(result, "snapshots", [])]
                 
                 println("   🔍 Analyzing $entity_count entities (with learning)...")
                 analysis, anomalies = analyze_with_learning(optimizer, snapshots, entity_count)
@@ -402,13 +402,18 @@ function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, in
                     # Generate learned recommendations
                     recommendations = generate_learned_recommendations(optimizer, analysis, anomalies)
                     
+                    # Safely get consciousness data with defaults
+                    consciousness_data = get(result, "consciousness", Dict())
+                    is_conscious = get(consciousness_data, "is_conscious", false)
+                    max_phi = get(consciousness_data, "max_phi", 0.0)
+                    
                     entity_analysis = Dict(
                         "entity_count" => entity_count,
                         "analysis" => analysis,
                         "anomalies_detected" => length(anomalies),
                         "recommendations" => recommendations,
-                        "consciousness_status" => result["consciousness"]["is_conscious"] ? "CONSCIOUS" : "DEVELOPING",
-                        "final_phi" => result["consciousness"]["max_phi"]
+                        "consciousness_status" => is_conscious ? "CONSCIOUS" : "DEVELOPING",
+                        "final_phi" => max_phi
                     )
                     push!(entity_analyses, entity_analysis)
                     append!(all_anomalies, anomalies)
