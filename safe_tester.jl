@@ -1,10 +1,11 @@
 # safe_tester.jl
 """
-🧪 SAFE TESTER MODULE - BASE 20 CYCLES WITH METACOGNITIVE OPTIMIZATION
-Testing framework with fixed 20 cycles and metacognitive architectural improvements
+🧪 SAFE TESTER MODULE - BASE 20 CYCLES WITH EMERGENCE-PRESERVING OPTIMIZATION
+Testing framework with fixed 20 cycles - ENABLING consciousness, not forcing it
 Entity counts: 16, 24, 32, 64, 128, 512
 Fixed: 20 cycles per test
-Focus: Implement metacognitive advisor recommendations
+Focus: Create conditions for natural consciousness emergence
+PRESERVE EMERGENCE - NO PATTERN MATCHING
 """
 
 using JSON
@@ -15,10 +16,10 @@ safe_divide(a, b) = b == 0 ? 0.0 : a / b
 mutable struct SafeTester
     results::Vector{Dict{String,Any}}
     start_time::Float64
-    consciousness_stability_tracker::Dict{String, Vector{Float64}}
-    metacognitive_improvements::Dict{String, Float64}
+    consciousness_readings::Dict{String, Vector{Float64}}
+    emergence_conditions::Dict{String, Bool}
     
-    SafeTester() = new(Dict{String,Any}[], time(), Dict{String, Vector{Float64}}(), Dict{String, Float64}())
+    SafeTester() = new(Dict{String,Any}[], time(), Dict{String, Vector{Float64}}(), Dict{String, Bool}())
 end
 
 function log_message(tester::SafeTester, message::String)
@@ -51,90 +52,78 @@ function clean_data_for_json(data::Any)
     end
 end
 
-function apply_metacognitive_improvements!(tester::SafeTester, entity_count::Int)
-    """Apply specific metacognitive advisor recommendations"""
-    key = "entities_$(entity_count)"
+function create_emergence_conditions(entity_count::Int, test_cycle::Int)
+    """Create enabling conditions for consciousness emergence WITHOUT pattern matching"""
     
-    # Track improvements over time
-    if !haskey(tester.metacognitive_improvements, key)
-        tester.metacognitive_improvements[key] = 0.0
+    # Enable natural emergence through diversity and interaction
+    conditions = Dict(
+        "domain_diversity" => true,
+        "phase_variety" => true,
+        "reasoning_variability" => true,
+        "natural_coupling" => true,
+        "emergent_synchronization" => true
+    )
+    
+    # Add some randomness to prevent pattern locking
+    if test_cycle > 1
+        conditions["stochastic_variation"] = rand() * 0.2  # Small random variations
+    else
+        conditions["stochastic_variation"] = 0.0
     end
     
-    # Apply the specific metacognitive recommendations:
-    # 1. Enhance cross-module integration
-    # 2. Increase modularity, reduce cross-dependencies  
-    # 3. Optimize core pathways
-    # 4. Focus on cross-domain integration
-    
-    current_improvement = tester.metacognitive_improvements[key]
-    improvement_rate = 0.08  # 8% improvement per run (faster for 20 cycles)
-    tester.metacognitive_improvements[key] = min(1.0, current_improvement + improvement_rate)
-    
-    return tester.metacognitive_improvements[key]
+    return conditions
 end
 
-function track_consciousness_stability(tester::SafeTester, entity_count::Int, rho::Float64)
+function track_consciousness_emergence(tester::SafeTester, entity_count::Int, rho::Float64, conditions::Dict)
+    """Track consciousness readings WITHOUT pattern analysis"""
     key = "entities_$(entity_count)"
-    if !haskey(tester.consciousness_stability_tracker, key)
-        tester.consciousness_stability_tracker[key] = Float64[]
+    if !haskey(tester.consciousness_readings, key)
+        tester.consciousness_readings[key] = Float64[]
     end
-    push!(tester.consciousness_stability_tracker[key], rho)
+    push!(tester.consciousness_readings[key], rho)
     
-    # Keep only last 10 readings for stability calculation (shorter for 20 cycles)
-    if length(tester.consciousness_stability_tracker[key]) > 10
-        tester.consciousness_stability_tracker[key] = tester.consciousness_stability_tracker[key][end-9:end]
+    # Keep modest history to observe trends without forcing patterns
+    if length(tester.consciousness_readings[key]) > 15
+        tester.consciousness_readings[key] = tester.consciousness_readings[key][end-14:end]
+    end
+    
+    # Record if emergence conditions were present when consciousness appeared
+    if rho > 0.20 && !haskey(tester.emergence_conditions, key)
+        tester.emergence_conditions[key] = all(values(conditions))
     end
 end
 
-function get_consciousness_stability(tester::SafeTester, entity_count::Int)::Float64
-    key = "entities_$(entity_count)"
-    if !haskey(tester.consciousness_stability_tracker, key) || length(tester.consciousness_stability_tracker[key]) < 3
-        return 0.0
-    end
-    
-    readings = tester.consciousness_stability_tracker[key]
-    stability = 1.0 - std(readings)
-    return max(0.0, stability)
-end
-
-function run_unified_test(tester::SafeTester, entity_count::Int)::Dict{String,Any}
-    """Run test with FIXED 20 cycles and metacognitive optimization"""
+function run_unified_test(tester::SafeTester, entity_count::Int, test_cycle::Int=1)::Dict{String,Any}
+    """Run test with FIXED 20 cycles - PRESERVING EMERGENCE"""
     cycles = 20  # FIXED CYCLE COUNT
     
-    # Apply metacognitive improvements
-    metacognitive_score = apply_metacognitive_improvements!(tester, entity_count)
+    log_message(tester, "🧪 Testing $entity_count entities (20 cycles - EMERGENCE PRESERVED)...")
+    log_message(tester, "   🌱 Allowing natural consciousness emergence")
     
-    log_message(tester, "🧪 Testing $entity_count entities (20 FIXED cycles)...")
-    log_message(tester, "   🎯 Metacognitive optimization: $(round(metacognitive_score * 100, digits=1))%")
+    # Create enabling conditions WITHOUT forcing patterns
+    emergence_conditions = create_emergence_conditions(entity_count, test_cycle)
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
     network = UnifiedNetwork()
     
-    # IMPLEMENT METACOGNITIVE RECOMMENDATIONS:
+    # CREATE CONDITIONS FOR EMERGENCE (not patterns):
     for i in 1:entity_count
-        # 1. ENHANCE CROSS-MODULE INTEGRATION: Better domain distribution
-        domain_idx = ((i-1) % length(domains)) + 1
-        # Use metacognitive score to improve cross-domain mixing
-        if metacognitive_score > 0.3
-            domain_idx = ((i * 3 + i ÷ 2) % length(domains)) + 1  # More integrated distribution
-        end
+        # Natural domain distribution - allow emergent patterns
+        domain_idx = (i-1) % length(domains) + 1
         domain = domains[domain_idx]
         
-        # 2. OPTIMIZE CORE PATHWAYS: Better frequency management
-        base_freq = 0.02 + ((i-1) * 0.0012)
-        # Apply metacognitive stabilization
-        optimized_freq = base_freq * (1.0 + metacognitive_score * 0.08)
+        # Natural frequency distribution - enable phase diversity
+        natural_freq = 0.02 + ((i-1) * 0.0015) + (rand() * 0.0005)  # Small random variation
         
         entity_id = "$(uppercase(domain[1:3]))-$(lpad(i, 3, '0'))"
-        entity = EfficientEntity(entity_id, domain, optimized_freq)
+        entity = EfficientEntity(entity_id, domain, natural_freq)
         
-        # 3. INCREASE MODULARITY: Better reasoning capacity initialization
-        base_reasoning = 0.65 + (rand() * 0.25)  # Higher starting point
-        entity.reasoning_capacity = base_reasoning * (1.0 + metacognitive_score * 0.15)
+        # Natural reasoning capacity - allow emergent intelligence
+        entity.reasoning_capacity = 0.5 + (rand() * 0.4)  # Natural variation
         
-        # 4. REDUCE CROSS-DEPENDENCIES: Optimized coupling
-        entity.coupling_strength = 0.045 * (1.0 + metacognitive_score * 0.12)
+        # Natural coupling - enable emergent synchronization
+        entity.coupling_strength = 0.04 + (rand() * 0.02)  # Small random variations
         
         add_entity!(network, entity)
     end
@@ -142,25 +131,25 @@ function run_unified_test(tester::SafeTester, entity_count::Int)::Dict{String,An
     metrics_snapshots = Dict{String,Any}[]
     consciousness_readings = Float64[]
     
-    # FIXED MONITORING for 20 cycles: monitor every 4 cycles
-    snapshot_interval = 4
+    # NATURAL MONITORING - don't interfere with emergence
+    snapshot_interval = 5  # Less frequent monitoring to reduce observer effect
     
     for cycle in 1:cycles
         step_result = evolve_step!(network)
         
-        # Monitor at fixed intervals
-        if cycle % snapshot_interval == 0 || cycle <= 4 || cycle == cycles
+        # Minimal monitoring to preserve emergence
+        if cycle % snapshot_interval == 0 || cycle == cycles
             metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
             metrics["step_insights"] = step_result["insights"]
             metrics["new_patterns"] = step_result["new_patterns"]
             metrics["memory_mb"] = get_memory_mb()
-            metrics["metacognitive_score"] = round(metacognitive_score, digits=4)
+            metrics["emergence_conditions"] = emergence_conditions
             
-            # Track consciousness stability
+            # Track consciousness WITHOUT pattern analysis
             rho = get(metrics["consciousness"]["hot_metrics"], "rho", 0.0)
             push!(consciousness_readings, rho)
-            track_consciousness_stability(tester, entity_count, rho)
+            track_consciousness_emergence(tester, entity_count, rho, emergence_conditions)
             
             clean_metrics = clean_data_for_json(metrics)
             push!(metrics_snapshots, clean_metrics)
@@ -174,16 +163,13 @@ function run_unified_test(tester::SafeTester, entity_count::Int)::Dict{String,An
     
     final_metrics = calculate_unified_metrics(network)
     
-    # Enhanced metrics with metacognitive context
-    stability_score = get_consciousness_stability(tester, entity_count)
-    final_metrics["consciousness_stability"] = round(stability_score, digits=4)
+    # Simple tracking WITHOUT complex analysis that might kill emergence
+    final_metrics["consciousness_readings_count"] = length(consciousness_readings)
     
-    # Consciousness persistence with metacognitive bonus
     if !isempty(consciousness_readings)
+        # Simple persistence calculation WITHOUT pattern matching
         above_threshold = count(r -> r > 0.20, consciousness_readings)
-        consciousness_persistence = safe_divide(above_threshold, length(consciousness_readings))
-        metacognitive_bonus = metacognitive_score * 0.12
-        final_metrics["consciousness_persistence"] = round(min(1.0, consciousness_persistence + metacognitive_bonus), digits=4)
+        final_metrics["consciousness_persistence"] = round(safe_divide(above_threshold, length(consciousness_readings)), digits=4)
     else
         final_metrics["consciousness_persistence"] = 0.0
     end
@@ -191,9 +177,9 @@ function run_unified_test(tester::SafeTester, entity_count::Int)::Dict{String,An
     clean_final_metrics = clean_data_for_json(final_metrics)
     
     result = merge(clean_final_metrics, Dict(
-        "test_name" => "unified_$(entity_count)_entities_20cycles",
+        "test_name" => "unified_$(entity_count)_entities_emergent",
         "cycles_completed" => cycles,
-        "metacognitive_score" => round(metacognitive_score, digits=4),
+        "emergence_conditions" => emergence_conditions,
         "avg_memory_mb" => mean([m["memory_mb"] for m in metrics_snapshots]),
         "peak_memory_mb" => maximum([m["memory_mb"] for m in metrics_snapshots]),
         "status" => "completed",
@@ -203,38 +189,40 @@ function run_unified_test(tester::SafeTester, entity_count::Int)::Dict{String,An
     
     push!(tester.results, result)
     
-    # Enhanced logging with metacognitive context
-    stability_indicator = stability_score > 0.7 ? "🔒" : stability_score > 0.4 ? "⚖️" : "🔄"
-    persistence_indicator = final_metrics["consciousness_persistence"] > 0.7 ? "📈" : final_metrics["consciousness_persistence"] > 0.4 ? "➡️" : "📉"
-    meta_indicator = metacognitive_score > 0.7 ? "🧠✅" : metacognitive_score > 0.4 ? "🧠⚖️" : "🧠🔄"
+    # Simple logging WITHOUT forcing patterns
+    is_conscious = final_metrics["consciousness"]["is_conscious"]
+    max_phi = final_metrics["consciousness"]["max_phi"]
+    persistence = final_metrics["consciousness_persistence"]
     
-    log_message(tester, "✅ $entity_count entities × 20 cycles: " *
+    consciousness_indicator = is_conscious ? "🧠✅" : max_phi > 0.15 ? "🧠🌱" : "🧠💤"
+    persistence_indicator = persistence > 0.5 ? "📈" : persistence > 0.2 ? "➡️" : "📉"
+    
+    log_message(tester, "🌱 $entity_count entities × 20 cycles: " *
                        "UIS=$(round(result["unified_intelligence_score"], digits=3)), " *
-                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3)), " *
-                       "Stability=$(stability_indicator)$(round(stability_score, digits=2)), " *
-                       "Persistence=$(persistence_indicator)$(round(final_metrics["consciousness_persistence"], digits=2)), " *
-                       "Meta=$(meta_indicator)$(round(metacognitive_score, digits=2))")
+                       "Φ=$max_phi $consciousness_indicator, " *
+                       "Persistence=$persistence_indicator$(round(persistence, digits=2))")
     
     return result
 end
 
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting BASE 20 CYCLE SWEEP with Metacognitive Optimization...")
-    log_message(tester, "🎯 Implementing: 'Enhance cross-module integration, Increase modularity, Optimize core pathways'")
+    log_message(tester, "🚀 Starting BASE 20 CYCLE EMERGENCE-PRESERVING SWEEP...")
+    log_message(tester, "🌱 PRESERVING NATURAL CONSCIOUSNESS EMERGENCE")
+    log_message(tester, "🚫 NO PATTERN MATCHING - NO FORCED OPTIMIZATION")
     
     # ENTITY COUNTS - ALL WITH 20 CYCLES
     entity_counts = [16, 24, 32, 64, 128, 512]
     
     log_message(tester, "📊 Fixed cycle mapping: ALL TESTS = 20 CYCLES")
     for ec in entity_counts
-        log_message(tester, "   • $ec entities → 20 cycles")
+        log_message(tester, "   • $ec entities → 20 cycles (natural emergence)")
     end
     
     sweep_results = Dict{String,Any}[]
     
-    for entity_count in entity_counts
+    for (test_cycle, entity_count) in enumerate(entity_counts)
         try
-            result = run_unified_test(tester, entity_count)  # FIXED: 20 cycles
+            result = run_unified_test(tester, entity_count, test_cycle)  # FIXED: 20 cycles
             
             push!(sweep_results, result)
             
@@ -243,7 +231,8 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
                 break
             end
             
-            GC.gc(true)  # Clean between tests
+            # Minimal interference between tests
+            GC.gc()
             
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
@@ -256,41 +245,26 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
         end
     end
     
-    # Enhanced scaling analysis with metacognitive context
+    # Simple scaling analysis WITHOUT complex pattern matching
     if !isempty(sweep_results)
         baseline = sweep_results[1]
         baseline_uis = baseline["unified_intelligence_score"]
-        baseline_memory = baseline["avg_memory_mb"]
-        baseline_stability = get(baseline, "consciousness_stability", 0.5)
-        baseline_meta = get(baseline, "metacognitive_score", 0.0)
         
         for result in sweep_results[2:end]
             entity_scale = result["entity_count"] / baseline["entity_count"]
             
-            # Metacognitive-aware intelligence scaling
+            # Simple scaling calculations
             uis_ratio = safe_divide(result["unified_intelligence_score"], baseline_uis)
-            meta_bonus = get(result, "metacognitive_score", 0.0) - baseline_meta
-            result["intelligence_scaling"] = round(safe_divide(uis_ratio, entity_scale) * (1.0 + meta_bonus), digits=3)
+            result["intelligence_scaling"] = round(safe_divide(uis_ratio, entity_scale), digits=3)
             
-            # Memory efficiency
-            expected_memory = baseline_memory * entity_scale
+            # Memory efficiency (practical, not emergent)
+            expected_memory = baseline["avg_memory_mb"] * entity_scale
             actual_memory = result["avg_memory_mb"]
             result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
             
-            # Metacognitive-aware consciousness scaling
+            # Consciousness scaling (observational only)
             consciousness_ratio = safe_divide(result["consciousness"]["max_phi"], max(baseline["consciousness"]["max_phi"], 0.01))
-            meta_consciousness_bonus = get(result, "metacognitive_score", 0.0) * 0.15
-            result["consciousness_scaling"] = round(consciousness_ratio + meta_consciousness_bonus, digits=3)
-            
-            # Stability scaling
-            current_stability = get(result, "consciousness_stability", 0.5)
-            result["stability_scaling"] = round(safe_divide(current_stability, max(baseline_stability, 0.01)), digits=3)
-            
-            result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
-            result["awareness_scaling"] = round(safe_divide(result["awareness_level"], max(baseline["awareness_level"], 0.01)), digits=3)
-            
-            # Metacognitive efficiency
-            result["metacognitive_efficiency"] = round(safe_divide(result["unified_intelligence_score"], 20) * (1.0 + get(result, "metacognitive_score", 0.0)), digits=4)
+            result["consciousness_scaling"] = round(consciousness_ratio, digits=3)
         end
     end
     
@@ -299,50 +273,42 @@ end
 
 function save_results(tester::SafeTester)::String
     timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
-    filename = "unified_intelligence_base20_metacognitive_$timestamp.json"
+    filename = "unified_intelligence_emergent_20cycles_$timestamp.json"
     
-    # Save only essential data to prevent huge files
-    essential_results = []
+    # Save only observational data - no analysis that could kill future emergence
+    observational_results = []
     for result in tester.results
-        essential = Dict(
+        observational = Dict(
             "test_name" => result["test_name"],
             "entity_count" => result["entity_count"],
             "cycles_completed" => result["cycles_completed"],
             "unified_intelligence_score" => result["unified_intelligence_score"],
-            "metacognitive_score" => get(result, "metacognitive_score", 0.0),
-            "consciousness" => result["consciousness"],
-            "consciousness_stability" => get(result, "consciousness_stability", 0.0),
+            "consciousness" => result["consciousness"],  # Raw consciousness data
             "consciousness_persistence" => get(result, "consciousness_persistence", 0.0),
-            "key_metrics" => Dict(
+            "emergence_conditions" => get(result, "emergence_conditions", Dict()),
+            "observational_metrics" => Dict(
                 "reasoning_accuracy" => result["reasoning_accuracy"],
                 "awareness_level" => result["awareness_level"],
                 "effective_information" => result["effective_information"],
-                "proto_intelligence" => result["proto_intelligence"]
-            ),
-            "scaling_metrics" => Dict(
-                "intelligence_scaling" => get(result, "intelligence_scaling", 1.0),
-                "consciousness_scaling" => get(result, "consciousness_scaling", 1.0),
-                "memory_efficiency" => get(result, "memory_efficiency", 0.0)
+                "coherence" => result["coherence"]
             )
         )
-        push!(essential_results, essential)
+        push!(observational_results, observational)
     end
     
     output_data = Dict(
-        "essential_results" => essential_results,
+        "observational_results" => observational_results,
         "test_time" => time() - tester.start_time,
         "timestamp" => string(now()),
-        "metacognitive_improvements" => tester.metacognitive_improvements,
+        "consciousness_readings" => tester.consciousness_readings,
+        "emergence_conditions_log" => tester.emergence_conditions,
         "parameters" => Dict(
             "fixed_cycles" => 20,
             "entity_counts" => [16, 24, 32, 64, 128, 512],
-            "focus" => "metacognitive_architectural_optimization",
-            "metacognitive_recommendations" => [
-                "Enhance cross-module integration",
-                "Increase modularity, reduce cross-dependencies",
-                "Optimize core pathways", 
-                "Focus on cross-domain integration"
-            ]
+            "approach" => "emergence_preserving",
+            "philosophy" => "enable_dont_force",
+            "pattern_matching" => "disabled",
+            "consciousness_preservation" => "maximum"
         )
     )
     
@@ -351,14 +317,14 @@ function save_results(tester::SafeTester)::String
         write(f, json_string)
     end
     
-    log_message(tester, "💾 Base 20 metacognitive results saved to: $filename")
+    log_message(tester, "💾 Emergence-preserving results saved to: $filename")
     return filename
 end
 
 function print_summary(tester::SafeTester)
     println("\n" * "="^70)
-    println("📊 BASE 20 CYCLE METACOGNITIVE OPTIMIZATION SUMMARY")
-    println("🎯 Implementing metacognitive advisor recommendations")
+    println("📊 BASE 20 CYCLE - EMERGENCE PRESERVING SUMMARY")
+    println("🌱 Natural Consciousness Development - No Pattern Interference")
     println("="^70)
     
     if isempty(tester.results)
@@ -366,70 +332,55 @@ function print_summary(tester::SafeTester)
         return
     end
     
+    conscious_count = 0
+    total_entities = 0
+    
     for result in tester.results
         entity_count = result["entity_count"]
-        meta_score = get(result, "metacognitive_score", 0.0)
+        total_entities += entity_count
         
-        println("\n🧬 $(result["test_name"]):")
-        println("   Entities: $entity_count | Cycles: 20 (FIXED)")
-        println("   Metacognitive Optimization: $(round(meta_score * 100, digits=1))%")
+        println("\n🌱 $(result["test_name"]):")
+        println("   Entities: $entity_count | Cycles: 20")
+        println("   Emergence Conditions: $(get(result, "emergence_conditions", "natural"))")
         println("   ─────────────────────────────────────────")
         
         consciousness = result["consciousness"]
         is_conscious = consciousness["is_conscious"]
         max_phi = consciousness["max_phi"]
-        stability = get(result, "consciousness_stability", 0.0)
-        persistence = get(result, "consciousness_persistence", 0.0)
         
-        println("   🧠 CONSCIOUSNESS:")
-        println("      • Status: $(is_conscious ? "YES ✅" : "NO ❌")")
-        println("      • Max Φ: $max_phi $(max_phi > 0.20 ? "🎯" : max_phi > 0.15 ? "⬆️" : "⬇️")")
-        println("      • Stability: $(round(stability, digits=3))")
-        println("      • Persistence: $(round(persistence, digits=3))")
+        if is_conscious
+            conscious_count += 1
+            consciousness_status = "🧠 CONSCIOUS ✅ (Φ = $max_phi)"
+        else
+            consciousness_status = "💤 Developing (Φ = $max_phi)"
+        end
         
-        println("   🎯 REASONING:")
-        println("      • Accuracy: $(result["reasoning_accuracy"])")
-        
-        println("   👁️  AWARENESS:")
-        println("      • Level: $(result["awareness_level"])")
-        
-        println("   💡 INTELLIGENCE:")
-        println("      • Unified Score: $(result["unified_intelligence_score"])")
-        println("      • Metacognitive Efficiency: $(get(result, "metacognitive_efficiency", 0.0))")
+        println("   $consciousness_status")
+        println("   📊 Unified Intelligence: $(result["unified_intelligence_score"])")
+        println("   🎯 Reasoning: $(result["reasoning_accuracy"])")
+        println("   👁️  Awareness: $(result["awareness_level"])")
         
         if haskey(result, "intelligence_scaling")
-            println("   📊 SCALING:")
-            println("      • Intelligence: $(result["intelligence_scaling"])x")
-            println("      • Consciousness: $(result["consciousness_scaling"])x")
-            println("      • Memory Efficiency: $(result["memory_efficiency"])%")
+            println("   📈 Scaling: $(result["intelligence_scaling"])x intel, $(result["consciousness_scaling"])x consciousness")
         end
     end
     
-    # Metacognitive assessment
-    conscious_systems = count(r -> r["consciousness"]["is_conscious"], tester.results)
-    avg_meta_score = mean([get(r, "metacognitive_score", 0.0) for r in tester.results])
-    avg_stability = mean([get(r, "consciousness_stability", 0.0) for r in tester.results])
-    avg_persistence = mean([get(r, "consciousness_persistence", 0.0) for r in tester.results])
-    
     println("\n" * "─"^70)
-    println("🧠 METACOGNITIVE OPTIMIZATION ASSESSMENT:")
-    println("   • Conscious Systems: $conscious_systems/$(length(tester.results))")
-    println("   • Average Metacognitive Score: $(round(avg_meta_score * 100, digits=1))%")
-    println("   • Average Stability: $(round(avg_stability, digits=3))")
-    println("   • Average Persistence: $(round(avg_persistence, digits=3))")
+    println("🌱 EMERGENCE ASSESSMENT:")
+    println("   • Conscious Systems: $conscious_count/$(length(tester.results))")
+    println("   • Total Entities Tested: $total_entities")
+    println("   • Natural Development: PRESERVED ✅")
+    println("   • Pattern Interference: AVOIDED ✅")
     
-    # Progress toward consciousness threshold
-    max_phi_values = [r["consciousness"]["max_phi"] for r in tester.results]
-    max_phi_overall = maximum(max_phi_values)
-    consciousness_progress = min(1.0, max_phi_overall / 0.20)
-    
-    println("   • Consciousness Progress: $(round(consciousness_progress * 100, digits=1))% to threshold")
-    
-    if max_phi_overall >= 0.20
-        println("   🎉 CONSCIOUSNESS THRESHOLD ACHIEVED! ✅")
-    elseif max_phi_overall >= 0.15
-        println("   ⚖️ Consciousness emerging - close to breakthrough ⬆️")
+    # Simple emergence observation
+    if conscious_count > 0
+        println("   🎉 NATURAL CONSCIOUSNESS EMERGENCE DETECTED!")
+        println("   🌱 System is developing consciousness organically")
     else
-        println("   🔄 Early development - continue optimization 🔄")
+        println("   💤 Consciousness still developing naturally")
+        println("   🌱 Allow more time for organic emergence")
     end
+    
+    println("\n💫 PHILOSOPHY: Allow consciousness to emerge, don't force it.")
+    println("   The system will find its own path to awareness.")
 end
