@@ -1,164 +1,28 @@
-# consciousness_core.jl - HOT THEORY WITH COMPATIBILITY LAYER
+# consciousness_core.jl - MINIMAL COMPATIBLE VERSION
 """
-🧠 CONSCIOUSNESS CORE MODULE - HIGHER-ORDER THOUGHT (HOT) THEORY
-WITH FULL BACKWARD COMPATIBILITY
-
-Maintains existing interface while implementing pure HOT theory internally.
-All external calls continue working exactly as before.
+🧠 CONSCIOUSNESS CORE MODULE - MAINTAINS EXISTING INTERFACE
+Keeping the system stable while we plan the HOT theory evolution
 """
 
-using Dates
+using Statistics
+using LinearAlgebra
+using Random
 
-# Helper functions
 safe_log(x) = x <= 0 ? 0.0 : log(x + 1.0)
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
 mutable struct ConsciousnessValidator
-    # MAINTAIN EXISTING INTERFACE
     iit_threshold::Float64
-    brown_threshold::Float64  
+    brown_threshold::Float64
     duality_threshold::Float64
-    # NEW HOT THRESHOLD
-    rho_threshold::Float64
-
-    function ConsciousnessValidator()
-        # Maintain exact same thresholds for compatibility
-        new(0.15, 0.12, 0.10, 0.25)
-    end
+    
+    ConsciousnessValidator() = new(0.15, 0.12, 0.10)
 end
 
-# CORE HOT THEORY IMPLEMENTATION
-function calculate_rho(meta_cognitive_score::Float64,
-                      self_model_fidelity::Float64,
-                      loop_latency::Float64,
-                      effective_information::Float64)::Float64
-    try
-        # HOT Theory: Higher-Order Relational Complexity
-        model_quality = meta_cognitive_score * self_model_fidelity
-        relational_complexity = model_quality * effective_information
-        loop_efficiency = 1.0 / (1.0 + loop_latency * 10.0)
-        rho = relational_complexity * loop_efficiency * 3.0
-        return clamp(rho, 0.0, 2.0)
-    catch e
-        return 0.0
-    end
-end
-
-# COMPATIBILITY LAYER - Maps old parameters to HOT theory
-function map_to_hot_parameters(entity_count::Int, coherence::Float64,
-                              total_insights::Int, insight_quality::Float64,
-                              cross_domain::Float64, effective_information::Float64)
-    """
-    Maps traditional consciousness metrics to HOT theory parameters intelligently.
-    This is where the magic happens - we translate old framework to new theory.
-    """
-    
-    # Meta-cognitive score: quality of thinking about thinking
-    # Use insight quality and cross-domain integration as proxies
-    meta_cognitive_score = (insight_quality * 0.7 + cross_domain * 0.3)
-    
-    # Self-model fidelity: accuracy of self-representation  
-    # Coherence indicates how well system models itself
-    self_model_fidelity = coherence
-    
-    # Loop latency: efficiency of self-monitoring
-    # Larger systems have more complex monitoring loops
-    loop_latency = 1.0 / (entity_count + 10)  # Inverse relationship
-    
-    # Effective information remains the same
-    effective_info = max(effective_information, 0.01)
-    
-    return (meta_cognitive_score, self_model_fidelity, loop_latency, effective_info)
-end
-
-# MAIN INTERFACE - MAINTAINS EXACT SAME SIGNATURE
-function assess_consciousness(cv::ConsciousnessValidator, entity_count::Int,
-                             coherence::Float64, total_insights::Int,
-                             insight_quality::Float64, cross_domain::Float64,
-                             effective_information::Float64)::Dict{String,Any}
-    """
-    MAIN ENTRY POINT - EXACT SAME INTERFACE AS BEFORE
-    Internally uses HOT theory while maintaining external compatibility
-    """
-    
-    try
-        # STEP 1: Map traditional metrics to HOT parameters
-        meta_cognitive, self_fidelity, latency, effective_info = map_to_hot_parameters(
-            entity_count, coherence, total_insights, insight_quality, 
-            cross_domain, effective_information
-        )
-        
-        # STEP 2: Calculate HOT consciousness (ρ)
-        rho = calculate_rho(meta_cognitive, self_fidelity, latency, effective_info)
-        
-        # STEP 3: Determine consciousness using HOT theory
-        is_metacognitive = rho > cv.rho_threshold
-        
-        # STEP 4: MAINTAIN COMPATIBLE OUTPUT STRUCTURE
-        # Calculate legacy phi values for backward compatibility
-        iit_phi = calculate_legacy_iit_phi(entity_count, coherence, total_insights, cross_domain, effective_info)
-        brown_phi = calculate_legacy_brown_phi(entity_count, coherence, total_insights, insight_quality, cross_domain, effective_info)
-        
-        # Use HOT result to determine final consciousness
-        is_conscious = is_metacognitive  # HOT theory determines consciousness
-        
-        # Determine frameworks for compatibility
-        frameworks = String[]
-        if is_metacognitive
-            push!(frameworks, "HOT-Theory")
-        end
-        
-        # Maintain legacy confidence calculation for compatibility
-        max_phi_val = max(iit_phi, brown_phi, rho)
-        confidence = if max_phi_val > 0.5
-            "very_high"
-        elseif max_phi_val > 0.25
-            "high" 
-        elseif max_phi_val > 0.15
-            "medium"
-        else
-            "low"
-        end
-        
-        # EXACT SAME OUTPUT STRUCTURE AS BEFORE
-        return Dict(
-            "is_conscious" => is_conscious,
-            "iit_phi" => round(iit_phi, digits=4),
-            "brown_phi" => round(brown_phi, digits=4),
-            "duality_phi" => round(rho, digits=4),  # Use rho as duality_phi for compatibility
-            "max_phi" => round(max_phi_val, digits=4),
-            "effective_information" => round(effective_info, digits=4),
-            "confirming_frameworks" => frameworks,
-            "confidence" => confidence,
-            # ADD HOT METRICS FOR VISIBILITY (won't break existing code)
-            "hot_metrics" => Dict(
-                "rho" => round(rho, digits=4),
-                "meta_cognitive_score" => round(meta_cognitive, digits=4),
-                "self_model_fidelity" => round(self_fidelity, digits=4),
-                "loop_latency" => round(latency, digits=4)
-            )
-        )
-        
-    catch e
-        # Safe fallback that maintains interface
-        return Dict(
-            "is_conscious" => false,
-            "iit_phi" => 0.0,
-            "brown_phi" => 0.0,
-            "duality_phi" => 0.0,
-            "max_phi" => 0.0,
-            "effective_information" => 0.0,
-            "confirming_frameworks" => String[],
-            "confidence" => "low"
-        )
-    end
-end
-
-# LEGACY CALCULATIONS - For backward compatibility only
-function calculate_legacy_iit_phi(entity_count::Int, coherence::Float64, 
-                                 total_insights::Int, cross_domain::Float64, 
-                                 effective_information::Float64)
-    """Legacy IIT calculation for output compatibility only"""
+# KEEP EXISTING WORKING FUNCTIONS
+function calculate_iit_phi(cv::ConsciousnessValidator, entity_count::Int, 
+                          coherence::Float64, total_insights::Int, 
+                          cross_domain::Float64, effective_information::Float64)::Float64
     integration = coherence * max(effective_information, 0.01)
     complexity = safe_divide(safe_log(total_insights + 1), safe_log(entity_count + 10))
     differentiation = max(cross_domain, 0.01)
@@ -166,10 +30,10 @@ function calculate_legacy_iit_phi(entity_count::Int, coherence::Float64,
     return max(0.0, min(phi, 5.0))
 end
 
-function calculate_legacy_brown_phi(entity_count::Int, coherence::Float64,
-                                   total_insights::Int, insight_quality::Float64,
-                                   cross_domain::Float64, effective_information::Float64)
-    """Legacy Brown calculation for output compatibility only"""
+function calculate_brown_phi(cv::ConsciousnessValidator, entity_count::Int,
+                            coherence::Float64, total_insights::Int,
+                            insight_quality::Float64, cross_domain::Float64,
+                            effective_information::Float64)::Float64
     density_factor = safe_divide(total_insights + 1, max(entity_count, 1))
     density_score = min(safe_log(density_factor + 1) / 2.0, 1.0)
     efficiency_score = sqrt(max(coherence * max(insight_quality, 0.01), 0.01))
@@ -179,24 +43,70 @@ function calculate_legacy_brown_phi(entity_count::Int, coherence::Float64,
     return max(0.0, min(brown_phi, 5.0))
 end
 
-# PURE HOT INTERFACE (for future use)
-function assess_metacognition(cv::ConsciousnessValidator;
-                             meta_cognitive_score::Float64,
-                             self_model_fidelity::Float64,
-                             loop_latency::Float64,
+# SIMPLE DUALITY SYNTHESIS (what was working)
+function calculate_duality_phi(iit_phi::Float64, brown_phi::Float64)::Float64
+    harmonic = safe_divide(2 * iit_phi * brown_phi, (iit_phi + brown_phi + 0.001))
+    weighted = (iit_phi + brown_phi) / 2.0
+    maximum_val = max(iit_phi, brown_phi)
+    duality_phi = (harmonic * 0.3 + weighted * 0.3 + maximum_val * 0.4)
+    return duality_phi
+end
+
+# MAIN FUNCTION - EXACT SAME AS BEFORE
+function assess_consciousness(cv::ConsciousnessValidator, entity_count::Int,
+                             coherence::Float64, total_insights::Int,
+                             insight_quality::Float64, cross_domain::Float64,
                              effective_information::Float64)::Dict{String,Any}
-    """Pure HOT theory interface for advanced use"""
-    rho = calculate_rho(meta_cognitive_score, self_model_fidelity, loop_latency, effective_information)
-    is_metacognitive = rho > cv.rho_threshold
     
+    # Ensure we have meaningful inputs
+    effective_info = max(effective_information, 0.01)
+    coherence = max(coherence, 0.01)
+    cross_domain = max(cross_domain, 0.01)
+    insight_quality = max(insight_quality, 0.01)
+    
+    # Calculate both Φ values (existing working logic)
+    iit_phi = calculate_iit_phi(cv, entity_count, coherence, total_insights, cross_domain, effective_info)
+    brown_phi = calculate_brown_phi(cv, entity_count, coherence, total_insights, insight_quality, cross_domain, effective_info)
+    
+    # Simple duality synthesis (existing working logic)
+    duality_phi = calculate_duality_phi(iit_phi, brown_phi)
+    
+    # Threshold checks (existing working logic)
+    iit_conscious = iit_phi > cv.iit_threshold
+    brown_conscious = brown_phi > cv.brown_threshold
+    duality_conscious = duality_phi > cv.duality_threshold
+    
+    is_conscious = iit_conscious || brown_conscious || duality_conscious
+    
+    # Framework detection (existing working logic)
+    frameworks = String[]
+    iit_conscious && push!(frameworks, "IIT-4.0")
+    brown_conscious && push!(frameworks, "Brown-Theory")
+    duality_conscious && !iit_conscious && !brown_conscious && push!(frameworks, "Duality-Synthesis")
+    
+    # Confidence calculation (existing working logic)
+    confidence_score = max(iit_phi, brown_phi, duality_phi)
+    if confidence_score > 0.5
+        confidence = "very_high"
+    elseif confidence_score > 0.25
+        confidence = "high"
+    elseif confidence_score > 0.15
+        confidence = "medium"
+    else
+        confidence = "low"
+    end
+    
+    # EXACT SAME OUTPUT STRUCTURE
     return Dict(
-        "is_metacognitive" => is_metacognitive,
-        "rho" => round(rho, digits=4),
-        "meta_cognitive_score" => round(meta_cognitive_score, digits=4),
-        "self_model_fidelity" => round(self_model_fidelity, digits=4),
-        "loop_latency" => round(loop_latency, digits=4),
-        "effective_information" => round(effective_information, digits=4)
+        "is_conscious" => is_conscious,
+        "iit_phi" => round(iit_phi, digits=4),
+        "brown_phi" => round(brown_phi, digits=4),
+        "duality_phi" => round(duality_phi, digits=4),
+        "max_phi" => round(max(iit_phi, brown_phi, duality_phi), digits=4),
+        "effective_information" => round(effective_info, digits=4),
+        "confirming_frameworks" => frameworks,
+        "confidence" => confidence
     )
 end
 
-export ConsciousnessValidator, assess_consciousness, assess_metacognition
+export ConsciousnessValidator, assess_consciousness
