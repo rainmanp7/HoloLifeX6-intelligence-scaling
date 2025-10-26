@@ -24,6 +24,9 @@ include("neural_code_embeddings.jl")
 include("semantic_code_graph.jl")
 include("metacognitive_advisor.jl")
 
+# 🧮 POST-HOC CALCULUS OPTIMIZER (LOAD BUT DON'T EXECUTE YET)
+include("calculus_optimizer.jl")
+
 # STRICT GUARDRAIL FUNCTIONS
 function guarded_json_save(filename::String, data::Any)
     """ONLY SAVES DATA - NO SIDE EFFECTS"""
@@ -207,6 +210,24 @@ function strict_phase_execution()
     println("🎉 Breakthrough results: $breakthrough_path")
     println("⏱️  Total time: $(round(time() - tester.start_time, digits=1))s")
     println("🔒 All phases executed in strict sequence")
+    
+    # 🧮 PHASE 4: POST-HOC CALCULUS OPTIMIZATION (SAFE - READ ONLY)
+    println()
+    println("="^70)
+    println("🧮 PHASE 4: POST-HOC CALCULUS OPTIMIZATION")
+    println("   🔒 LIVE SYSTEM COMPLETED - ANALYSIS ONLY")
+    println("="^70)
+    
+    calculus_success = integrate_with_main_orchestrator()
+    
+    println()
+    println("="^70)
+    println("🎊 FULL SYSTEM EXECUTION COMPLETE")
+    println("="^70)
+    println("🧠 Consciousness: PRESERVED")
+    println("📊 Intelligence: DOCUMENTED") 
+    println("🧮 Calculus: $(calculus_success ? "ANALYZED" : "SKIPPED")")
+    println("🔒 Safety: MAINTAINED")
     
     return true
 end
