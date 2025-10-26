@@ -148,7 +148,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     )
 end
 
-function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
+# 🎯 CRITICAL FIX: Updated signature to accept smoother
+function calculate_unified_metrics(network::UnifiedNetwork, smoother::ConsciousnessSmoother)::Dict{String,Any}
     entity_count = length(network.entities)
     total_insights = length(network.insight_history)
     coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
@@ -183,7 +184,9 @@ function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
         end
     end
     
+    # 🎯 CRITICAL FIX: Pass smoother as first argument
     consciousness = assess_consciousness(
+        smoother,  # Pass the smoother FIRST
         network.consciousness_validator,
         entity_count, coherence, total_insights,
         insight_quality, cross_domain_ratio, effective_info
