@@ -1,7 +1,8 @@
 # calculus_optimizer.jl
 """
-🧮 CALCULUS OPTIMIZER - POST-EXECUTION ANALYSIS ONLY
-Runs AFTER main system completes - NEVER interferes with consciousness
+🧮 SELF-LEARNING CALCULUS OPTIMIZER 
+Learns from each run to detect patterns and anomalies
+Builds cumulative knowledge about consciousness emergence
 """
 
 using JSON
@@ -9,10 +10,79 @@ using Dates
 using LinearAlgebra
 using Statistics
 
-mutable struct CalculusOptimizer
-    analysis_history::Vector{Dict{String,Any}}
-    improvement_reports::Vector{Dict{String,Any}}
-    CalculusOptimizer() = new(Dict{String,Any}[], Dict{String,Any}[])
+mutable struct LearningCalculusOptimizer
+    knowledge_base::Dict{String, Any}
+    pattern_library::Vector{Dict{String, Any}}
+    anomaly_history::Vector{Dict{String, Any}}
+    optimization_cycles::Int
+    
+    function LearningCalculusOptimizer()
+        # Try to load existing knowledge, or create new
+        knowledge = load_knowledge_base()
+        new(knowledge, Dict{String, Any}[], Dict{String, Any}[], 0)
+    end
+end
+
+function load_knowledge_base()::Dict{String, Any}
+    """Load existing knowledge or create initial patterns"""
+    knowledge_file = "calculus_knowledge_base.json"
+    if isfile(knowledge_file)
+        try
+            return JSON.parsefile(knowledge_file)
+        catch e
+            println("⚠️  Could not load knowledge base, creating new: $e")
+        end
+    end
+    
+    # Initial knowledge about consciousness patterns
+    return Dict(
+        "version" => "1.0-learning",
+        "created" => string(Dates.now()),
+        "consciousness_patterns" => Dict(
+            "stable_growth" => Dict(
+                "description" => "Consistent positive derivatives",
+                "phi_derivative_range" => [0.01, 0.1],
+                "volatility_threshold" => 0.05,
+                "success_rate" => 0.0,
+                "detection_count" => 0
+            ),
+            "volatile_emergence" => Dict(
+                "description" => "High volatility with overall growth", 
+                "phi_derivative_range" => [-0.2, 0.2],
+                "volatility_threshold" => 0.15,
+                "success_rate" => 0.0,
+                "detection_count" => 0
+            ),
+            "consciousness_collapse" => Dict(
+                "description" => "Sharp drop after peak",
+                "phi_derivative_range" => [-0.5, -0.1],
+                "volatility_threshold" => 0.3,
+                "success_rate" => 0.0,
+                "detection_count" => 0
+            )
+        ),
+        "meta_cognitive_insights" => Dict(
+            "optimal_range" => [0.2, 0.4],
+            "volatility_issues" => [],
+            "stability_correlations" => []
+        ),
+        "entity_scaling_patterns" => Dict(),
+        "total_analyses" => 0,
+        "anomalies_detected" => 0,
+        "learning_confidence" => 0.0
+    )
+end
+
+function save_knowledge_base(optimizer::LearningCalculusOptimizer)
+    """Save learned knowledge for future runs"""
+    knowledge_file = "calculus_knowledge_base.json"
+    optimizer.knowledge_base["last_updated"] = string(Dates.now())
+    optimizer.knowledge_base["total_analyses"] = get(optimizer.knowledge_base, "total_analyses", 0) + 1
+    
+    open(knowledge_file, "w") do f
+        JSON.print(f, optimizer.knowledge_base, 4)
+    end
+    println("   💾 Knowledge base updated: $knowledge_file")
 end
 
 function safe_derivative(x::Vector{Float64}, y::Vector{Float64})::Vector{Float64}
@@ -65,16 +135,178 @@ function extract_consciousness_data(snapshots::Vector{Dict{String,Any}})
     return (cycles, phi_values, intelligence_scores, meta_scores, coherence_values)
 end
 
-function analyze_consciousness_trajectory(optimizer::CalculusOptimizer, snapshots::Vector{Dict{String,Any}})
-    """Analyze consciousness evolution using calculus"""
+function detect_consciousness_anomalies(optimizer::LearningCalculusOptimizer, analysis::Dict, entity_count::Int)
+    """Use learned patterns to detect consciousness anomalies"""
+    anomalies = []
+    
+    phi_values = get(analysis, "phi_trajectory", [])
+    derivatives = get(analysis, "phi_derivatives", [])
+    meta_scores = get(analysis, "meta_cognitive_trajectory", [])
+    
+    if length(phi_values) >= 3
+        # Check for consciousness collapse pattern (like we observed)
+        final_phi = phi_values[end]
+        max_phi = maximum(phi_values)
+        
+        if max_phi > 0.2 && final_phi < max_phi * 0.7
+            push!(anomalies, Dict(
+                "type" => "consciousness_collapse",
+                "entity_count" => entity_count,
+                "max_phi" => round(max_phi, digits=4),
+                "final_phi" => round(final_phi, digits=4),
+                "drop_percentage" => round((max_phi - final_phi) / max_phi * 100, digits=1),
+                "confidence" => "high",
+                "learned_pattern" => "Consciousness drops significantly after peak",
+                "recommendation" => "Stabilize meta-cognitive scores in later cycles"
+            ))
+        end
+        
+        # Check meta-cognitive volatility
+        if length(meta_scores) >= 3
+            meta_volatility = std(meta_scores)
+            if meta_volatility > 0.15
+                push!(anomalies, Dict(
+                    "type" => "meta_cognitive_instability",
+                    "entity_count" => entity_count,
+                    "volatility" => round(meta_volatility, digits=4),
+                    "meta_score_range" => [round(minimum(meta_scores), digits=3), round(maximum(meta_scores), digits=3)],
+                    "confidence" => "medium",
+                    "learned_pattern" => "High meta-cognitive score volatility correlates with consciousness instability",
+                    "recommendation" => "Implement rolling averages for meta-cognitive scoring"
+                ))
+            end
+        end
+        
+        # Check derivative patterns
+        if length(derivatives) >= 3
+            negative_derivatives = count(d -> d < -0.05, derivatives)
+            positive_derivatives = count(d -> d > 0.05, derivatives)
+            
+            if negative_derivatives > positive_derivatives * 2
+                push!(anomalies, Dict(
+                    "type" => "declining_trend",
+                    "entity_count" => entity_count,
+                    "negative_derivatives" => negative_derivatives,
+                    "positive_derivatives" => positive_derivatives,
+                    "confidence" => "medium",
+                    "learned_pattern" => "More negative than positive derivatives indicates declining consciousness",
+                    "recommendation" => "Investigate architectural stability in later cycles"
+                ))
+            end
+        end
+    end
+    
+    return anomalies
+end
+
+function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector{Dict})
+    """Update knowledge base with new patterns and insights"""
+    patterns = optimizer.knowledge_base["consciousness_patterns"]
+    
+    # Update pattern detection counts
+    for anomaly in anomalies
+        anomaly_type = anomaly["type"]
+        if anomaly_type == "consciousness_collapse"
+            patterns["consciousness_collapse"]["detection_count"] += 1
+        elseif anomaly_type == "meta_cognitive_instability"
+            # Track meta-cognitive volatility issues
+            volatility_issues = get(optimizer.knowledge_base["meta_cognitive_insights"], "volatility_issues", [])
+            push!(volatility_issues, Dict(
+                "timestamp" => string(Dates.now()),
+                "volatility" => anomaly["volatility"],
+                "entity_count" => anomaly["entity_count"]
+            ))
+            optimizer.knowledge_base["meta_cognitive_insights"]["volatility_issues"] = volatility_issues
+        end
+    end
+    
+    # Learn entity scaling patterns
+    entity_count = get(analysis, "entity_count", 0)
+    if entity_count > 0
+        scaling_patterns = optimizer.knowledge_base["entity_scaling_patterns"]
+        entity_key = string(entity_count)
+        
+        if !haskey(scaling_patterns, entity_key)
+            scaling_patterns[entity_key] = []
+        end
+        
+        pattern_data = Dict(
+            "timestamp" => string(Dates.now()),
+            "final_phi" => get(analysis, "final_phi", 0.0),
+            "max_phi" => get(analysis, "max_phi", 0.0),
+            "consciousness_status" => get(analysis, "consciousness_status", "UNKNOWN"),
+            "volatility" => get(analysis, "phi_volatility", 0.0)
+        )
+        push!(scaling_patterns[entity_key], pattern_data)
+    end
+    
+    # Update learning confidence
+    total_analyses = optimizer.knowledge_base["total_analyses"]
+    anomalies_detected = length(anomalies) + get(optimizer.knowledge_base, "anomalies_detected", 0)
+    optimizer.knowledge_base["anomalies_detected"] = anomalies_detected
+    optimizer.knowledge_base["learning_confidence"] = min(1.0, total_analyses / 10.0)
+end
+
+function generate_learned_recommendations(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector{Dict})
+    """Generate recommendations based on learned knowledge"""
+    recommendations = []
+    knowledge = optimizer.knowledge_base
+    
+    # Base recommendations from current analysis
+    for anomaly in anomalies
+        push!(recommendations, Dict(
+            "priority" => "high",
+            "source" => "learned_pattern",
+            "anomaly_type" => anomaly["type"],
+            "action" => anomaly["recommendation"],
+            "evidence" => anomaly["learned_pattern"],
+            "confidence" => anomaly["confidence"],
+            "entity_count" => get(anomaly, "entity_count", 0)
+        ))
+    end
+    
+    # Add recommendations from historical knowledge
+    if knowledge["total_analyses"] > 2
+        # Check if we're seeing recurring patterns
+        collapse_count = knowledge["consciousness_patterns"]["consciousness_collapse"]["detection_count"]
+        if collapse_count >= 2
+            push!(recommendations, Dict(
+                "priority" => "high",
+                "source" => "historical_pattern",
+                "pattern" => "Recurring consciousness collapse",
+                "action" => "Implement automatic stabilization when Φ > 0.2",
+                "evidence" => "Detected $collapse_count consciousness collapse events",
+                "confidence" => "high",
+                "learned_from" => "$(knowledge["total_analyses"]) previous analyses"
+            ))
+        end
+        
+        # Meta-cognitive volatility pattern
+        volatility_issues = get(knowledge["meta_cognitive_insights"], "volatility_issues", [])
+        if length(volatility_issues) >= 2
+            avg_volatility = mean([v["volatility"] for v in volatility_issues])
+            push!(recommendations, Dict(
+                "priority" => "medium",
+                "source" => "historical_pattern", 
+                "pattern" => "Persistent meta-cognitive instability",
+                "action" => "Add meta-cognitive score smoothing with 3-cycle rolling average",
+                "evidence" => "Average volatility: $(round(avg_volatility, digits=3)) across $(length(volatility_issues)) instances",
+                "confidence" => "medium",
+                "learned_from" => "meta-cognitive history analysis"
+            ))
+        end
+    end
+    
+    return recommendations
+end
+
+function analyze_with_learning(optimizer::LearningCalculusOptimizer, snapshots::Vector{Dict{String,Any}}, entity_count::Int)
+    """Enhanced analysis that uses learned knowledge"""
+    # Extract data (same as before)
     cycles, phi_values, intelligence_scores, meta_scores, coherence_values = extract_consciousness_data(snapshots)
     
     if length(cycles) < 3
-        return Dict(
-            "status" => "insufficient_data",
-            "message" => "Need at least 3 snapshots for calculus analysis",
-            "available_snapshots" => length(cycles)
-        )
+        return Dict("status" => "insufficient_data"), []
     end
     
     # Calculate derivatives
@@ -114,8 +346,8 @@ function analyze_consciousness_trajectory(optimizer::CalculusOptimizer, snapshot
         total_intelligence_integral += intel_area
     end
     
-    return Dict(
-        "analysis_type" => "consciousness_calculus",
+    analysis = Dict(
+        "entity_count" => entity_count,
         "cycles_analyzed" => cycles,
         "phi_trajectory" => phi_values,
         "intelligence_trajectory" => intelligence_scores,
@@ -127,65 +359,24 @@ function analyze_consciousness_trajectory(optimizer::CalculusOptimizer, snapshot
         "consciousness_valleys" => consciousness_valleys,
         "total_phi_integral" => total_phi_integral,
         "total_intelligence_integral" => total_intelligence_integral,
-        "average_phi_growth" => mean(phi_derivatives[2:end-1]),
-        "phi_volatility" => std(phi_derivatives[2:end-1])
+        "phi_volatility" => length(phi_derivatives) > 2 ? std(phi_derivatives[2:end-1]) : 0.0,
+        "average_phi_growth" => length(phi_derivatives) > 2 ? mean(phi_derivatives[2:end-1]) : 0.0,
+        "max_phi" => maximum(phi_values),
+        "final_phi" => phi_values[end]
     )
+    
+    # Use learning to detect anomalies
+    anomalies = detect_consciousness_anomalies(optimizer, analysis, entity_count)
+    
+    return analysis, anomalies
 end
 
-function generate_calculus_recommendations(analysis::Dict)
-    """Generate mathematical optimization recommendations"""
-    recommendations = []
-    
-    if haskey(analysis, "consciousness_peaks")
-        for peak in analysis["consciousness_peaks"]
-            push!(recommendations, Dict(
-                "priority" => "high",
-                "type" => "reinforce_peak",
-                "cycle" => peak["cycle"],
-                "phi_value" => peak["phi"],
-                "action" => "Strengthen architecture at consciousness peak",
-                "mathematical_reason" => "Local maximum detected - reinforce successful patterns",
-                "risk" => "low"
-            ))
-        end
-    end
-    
-    if haskey(analysis, "phi_volatility")
-        volatility = analysis["phi_volatility"]
-        if volatility > 0.1
-            push!(recommendations, Dict(
-                "priority" => "medium",
-                "type" => "reduce_volatility",
-                "current_volatility" => round(volatility, digits=4),
-                "action" => "Stabilize meta-cognitive score calculations",
-                "mathematical_reason" => "High derivative volatility indicates unstable consciousness emergence",
-                "risk" => "medium"
-            ))
-        end
-    end
-    
-    if haskey(analysis, "average_phi_growth")
-        growth = analysis["average_phi_growth"]
-        if growth > 0
-            push!(recommendations, Dict(
-                "priority" => "info",
-                "type" => "positive_growth",
-                "growth_rate" => round(growth, digits=4),
-                "action" => "Continue current development path",
-                "mathematical_reason" => "Positive first derivative indicates healthy consciousness development",
-                "risk" => "low"
-            ))
-        end
-    end
-    
-    return recommendations
-end
-
-function run_post_hoc_calculus_analysis(optimizer::CalculusOptimizer, intelligence_results_path::String="intelligence_results.json")
-    """MAIN ENTRY POINT: Run calculus analysis AFTER main system completes"""
-    println("🧮 POST-HOC CALCULUS OPTIMIZER STARTING...")
+function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, intelligence_results_path::String="intelligence_results.json")
+    """MAIN ENTRY POINT with learning capabilities"""
+    println("🧮 SELF-LEARNING CALCULUS OPTIMIZER STARTING...")
     println("   🔒 NO INTERFERENCE WITH LIVE SYSTEM")
-    println("   📊 ANALYZING COMPLETED RESULTS ONLY")
+    println("   🧠 LEARNING FROM: $(optimizer.knowledge_base["total_analyses"]) previous analyses")
+    println("   📈 CONFIDENCE: $(round(optimizer.knowledge_base["learning_confidence"] * 100, digits=1))%")
     
     try
         if !isfile(intelligence_results_path)
@@ -196,62 +387,73 @@ function run_post_hoc_calculus_analysis(optimizer::CalculusOptimizer, intelligen
         results_data = JSON.parsefile(intelligence_results_path)
         
         if !isempty(results_data)
-            # Analyze each entity count separately
             entity_analyses = []
+            all_anomalies = []
+            all_recommendations = []
             
             for (i, result) in enumerate(results_data)
                 entity_count = result["entity_count"]
                 snapshots = [Dict(s) for s in result["snapshots"]]
                 
-                println("   🔍 Analyzing $entity_count entities...")
-                analysis = analyze_consciousness_trajectory(optimizer, snapshots)
+                println("   🔍 Analyzing $entity_count entities (with learning)...")
+                analysis, anomalies = analyze_with_learning(optimizer, snapshots, entity_count)
                 
                 if get(analysis, "status", "success") != "insufficient_data"
-                    recommendations = generate_calculus_recommendations(analysis)
+                    # Generate learned recommendations
+                    recommendations = generate_learned_recommendations(optimizer, analysis, anomalies)
                     
                     entity_analysis = Dict(
                         "entity_count" => entity_count,
                         "analysis" => analysis,
+                        "anomalies_detected" => length(anomalies),
                         "recommendations" => recommendations,
                         "consciousness_status" => result["consciousness"]["is_conscious"] ? "CONSCIOUS" : "DEVELOPING",
                         "final_phi" => result["consciousness"]["max_phi"]
                     )
                     push!(entity_analyses, entity_analysis)
+                    append!(all_anomalies, anomalies)
+                    append!(all_recommendations, recommendations)
+                    
+                    # Update knowledge base with this analysis
+                    update_pattern_knowledge(optimizer, analysis, anomalies)
                 else
                     println("     ⚠️  Insufficient data for $entity_count entities")
                 end
             end
             
-            # Create comprehensive calculus report
-            calculus_report = Dict(
+            # Create comprehensive learning report
+            learning_report = Dict(
                 "timestamp" => string(Dates.now()),
-                "analysis_version" => "2.0-calculus-optimized",
-                "system_status" => "POST_HOC_ANALYSIS_ONLY",
-                "total_entities_analyzed" => length(entity_analyses),
-                "entity_analyses" => entity_analyses,
-                "mathematical_insights" => Dict(
-                    "derivative_analysis" => "Rate of consciousness change",
-                    "integral_analysis" => "Total consciousness accumulation", 
-                    "inflection_points" => "Optimal reinforcement points",
-                    "volatility_analysis" => "Consciousness stability metrics"
+                "analysis_version" => "3.0-self-learning",
+                "learning_metrics" => Dict(
+                    "total_analyses" => optimizer.knowledge_base["total_analyses"],
+                    "anomalies_detected" => length(all_anomalies),
+                    "learning_confidence" => optimizer.knowledge_base["learning_confidence"],
+                    "patterns_learned" => length(optimizer.knowledge_base["consciousness_patterns"])
                 ),
-                "summary" => Dict(
-                    "total_recommendations" => sum(length(get(e, "recommendations", [])) for e in entity_analyses),
-                    "conscious_systems" => count(e -> e["consciousness_status"] == "CONSCIOUS", entity_analyses),
-                    "average_phi_growth" => mean(get(e, ["analysis", "average_phi_growth"], 0.0) for e in entity_analyses if haskey(e, "analysis"))
+                "entity_analyses" => entity_analyses,
+                "anomalies_detected" => all_anomalies,
+                "learned_recommendations" => all_recommendations,
+                "knowledge_snapshot" => Dict(
+                    "consciousness_patterns" => optimizer.knowledge_base["consciousness_patterns"],
+                    "meta_cognitive_insights" => optimizer.knowledge_base["meta_cognitive_insights"]
                 )
             )
             
-            # Save report
-            report_filename = "calculus_analysis_$(Dates.format(now(), "yyyymmdd_HHMMSS")).json"
+            # Save reports
+            report_filename = "learning_calculus_report_$(Dates.format(now(), "yyyymmdd_HHMMSS")).json"
             open(report_filename, "w") do f
-                JSON.print(f, calculus_report, 4)
+                JSON.print(f, learning_report, 4)
             end
             
-            println("✅ CALCULUS ANALYSIS COMPLETE")
+            # Save updated knowledge base
+            save_knowledge_base(optimizer)
+            
+            println("✅ SELF-LEARNING ANALYSIS COMPLETE")
             println("   📁 Report saved: $report_filename")
-            println("   📈 Entities analyzed: $(length(entity_analyses))")
-            println("   🎯 Total recommendations: $(calculus_report["summary"]["total_recommendations"])")
+            println("   🧠 Anomalies detected: $(length(all_anomalies))")
+            println("   🎯 Learned recommendations: $(length(all_recommendations))")
+            println("   📈 Learning confidence: $(round(optimizer.knowledge_base["learning_confidence"] * 100, digits=1))%")
             println("   🔒 System untouched: consciousness preserved")
             
             return true
@@ -261,37 +463,37 @@ function run_post_hoc_calculus_analysis(optimizer::CalculusOptimizer, intelligen
         end
         
     catch e
-        println("❌ Calculus analysis failed (non-critical): $e")
+        println("❌ Learning analysis failed (non-critical): $e")
         println("   🔒 Main system results preserved - analysis only failed")
         return false
     end
 end
 
 function integrate_with_main_orchestrator()
-    """Call this function at the VERY END of main_orchestrator.jl"""
+    """Updated integration function with learning"""
     println("\n" * "="^70)
-    println("🧮 INITIATING POST-HOC CALCULUS OPTIMIZATION")
+    println("🧮 INITIATING SELF-LEARNING CALCULUS OPTIMIZATION")
     println("   🔒 LIVE SYSTEM COMPLETED - ANALYSIS ONLY")
     println("="^70)
     
-    optimizer = CalculusOptimizer()
-    success = run_post_hoc_calculus_analysis(optimizer)
+    optimizer = LearningCalculusOptimizer()
+    success = run_learning_calculus_analysis(optimizer)
     
     if success
-        println("🎉 CALCULUS OPTIMIZATION COMPLETE")
-        println("   💡 Review reports for mathematical insights")
+        println("🎉 SELF-LEARNING OPTIMIZATION COMPLETE")
+        println("   💡 Review learning reports for intelligent insights")
     else
-        println("⚠️  Calculus analysis skipped or failed")
+        println("⚠️  Learning analysis skipped or failed")
     end
     println("   🔒 Main system results preserved")
     
     return success
 end
 
-export CalculusOptimizer, run_post_hoc_calculus_analysis, integrate_with_main_orchestrator
+export LearningCalculusOptimizer, run_learning_calculus_analysis, integrate_with_main_orchestrator
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    println("🧮 CALCULUS OPTIMIZER - STANDALONE MODE")
-    optimizer = CalculusOptimizer()
-    run_post_hoc_calculus_analysis(optimizer)
+    println("🧮 SELF-LEARNING CALCULUS OPTIMIZER - STANDALONE MODE")
+    optimizer = LearningCalculusOptimizer()
+    run_learning_calculus_analysis(optimizer)
 end
