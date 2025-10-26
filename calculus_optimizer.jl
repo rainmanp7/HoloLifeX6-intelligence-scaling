@@ -7,6 +7,7 @@ Generates reports for HUMAN review and future system reference
 """
 
 using JSON
+using Dates
 using LinearAlgebra
 using Statistics
 
@@ -81,7 +82,7 @@ function analyze_consciousness_trajectory(optimizer::CalculusOptimizer, snapshot
         "intelligence_derivatives" => intelligence_derivatives,
         "total_intelligence_integral" => total_intelligence_integral,
         "optimization_insights" => optimization_insights,
-        "average_phi_growth_rate" => mean(phi_derivatives[phi_derivatives .!= 0]),
+        "average_phi_growth_rate" => isempty(phi_derivatives[phi_derivatives .!= 0]) ? 0.0 : mean(phi_derivatives[phi_derivatives .!= 0]),
         "peak_consciousness_cycle" => cycles[argmax(phi_values)]
     )
 end
@@ -131,12 +132,12 @@ function generate_architectural_recommendations(optimizer::CalculusOptimizer, an
     if haskey(analysis_results, "consciousness_trajectory")
         ct = analysis_results["consciousness_trajectory"]
         
-        if ct["average_phi_growth_rate"] > 0.1
+        if get(ct, "average_phi_growth_rate", 0.0) > 0.1
             push!(recommendations, Dict(
                 "priority" => "high",
                 "module" => "consciousness_core.jl",
                 "action" => "MAINTAIN CURRENT SETTINGS",
-                "reason" => "Consciousness growing at optimal rate $(round(ct["average_phi_growth_rate"], digits=3))",
+                "reason" => "Consciousness growing at optimal rate $(round(get(ct, "average_phi_growth_rate", 0.0), digits=3))",
                 "risk" => "low",
                 "evidence" => "Calculus shows stable positive derivative"
             ))
@@ -190,9 +191,9 @@ function run_post_hoc_calculus_analysis(optimizer::CalculusOptimizer, intelligen
         results_data = JSON.parsefile(intelligence_results_path)
         
         if !isempty(results_data)
-            # Analyze the first test result (16 entities - our conscious system)
+            # Convert JSON objects to proper dictionaries for analysis
             main_result = results_data[1]
-            snapshots = main_result["snapshots"]
+            snapshots = [Dict(s) for s in main_result["snapshots"]]  # Convert JSON objects
             
             # Run calculus analyses
             consciousness_analysis = analyze_consciousness_trajectory(optimizer, snapshots)
@@ -266,6 +267,8 @@ function integrate_with_main_orchestrator()
         println("⚠️  Calculus analysis skipped or failed")
         println("   🔒 Main system results preserved")
     end
+    
+    return success
 end
 
 # EXPORT FOR USE IN MAIN ORCHESTRATOR
