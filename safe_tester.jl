@@ -116,11 +116,11 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     
     # Entity counts with adjusted cycle counts based on entity size
     entity_configs = [
-        (32, 20),   # Small: more cycles to establish patterns
-        (64, 20),    # Medium: slightly fewer cycles
-        (128, 20),   # Large: moderate cycles
-        (256, 20),   # Very large: fewer cycles
-        (1024, 20)   # Massive: minimal cycles for stability
+        (32, 50),   # Small: more cycles to establish patterns
+        (64, 50),    # Medium: slightly fewer cycles
+        (128, 50),   # Large: moderate cycles
+        (256, 25),   # Very large: fewer cycles
+        (1024, 25)   # Massive: minimal cycles for stability
     ]
     
     sweep_results = Dict{String,Any}[]
