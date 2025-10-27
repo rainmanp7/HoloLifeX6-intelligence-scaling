@@ -4,6 +4,8 @@
 An enhanced testing framework that supports massive entity counts, provides
 intelligent, adaptive cycle calculation to manage runtime, and includes
 robust memory management and result logging.
+
+NOTE: Scaling is currently CAPPED at 2048 entities for faster test runs.
 """
 
 using JSON
@@ -31,7 +33,6 @@ end
 
 function memory_check(tester::SafeTester)::Bool
     memory_mb = get_memory_mb()
-    # Increased memory limit for massive tests
     if memory_mb > 16000 # 16 GB limit
         log_message(tester, "⚠️  MEMORY WARNING: $(round(memory_mb, digits=1))MB")
         return false
@@ -86,8 +87,6 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
         
         snapshot_interval = entity_count > 1000 ? 5 : 10
         if cycle % snapshot_interval == 0
-            # CRITICAL FIX: The call to calculate_unified_metrics must only take the `network` object.
-            # The stateful consciousness calculation works because the state is carried *inside* the network's validator.
             metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
             metrics["step_insights"] = get(step_result, "insights", 0)
@@ -104,7 +103,6 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
         end
     end
     
-    # CRITICAL FIX: Ensure final metrics are also calculated with the correct signature.
     final_metrics = calculate_unified_metrics(network)
     clean_final_metrics = clean_data_for_json(final_metrics)
     
@@ -118,7 +116,6 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
         "peak_memory_mb" => peak_memory,
         "status" => "completed"
     ))
-    # Snapshots are part of final_metrics now, so no need to add them separately.
     
     push!(tester.results, result)
     
@@ -129,10 +126,11 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     return result
 end
 
-# --- SCALING SWEEP WITH MASSIVE COUNTS ---
+# --- SCALING SWEEP (CAPPED) ---
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting massive scaling sweep...")
+    log_message(tester, "🚀 Starting scaling sweep (capped at 2048 entities)...")
     
+    # MODIFICATION: Entity counts are now capped at 2048 for faster, more focused testing.
     entity_counts = [32, 64, 256, 1024, 2048]
     base_cycles_for_32 = 50
     
