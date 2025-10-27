@@ -116,15 +116,15 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
         "cycles_completed" => isempty(metrics_snapshots) ? 0 : last(metrics_snapshots)["cycle"],
         "avg_memory_mb" => avg_memory,
         "peak_memory_mb" => peak_memory,
-        "status" => "completed",
-        "snapshots" => metrics_snapshots
+        "status" => "completed"
     ))
+    # Snapshots are part of final_metrics now, so no need to add them separately.
     
     push!(tester.results, result)
     
     log_message(tester, "✅ Completed: UIS=$(round(get(result, "unified_intelligence_score", 0.0), digits=3)), " *
                        "R=$(round(get(result, "reasoning_accuracy", 0.0), digits=3)), " *
-                       "Φ=$(round(get(result, "consciousness", Dict("max_phi"=>0.0))["max_phi"], digits=3))")
+                       "Φ=$(round(get(get(result, "consciousness", Dict()), "max_phi", 0.0), digits=3))")
     
     return result
 end
