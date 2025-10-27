@@ -2,7 +2,6 @@
 """
 🌐 UNIFIED NETWORK MODULE
 Orchestrates all intelligence components into unified system
-NOW WITH STABLE METACOGNITIVE STATE
 """
 
 using Statistics
@@ -73,13 +72,18 @@ function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
     network.coupling_matrix = new_coupling_matrix
 end
 
+# 🎯 CRITICAL FIX: Add reasoning capacity update function
 function update_reasoning_capacity!(network::UnifiedNetwork)
+    # Only update if we have recent reasoning results
     if !isempty(network.reasoning_engine.reasoning_history)
         recent_reasoning = network.reasoning_engine.reasoning_history[end]
         
+        # Only update if we have meaningful reasoning scores
         if recent_reasoning > 0.0
             for entity in network.entities
+                # Real learning: entities improve reasoning based on network performance
                 entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * recent_reasoning
+                # Ensure it stays in valid range
                 entity.reasoning_capacity = max(0.0, min(1.0, entity.reasoning_capacity))
             end
         end
@@ -90,16 +94,19 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     insights = Dict{String,Any}[]
     entity_phases = [e.phase for e in network.entities]
     
+    # Real phase evolution with Kuramoto coupling
     for entity in network.entities
         evolve_phase!(entity)
         kuramoto_coupling!(entity, entity_phases, network.coupling_matrix)
     end
     
+    # 🎯 CRITICAL FIX: Update reasoning capacity with REAL geometric reasoning
     if length(network.coherence_history) % 8 == 0
         reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12)
-        update_reasoning_capacity!(network)
+        update_reasoning_capacity!(network)  # Call the new function
     end
     
+    # Update awareness with real phase coherence
     current_phases = [e.phase for e in network.entities]
     update_awareness(network.awareness_monitor, current_phases)
     awareness_level = get_awareness_level(network.awareness_monitor)
@@ -108,6 +115,7 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
         entity.awareness_level = 0.8 * entity.awareness_level + 0.2 * awareness_level
     end
     
+    # Generate insights with real network context
     for entity in network.entities
         insight = generate_insight(entity, current_phases)
         if !isempty(insight)
@@ -116,11 +124,14 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
         end
     end
     
+    # Real pattern recognition
     new_patterns = recognize_emergent_patterns(network.proto_intelligence, insights)
     
+    # Calculate real coherence using order parameter
     coherence = calculate_phase_coherence(current_phases)
     push!(network.coherence_history, coherence)
     
+    # Calculate real effective information
     ei = calculate_effective_information(network)
     push!(network.effective_information, ei)
     
@@ -137,10 +148,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     )
 end
 
-# 🎯 CRITICAL FIX: Make sure this function signature matches exactly what safe_tester.jl calls
-function calculate_unified_metrics(network::UnifiedNetwork, 
-                                  smoother::ConsciousnessSmoother,
-                                  meta_state::MetacognitiveState)::Dict{String,Any}
+# 🎯 CRITICAL FIX: Updated signature to accept smoother
+function calculate_unified_metrics(network::UnifiedNetwork, smoother::ConsciousnessSmoother)::Dict{String,Any}
     entity_count = length(network.entities)
     total_insights = length(network.insight_history)
     coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
@@ -175,17 +184,19 @@ function calculate_unified_metrics(network::UnifiedNetwork,
         end
     end
     
+    # Calculate reasoning and awareness first (needed for adaptive thresholds)
     reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
                         0.0 : mean(network.reasoning_engine.reasoning_history[max(1, end-4):end])
     awareness_level = get_awareness_level(network.awareness_monitor)
     
-    # 🎯 UPDATED CALL: Now passes meta_state as first argument
+    # 🎯 CRITICAL FIX: Pass smoother and system state for emergent recognition
     consciousness = assess_consciousness(
-        meta_state,              # NEW: Stable metacognitive state FIRST
-        smoother,                # Final output smoother  
+        smoother,  # Pass the smoother FIRST
         network.consciousness_validator,
         entity_count, coherence, total_insights,
-        insight_quality, cross_domain_ratio, effective_info
+        insight_quality, cross_domain_ratio, effective_info;
+        awareness_level=awareness_level,
+        reasoning_accuracy=reasoning_accuracy
     )
     
     awareness_stability = get_awareness_stability(network.awareness_monitor)
