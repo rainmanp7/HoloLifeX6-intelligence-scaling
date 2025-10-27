@@ -1,5 +1,3 @@
-[file name]: safe_tester.jl
-[file content begin]
 # safe_tester.jl
 """
 🧪 SAFE TESTER MODULE
@@ -14,11 +12,8 @@ safe_divide(a, b) = b == 0 ? 0.0 : a / b
 mutable struct SafeTester
     results::Vector{Dict{String,Any}}
     start_time::Float64
-    consciousness_smoother::ConsciousnessSmoother  # 🎯 CRITICAL FIX: Added smoother
     
-    function SafeTester()
-        new(Dict{String,Any}[], time(), ConsciousnessSmoother())  # Initialize smoother
-    end
+    SafeTester() = new(Dict{String,Any}[], time())
 end
 
 function log_message(tester::SafeTester, message::String)
@@ -52,7 +47,7 @@ function clean_data_for_json(data::Any)
 end
 
 function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
-    log_message(tester, "🧪 Testing $entity_count entities for $cycles cycles...")
+    log_message(tester, "🧪 Testing $entity_count entities...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
@@ -72,8 +67,7 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)
         step_result = evolve_step!(network)
         
         if cycle % 10 == 0
-            # 🎯 CRITICAL FIX: Pass smoother to calculate_unified_metrics
-            metrics = calculate_unified_metrics(network, tester.consciousness_smoother)
+            metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
             metrics["step_insights"] = step_result["insights"]
             metrics["new_patterns"] = step_result["new_patterns"]
@@ -89,8 +83,7 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)
         end
     end
     
-    # 🎯 CRITICAL FIX: Pass smoother to final metrics calculation
-    final_metrics = calculate_unified_metrics(network, tester.consciousness_smoother)
+    final_metrics = calculate_unified_metrics(network)
     clean_final_metrics = clean_data_for_json(final_metrics)
     
     result = merge(clean_final_metrics, Dict(
@@ -114,21 +107,12 @@ end
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting scaling sweep...")
     
-    # Entity counts with adjusted cycle counts based on entity size
-    entity_configs = [
-        (32, 50),   # Small: more cycles to establish patterns
-        (64, 50),    # Medium: slightly fewer cycles
-        (128, 50),   # Large: moderate cycles
-        (256, 25),   # Very large: fewer cycles
-        (1024, 25)   # Massive: minimal cycles for stability
-    ]
-    
+    entity_counts = [32, 64, 128, 256, 512, 1024]  # Simple scaling for reliability
     sweep_results = Dict{String,Any}[]
     
-    for (entity_count, cycles) in entity_configs
+    for entity_count in entity_counts
         try
-            log_message(tester, "🔧 Config: $entity_count entities, $cycles cycles")
-            result = run_unified_test(tester, entity_count, cycles)
+            result = run_unified_test(tester, entity_count, 50)
             push!(sweep_results, result)
             
             if result["status"] != "completed"
@@ -137,7 +121,6 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
             end
             
             GC.gc()
-            sleep(1)  # Brief pause between tests for system stability
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
             println("Stacktrace:")
@@ -207,7 +190,6 @@ function print_summary(tester::SafeTester)
     for result in tester.results
         println("\n🧬 $(result["test_name"]):")
         println("   Entities: $(result["entity_count"])")
-        println("   Cycles: $(result["cycles_completed"])")
         println("   ─────────────────────────────────────────")
         println("   🧠 CONSCIOUSNESS:")
         println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")")
@@ -232,4 +214,3 @@ function print_summary(tester::SafeTester)
         end
     end
 end
-[file content end]
