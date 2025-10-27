@@ -137,7 +137,7 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     )
 end
 
-# 🎯 CRITICAL UPDATE: New function signature accepts MetacognitiveState
+# 🎯 CRITICAL FIX: Make sure this function signature matches exactly what safe_tester.jl calls
 function calculate_unified_metrics(network::UnifiedNetwork, 
                                   smoother::ConsciousnessSmoother,
                                   meta_state::MetacognitiveState)::Dict{String,Any}
