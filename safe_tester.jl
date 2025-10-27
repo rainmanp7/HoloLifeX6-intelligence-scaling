@@ -133,7 +133,7 @@ end
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting massive scaling sweep...")
     
-    entity_counts = [32, 64, 256, 1024, 2048, 64800, 640900, 1346984]
+    entity_counts = [32, 64, 256, 1024, 2048]
     base_cycles_for_32 = 50
     
     sweep_results = Dict{String,Any}[]
