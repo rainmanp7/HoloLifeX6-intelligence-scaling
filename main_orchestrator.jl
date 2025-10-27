@@ -1,4 +1,4 @@
-main_orchestrator.jl
+#main_orchestrator.jl
 """
 🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE
 Modular architecture for unified intelligence testing
