@@ -1,23 +1,22 @@
-# main_orchestrator.jl
+main_orchestrator.jl
 """
 🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE
 Modular architecture for unified intelligence testing
-STRICT EXECUTION ORDER - NO CODE CAN JUMP SEQUENCE
+NOW WITH STABLE METACOGNITIVE STATE
 """
 
-# Add JSON at top level
 using JSON
 using Dates
 
 # PHASE 1: CORE INTELLIGENCE MODULES (SEQUENTIAL LOAD)
-include("consciousness_core.jl")
+include("consciousness_core.jl")  # 🆕 Now includes MetacognitiveState
 include("geometric_reasoning.jl") 
 include("phase_synchronization.jl")
 include("insight_generation.jl")
 include("awareness_monitor.jl")
 include("proto_intelligence.jl")
-include("unified_network.jl")
-include("safe_tester.jl")
+include("unified_network.jl")     # 🆕 Now uses MetacognitiveState
+include("safe_tester.jl")         # 🆕 Now creates MetacognitiveState
 
 # PHASE 2: METACOGNITION MODULES (LOAD BUT DON'T EXECUTE)
 include("neural_code_embeddings.jl")
