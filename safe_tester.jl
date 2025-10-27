@@ -2,7 +2,6 @@
 """
 🧪 SAFE TESTER MODULE
 Testing framework with memory management and result logging
-NOW WITH STABLE METACOGNITIVE STATE
 """
 
 using JSON
@@ -13,11 +12,10 @@ safe_divide(a, b) = b == 0 ? 0.0 : a / b
 mutable struct SafeTester
     results::Vector{Dict{String,Any}}
     start_time::Float64
-    consciousness_smoother::ConsciousnessSmoother
-    metacognitive_state::MetacognitiveState  # 🆕 NEW: Stable metacognitive state
+    consciousness_smoother::ConsciousnessSmoother  # 🎯 CRITICAL FIX: Added smoother
     
     function SafeTester()
-        new(Dict{String,Any}[], time(), ConsciousnessSmoother(), MetacognitiveState())
+        new(Dict{String,Any}[], time(), ConsciousnessSmoother())  # Initialize smoother
     end
 end
 
@@ -72,8 +70,8 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)
         step_result = evolve_step!(network)
         
         if cycle % 10 == 0
-            # 🎯 UPDATED: Pass BOTH smoother AND metacognitive_state
-            metrics = calculate_unified_metrics(network, tester.consciousness_smoother, tester.metacognitive_state)
+            # 🎯 CRITICAL FIX: Pass smoother to calculate_unified_metrics
+            metrics = calculate_unified_metrics(network, tester.consciousness_smoother)
             metrics["cycle"] = cycle
             metrics["step_insights"] = step_result["insights"]
             metrics["new_patterns"] = step_result["new_patterns"]
@@ -89,8 +87,8 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)
         end
     end
     
-    # 🎯 UPDATED: Pass BOTH state objects
-    final_metrics = calculate_unified_metrics(network, tester.consciousness_smoother, tester.metacognitive_state)
+    # 🎯 CRITICAL FIX: Pass smoother to final metrics calculation
+    final_metrics = calculate_unified_metrics(network, tester.consciousness_smoother)
     clean_final_metrics = clean_data_for_json(final_metrics)
     
     result = merge(clean_final_metrics, Dict(
