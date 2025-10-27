@@ -148,8 +148,7 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     )
 end
 
-# 🎯 CRITICAL FIX: Updated signature to accept smoother
-function calculate_unified_metrics(network::UnifiedNetwork, smoother::ConsciousnessSmoother)::Dict{String,Any}
+function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
     entity_count = length(network.entities)
     total_insights = length(network.insight_history)
     coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
@@ -184,21 +183,16 @@ function calculate_unified_metrics(network::UnifiedNetwork, smoother::Consciousn
         end
     end
     
-    # Calculate reasoning and awareness first (needed for adaptive thresholds)
-    reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
-                        0.0 : mean(network.reasoning_engine.reasoning_history[max(1, end-4):end])
-    awareness_level = get_awareness_level(network.awareness_monitor)
-    
-    # 🎯 CRITICAL FIX: Pass smoother and system state for emergent recognition
     consciousness = assess_consciousness(
-        smoother,  # Pass the smoother FIRST
         network.consciousness_validator,
         entity_count, coherence, total_insights,
-        insight_quality, cross_domain_ratio, effective_info;
-        awareness_level=awareness_level,
-        reasoning_accuracy=reasoning_accuracy
+        insight_quality, cross_domain_ratio, effective_info
     )
     
+    reasoning_accuracy = isempty(network.reasoning_engine.reasoning_history) ? 
+                        0.0 : mean(network.reasoning_engine.reasoning_history[max(1, end-4):end])
+    
+    awareness_level = get_awareness_level(network.awareness_monitor)
     awareness_stability = get_awareness_stability(network.awareness_monitor)
     
     proto_iq = calculate_proto_intelligence(network.proto_intelligence)
