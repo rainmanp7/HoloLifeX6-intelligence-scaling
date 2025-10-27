@@ -1,3 +1,5 @@
+[file name]: safe_tester.jl
+[file content begin]
 # safe_tester.jl
 """
 🧪 SAFE TESTER MODULE
@@ -50,7 +52,7 @@ function clean_data_for_json(data::Any)
 end
 
 function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
-    log_message(tester, "🧪 Testing $entity_count entities...")
+    log_message(tester, "🧪 Testing $entity_count entities for $cycles cycles...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
@@ -112,12 +114,21 @@ end
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting scaling sweep...")
     
-    entity_counts = [16, 32, 64]  # Simple scaling for reliability
+    # Entity counts with adjusted cycle counts based on entity size
+    entity_configs = [
+        (32, 20),   # Small: more cycles to establish patterns
+        (64, 20),    # Medium: slightly fewer cycles
+        (128, 20),   # Large: moderate cycles
+        (256, 20),   # Very large: fewer cycles
+        (1024, 20)   # Massive: minimal cycles for stability
+    ]
+    
     sweep_results = Dict{String,Any}[]
     
-    for entity_count in entity_counts
+    for (entity_count, cycles) in entity_configs
         try
-            result = run_unified_test(tester, entity_count, 50)
+            log_message(tester, "🔧 Config: $entity_count entities, $cycles cycles")
+            result = run_unified_test(tester, entity_count, cycles)
             push!(sweep_results, result)
             
             if result["status"] != "completed"
@@ -126,6 +137,7 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
             end
             
             GC.gc()
+            sleep(1)  # Brief pause between tests for system stability
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
             println("Stacktrace:")
@@ -195,6 +207,7 @@ function print_summary(tester::SafeTester)
     for result in tester.results
         println("\n🧬 $(result["test_name"]):")
         println("   Entities: $(result["entity_count"])")
+        println("   Cycles: $(result["cycles_completed"])")
         println("   ─────────────────────────────────────────")
         println("   🧠 CONSCIOUSNESS:")
         println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")")
@@ -219,3 +232,4 @@ function print_summary(tester::SafeTester)
         end
     end
 end
+[file content end]
