@@ -51,37 +51,26 @@ function clean_data_for_json(data::Any)
     end
 end
 
-# --- NEW: ADAPTIVE CYCLE CALCULATION ---
-"""
-    calculate_adaptive_cycles(entity_count, base_cycles)
-
-Intelligently calculates the number of cycles for a test run.
-Uses a high number of cycles for small systems and reduces it for massive
-systems to ensure tests complete in a reasonable timeframe.
-"""
+# --- ADAPTIVE CYCLE CALCULATION ---
 function calculate_adaptive_cycles(entity_count::Int, base_cycles::Int)::Int
     if entity_count <= 64
-        return base_cycles # Full cycles for small, core tests
+        return base_cycles
     elseif entity_count <= 2048
-        # Gradually reduce cycles for medium systems
         return max(30, Int(floor(base_cycles * (64 / entity_count) * 2.0)))
     elseif entity_count <= 100000
-        # Fewer cycles for large systems, just enough to stabilize
         return 20
     else
-        # Minimal cycles for massive systems to check for immediate collapse
         return 10
     end
 end
 
-# --- UPDATED: UNIFIED TEST WITH ADAPTIVE CYCLES ---
+# --- UNIFIED TEST WITH ADAPTIVE CYCLES ---
 function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::Dict{String,Any}
     log_message(tester, "🧪 Testing $entity_count entities for $cycles cycles...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     network = UnifiedNetwork()
     
-    # This loop can be slow for massive counts, but is necessary
     for i in 1:entity_count
         domain = domains[(i-1) % length(domains) + 1]
         freq = 0.02 + (i * 0.0005)
@@ -92,17 +81,17 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     
     metrics_snapshots = Dict{String,Any}[]
     
-    # Run the simulation for the specified number of cycles
     for cycle in 1:cycles
         step_result = evolve_step!(network)
         
-        # Take snapshots less frequently for massive systems
         snapshot_interval = entity_count > 1000 ? 5 : 10
         if cycle % snapshot_interval == 0
+            # CRITICAL FIX: The call to calculate_unified_metrics must only take the `network` object.
+            # The stateful consciousness calculation works because the state is carried *inside* the network's validator.
             metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
-            metrics["step_insights"] = step_result["insights"]
-            metrics["new_patterns"] = step_result["new_patterns"]
+            metrics["step_insights"] = get(step_result, "insights", 0)
+            metrics["new_patterns"] = get(step_result, "new_patterns", 0)
             metrics["memory_mb"] = get_memory_mb()
             
             clean_metrics = clean_data_for_json(metrics)
@@ -115,6 +104,7 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
         end
     end
     
+    # CRITICAL FIX: Ensure final metrics are also calculated with the correct signature.
     final_metrics = calculate_unified_metrics(network)
     clean_final_metrics = clean_data_for_json(final_metrics)
     
@@ -139,21 +129,18 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     return result
 end
 
-# --- UPDATED: SCALING SWEEP WITH MASSIVE COUNTS ---
+# --- SCALING SWEEP WITH MASSIVE COUNTS ---
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting massive scaling sweep...")
     
-    # NEW: Updated entity counts as requested
     entity_counts = [32, 64, 256, 1024, 2048, 64800, 640900, 1346984]
-    base_cycles_for_32 = 50 # The baseline number of cycles for the 32-entity test
+    base_cycles_for_32 = 50
     
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
-            # NEW: Calculate adaptive cycles for this run
             cycles_to_run = calculate_adaptive_cycles(entity_count, base_cycles_for_32)
-            
             result = run_unified_test(tester, entity_count, cycles_to_run)
             push!(sweep_results, result)
             
@@ -162,20 +149,18 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
                 break
             end
             
-            # Force garbage collection between massive runs to free up memory
             GC.gc()
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
             println("Stacktrace:")
             for (i, frame) in enumerate(stacktrace(catch_backtrace()))
                 println("  $i: $frame")
-                i > 3 && break # Keep stack trace brief
+                i > 3 && break
             end
             break
         end
     end
     
-    # The rest of the scaling analysis remains the same
     if length(sweep_results) > 1
         baseline = sweep_results[1]
         baseline_uis = get(baseline, "unified_intelligence_score", 0.0)
@@ -191,7 +176,7 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
             actual_memory = get(result, "avg_memory_mb", 0.0)
             result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
             
-            result["consciousness_scaling"] = round(safe_divide(get(result, "consciousness", Dict("max_phi"=>0.0))["max_phi"], max(get(baseline, "consciousness", Dict("max_phi"=>0.0))["max_phi"], 0.01)), digits=3)
+            result["consciousness_scaling"] = round(safe_divide(get(get(result, "consciousness", Dict()), "max_phi", 0.0), max(get(get(baseline, "consciousness", Dict()), "max_phi", 0.01), 0.01)), digits=3)
             result["reasoning_scaling"] = round(safe_divide(get(result, "reasoning_accuracy", 0.0), max(get(baseline, "reasoning_accuracy", 0.01), 0.01)), digits=3)
             result["awareness_scaling"] = round(safe_divide(get(result, "awareness_level", 0.0), max(get(baseline, "awareness_level", 0.01), 0.01)), digits=3)
         end
