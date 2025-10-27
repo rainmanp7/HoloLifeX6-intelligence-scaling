@@ -1,11 +1,8 @@
 # safe_tester.jl
 """
-🧪 SAFE TESTER MODULE - ADVANCED SCALING & ADAPTIVE CYCLES
-An enhanced testing framework that supports massive entity counts, provides
-intelligent, adaptive cycle calculation to manage runtime, and includes
-robust memory management and result logging.
-
-NOTE: Scaling is currently CAPPED at 2048 entities for faster test runs.
+🧪 SAFE TESTER MODULE - ADAPTIVE SCALING BASELINE
+A non-invasive testing framework with adaptive cycle counts for reliable
+baseline measurements across a defined scaling range (16 to 1024 entities).
 """
 
 using JSON
@@ -33,7 +30,7 @@ end
 
 function memory_check(tester::SafeTester)::Bool
     memory_mb = get_memory_mb()
-    if memory_mb > 16000 # 16 GB limit
+    if memory_mb > 8000 # 8 GB limit for baseline tests
         log_message(tester, "⚠️  MEMORY WARNING: $(round(memory_mb, digits=1))MB")
         return false
     end
@@ -53,23 +50,27 @@ function clean_data_for_json(data::Any)
 end
 
 # --- ADAPTIVE CYCLE CALCULATION ---
-function calculate_adaptive_cycles(entity_count::Int, base_cycles::Int)::Int
-    if entity_count <= 64
+"""
+    calculate_adaptive_cycles(entity_count, base_cycles, base_entity_count)
+
+Intelligently calculates the number of cycles for a test run based on a baseline.
+"""
+function calculate_adaptive_cycles(entity_count::Int, base_cycles::Int, base_entity_count::Int)::Int
+    if entity_count <= base_entity_count
         return base_cycles
-    elseif entity_count <= 2048
-        return max(30, Int(floor(base_cycles * (64 / entity_count) * 2.0)))
-    elseif entity_count <= 100000
-        return 20
     else
-        return 10
+        # Use a logarithmic reduction factor to smoothly decrease cycles for larger systems.
+        reduction_factor = log2(entity_count / base_entity_count)
+        cycles = round(Int, base_cycles / (1 + reduction_factor * 0.5))
+        return max(10, cycles) # Ensure at least 10 cycles are run.
     end
 end
 
-# --- UNIFIED TEST WITH ADAPTIVE CYCLES ---
 function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::Dict{String,Any}
     log_message(tester, "🧪 Testing $entity_count entities for $cycles cycles...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
+    
     network = UnifiedNetwork()
     
     for i in 1:entity_count
@@ -85,8 +86,7 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     for cycle in 1:cycles
         step_result = evolve_step!(network)
         
-        snapshot_interval = entity_count > 1000 ? 5 : 10
-        if cycle % snapshot_interval == 0
+        if cycle % 10 == 0
             metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
             metrics["step_insights"] = get(step_result, "insights", 0)
@@ -97,7 +97,7 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
             push!(metrics_snapshots, clean_metrics)
             
             if !memory_check(tester)
-                log_message(tester, "🛑 Stopping early - memory limit reached")
+                log_message(tester, "🛑 Stopping early - memory limit")
                 break
             end
         end
@@ -108,13 +108,14 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     
     avg_memory = !isempty(metrics_snapshots) ? mean([m["memory_mb"] for m in metrics_snapshots]) : 0.0
     peak_memory = !isempty(metrics_snapshots) ? maximum([m["memory_mb"] for m in metrics_snapshots]) : 0.0
-    
+
     result = merge(clean_final_metrics, Dict(
         "test_name" => "unified_$(entity_count)_entities",
         "cycles_completed" => isempty(metrics_snapshots) ? 0 : last(metrics_snapshots)["cycle"],
         "avg_memory_mb" => avg_memory,
         "peak_memory_mb" => peak_memory,
-        "status" => "completed"
+        "status" => "completed",
+        "snapshots" => metrics_snapshots
     ))
     
     push!(tester.results, result)
@@ -126,19 +127,21 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     return result
 end
 
-# --- SCALING SWEEP (CAPPED) ---
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting scaling sweep (capped at 2048 entities)...")
+    log_message(tester, "🚀 Starting scaling sweep...")
     
-    # MODIFICATION: Entity counts are now capped at 2048 for faster, more focused testing.
-    entity_counts = [32, 64, 256, 1024, 2048]
-    base_cycles_for_32 = 50
+    # MODIFICATION: Use the new, corrected entity counts.
+    entity_counts = [16, 32, 64, 128, 256, 512, 1024]
+    base_cycles = 50
+    base_entity_count = first(entity_counts) # The baseline is now 16 entities.
     
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
-            cycles_to_run = calculate_adaptive_cycles(entity_count, base_cycles_for_32)
+            # MODIFICATION: Calculate adaptive cycles using the correct baseline.
+            cycles_to_run = calculate_adaptive_cycles(entity_count, base_cycles, base_entity_count)
+            
             result = run_unified_test(tester, entity_count, cycles_to_run)
             push!(sweep_results, result)
             
@@ -147,7 +150,7 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
                 break
             end
             
-            GC.gc()
+            GC.gc() # Force garbage collection between runs.
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
             println("Stacktrace:")
@@ -160,7 +163,7 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     end
     
     if length(sweep_results) > 1
-        baseline = sweep_results[1]
+        baseline = first(sweep_results)
         baseline_uis = get(baseline, "unified_intelligence_score", 0.0)
         baseline_memory = get(baseline, "avg_memory_mb", 0.0)
         
