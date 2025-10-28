@@ -2,7 +2,7 @@
 """
 🧪 SAFE TESTER MODULE
 Testing framework with memory management and result logging.
-v4.0: Integrated with memory-efficient calculus optimizer.
+v4.1: Restored adaptive cycles and scaling metrics within the new scalable architecture.
 """
 
 using JSON
@@ -25,7 +25,6 @@ mutable struct SafeTester
 end
 
 # (log_message, get_memory_mb, memory_check, clean_data_for_json, run_unified_test are unchanged)
-# They are correct and do not need modification for this architectural change.
 function log_message(tester::SafeTester, message::String)
     elapsed = time() - tester.start_time; println("[$(round(elapsed, digits=1))s] $message")
 end
@@ -43,29 +42,32 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, ad
 end
 
 
-# --- THIS IS THE CRITICALLY MODIFIED FUNCTION ---
+# --- THIS IS THE CORRECTED AND FINAL VERSION OF THIS FUNCTION ---
 function run_scaling_sweep(tester::SafeTester, adaptive_cycles::Bool=false)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting SCALABLE scaling sweep...")
+    if adaptive_cycles
+        log_message(tester, "🚀 Starting ADAPTIVE scaling sweep to measure time-to-consciousness...")
+    else
+        log_message(tester, "🚀 Starting FIXED cycle scaling sweep...")
+    end
     
     master_seed = 1234
     master_rng = MersenneTwister(master_seed)
 
-    # Revert to the larger scale for this experiment
     entity_counts = [16, 32, 64, 128, 256, 512]
-    max_cycles = 50 # Let's use the fixed 50 cycles for now
+    # If not adaptive, use 50 cycles. If adaptive, give it a long runway of 500.
+    max_cycles = adaptive_cycles ? 500 : 50
 
     sweep_results = Dict{String,Any}[]
-
-    # --- NEW: Initialize the learning optimizer ONCE at the start ---
     calc_optimizer = LearningCalculusOptimizer()
     
     for entity_count in entity_counts
         try
             sim_rng = MersenneTwister(rand(master_rng, UInt32))
+            
+            # Call the test with the correct parameters
             result = run_unified_test(tester, entity_count, max_cycles, adaptive_cycles, sim_rng)
             push!(sweep_results, result)
             
-            # --- NEW: Analyze this single result immediately, in-memory ---
             analyze_single_run_and_learn(calc_optimizer, result)
 
             if result["status"] != "completed"; log_message(tester, "🛑 Stopping sweep at $entity_count entities"); break; end
@@ -78,20 +80,29 @@ function run_scaling_sweep(tester::SafeTester, adaptive_cycles::Bool=false)::Vec
         end
     end
 
-    # --- NEW: After the loop, save the final aggregated calculus report ---
     finalize_and_save_report(calc_optimizer)
     
-    # The rest of the function for scaling metrics remains the same
+    # --- FIX: Restore the calculation of scaling metrics to fix the KeyError ---
     if length(sweep_results) > 1
         baseline = sweep_results[1]
-        baseline_uis = baseline["unified_intelligence_score"]
-        baseline_memory = baseline["avg_memory_mb"]
-        
-        for result in sweep_results[2:end]
-            scale_factor = result["entity_count"] / baseline["entity_count"]
-            uis_ratio = safe_divide(result["unified_intelligence_score"], baseline_uis)
-            result["intelligence_scaling"] = round(safe_divide(uis_ratio, scale_factor), digits=3)
-            # ... and so on for other scaling metrics
+        # Check if baseline has the necessary keys before proceeding
+        if haskey(baseline, "unified_intelligence_score") && haskey(baseline, "avg_memory_mb")
+            baseline_uis = baseline["unified_intelligence_score"]
+            baseline_memory = baseline["avg_memory_mb"]
+            
+            for result in sweep_results[2:end]
+                scale_factor = result["entity_count"] / baseline["entity_count"]
+                uis_ratio = safe_divide(result["unified_intelligence_score"], baseline_uis)
+                result["intelligence_scaling"] = round(safe_divide(uis_ratio, scale_factor), digits=3)
+                
+                expected_memory = baseline_memory * scale_factor
+                actual_memory = get(result, "avg_memory_mb", 0.0)
+                result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
+
+                result["consciousness_scaling"] = round(safe_divide(result["consciousness"]["max_phi"], max(baseline["consciousness"]["max_phi"], 0.01)), digits=3)
+                result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
+                result["awareness_scaling"] = round(safe_divide(result["awareness_level"], max(baseline["awareness_level"], 0.01)), digits=3)
+            end
         end
     end
     
