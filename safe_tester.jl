@@ -2,14 +2,13 @@
 """
 🧪 SAFE TESTER MODULE
 Testing framework with memory management and result logging.
-v3.0: Implemented RNG isolation for scientific reproducibility.
-      Includes adaptive cycle termination.
+v3.1: Expanded scaling sweep to 512 entities.
 """
 
 using JSON
 using Dates
 using Statistics
-using Random # <-- STEP 1: IMPORT RANDOM
+using Random
 
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
@@ -20,24 +19,28 @@ mutable struct SafeTester
     SafeTester() = new(Dict{String,Any}[], time())
 end
 
-# ... (log_message, get_memory_mb, memory_check, clean_data_for_json are unchanged) ...
 function log_message(tester::SafeTester, message::String)
     elapsed = time() - tester.start_time
     println("[$(round(elapsed, digits=1))s] $message")
 end
+
 function get_memory_mb()::Float64
     return Base.gc_live_bytes() / 1024 / 1024
 end
+
 function memory_check(tester::SafeTester)::Bool
     memory_mb = get_memory_mb()
-    if memory_mb > 6000; log_message(tester, "⚠️ MEMORY WARNING: $(round(memory_mb, digits=1))MB"); return false; end
+    if memory_mb > 6000
+        log_message(tester, "⚠️ MEMORY WARNING: $(round(memory_mb, digits=1))MB. Stopping run.")
+        return false
+    end
     return true
 end
+
 function clean_data_for_json(data::Any)
     if data isa Real; return isfinite(data) ? data : 0.0; elseif data isa Dict; return Dict(k => clean_data_for_json(v) for (k, v) in data); elseif data isa Vector; return [clean_data_for_json(x) for x in data]; else; return data; end
 end
 
-# --- MODIFIED: `run_unified_test` now accepts an RNG object ---
 function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, adaptive_cycles::Bool, sim_rng::AbstractRNG)::Dict{String,Any}
     log_message(tester, "🧪 Testing $entity_count entities... (Cycles: $(adaptive_cycles ? "Adaptive up to $cycles" : "$cycles Fixed"))")
     
@@ -48,7 +51,6 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, ad
         domain = domains[(i-1) % length(domains) + 1]
         freq = 0.02 + (i * 0.0005)
         entity_id = "$(uppercase(domain[1:3]))-$(lpad(i, 3, '0'))"
-        # The entity creation itself should be deterministic, so no RNG needed here
         entity = EfficientEntity(entity_id, domain, freq)
         add_entity!(network, entity)
     end
@@ -56,7 +58,6 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, ad
     metrics_snapshots = Dict{String,Any}[]
     
     for cycle in 1:cycles
-        # --- CRITICAL CHANGE: Pass the private RNG to the simulation step ---
         step_result = evolve_step!(network, sim_rng)
         
         if cycle % 10 == 0
@@ -74,7 +75,7 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, ad
                 break
             end
             
-            if !memory_check(tester); log_message(tester, "🛑 Stopping early - memory limit"); break; end
+            if !memory_check(tester); break; end
         end
     end
     
@@ -94,25 +95,21 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, ad
     return result
 end
 
-# --- MODIFIED: `run_scaling_sweep` now manages all RNG ---
 function run_scaling_sweep(tester::SafeTester, adaptive_cycles::Bool=false)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting scaling sweep with RNG isolation...")
     
-    # STEP 2: Create a master RNG for the entire sweep. Use a fixed seed for reproducibility.
     master_seed = 1234
     master_rng = MersenneTwister(master_seed)
 
-    entity_counts = [16, 32, 64]
+    # --- THIS IS THE CHANGE ---
+    entity_counts = [16, 32, 64, 128, 256, 512]
+    # --- END OF CHANGE ---
+
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
-            # STEP 3: For each simulation, create a new, dedicated RNG from the master.
-            # This ensures the 16-entity run ALWAYS gets the same "deck of cards",
-            # and the 32-entity run ALWAYS gets its own same "deck of cards", etc.
             sim_rng = MersenneTwister(rand(master_rng, UInt32))
-
-            # STEP 4: Pass the dedicated RNG object to the test function.
             result = run_unified_test(tester, entity_count, 50, adaptive_cycles, sim_rng)
             push!(sweep_results, result)
             
@@ -126,7 +123,6 @@ function run_scaling_sweep(tester::SafeTester, adaptive_cycles::Bool=false)::Vec
         end
     end
     
-    # ... (The rest of the function for calculating scaling is unchanged) ...
     if length(sweep_results) > 1
         baseline = sweep_results[1]
         baseline_uis = baseline["unified_intelligence_score"]
@@ -148,7 +144,6 @@ function run_scaling_sweep(tester::SafeTester, adaptive_cycles::Bool=false)::Vec
     return sweep_results
 end
 
-# ... (save_results and print_summary are unchanged) ...
 function save_results(tester::SafeTester)::String
     timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
     filename = "unified_intelligence_scaling_MODULAR_$timestamp.json"
@@ -159,6 +154,7 @@ function save_results(tester::SafeTester)::String
     log_message(tester, "💾 Results saved to: $filename")
     return filename
 end
+
 function print_summary(tester::SafeTester)
     println("\n" * "="^70); println("📊 MODULAR UNIFIED INTELLIGENCE SCALING SUMMARY"); println("="^70)
     if isempty(tester.results); println("❌ No results to display"); return; end
