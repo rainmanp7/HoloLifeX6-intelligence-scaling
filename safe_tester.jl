@@ -2,7 +2,7 @@
 """
 🧪 SAFE TESTER MODULE
 Testing framework with memory management and result logging.
-v3.1: Expanded scaling sweep to 512 entities.
+v3.2: Configured for adaptive time-to-consciousness experiment.
 """
 
 using JSON
@@ -95,22 +95,33 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int, ad
     return result
 end
 
+# --- THIS IS THE MODIFIED FUNCTION FOR THE NEW EXPERIMENT ---
 function run_scaling_sweep(tester::SafeTester, adaptive_cycles::Bool=false)::Vector{Dict{String,Any}}
-    log_message(tester, "🚀 Starting scaling sweep with RNG isolation...")
+    # Note: For this specific experiment, we will force adaptive_cycles to true.
+    if !adaptive_cycles
+        println("   🔬 INFO: Forcing adaptive cycles for this experiment.")
+        adaptive_cycles = true
+    end
+
+    log_message(tester, "🚀 Starting ADAPTIVE scaling sweep to measure time-to-consciousness...")
     
     master_seed = 1234
     master_rng = MersenneTwister(master_seed)
 
-    # --- THIS IS THE CHANGE ---
-    entity_counts = [16, 32, 64, 128, 256, 512]
-    # --- END OF CHANGE ---
+    # Change 1: Set the entity counts for this specific experiment.
+    entity_counts = [16, 32, 64, 128]
+    
+    # Change 2: Set a high max cycle count to give systems time to emerge.
+    max_cycles_for_experiment = 500
 
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
             sim_rng = MersenneTwister(rand(master_rng, UInt32))
-            result = run_unified_test(tester, entity_count, 50, adaptive_cycles, sim_rng)
+
+            # Change 3: Call the test with the new parameters.
+            result = run_unified_test(tester, entity_count, max_cycles_for_experiment, adaptive_cycles, sim_rng)
             push!(sweep_results, result)
             
             if result["status"] != "completed"; log_message(tester, "🛑 Stopping sweep at $entity_count entities"); break; end
@@ -159,7 +170,13 @@ function print_summary(tester::SafeTester)
     println("\n" * "="^70); println("📊 MODULAR UNIFIED INTELLIGENCE SCALING SUMMARY"); println("="^70)
     if isempty(tester.results); println("❌ No results to display"); return; end
     for result in tester.results
-        println("\n🧬 $(result["test_name"]):"); println("   Entities: $(result["entity_count"])"); println("   ─────────────────────────────────────────"); println("   🧠 CONSCIOUSNESS:"); println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")"); println("      • Max Φ: $(result["consciousness"]["max_phi"])"); println("      • Effective Info: $(result["effective_information"])"); println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
+        println("\n🧬 $(result["test_name"]):")
+        println("   Entities: $(result["entity_count"])")
+        # --- NEW: Add the cycles completed to the summary ---
+        println("   Cycles to Result: $(result["cycles_completed"])")
+        println("   ─────────────────────────────────────────")
+        println("   🧠 CONSCIOUSNESS:")
+        println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")"); println("      • Max Φ: $(result["consciousness"]["max_phi"])"); println("      • Effective Info: $(result["effective_information"])"); println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
         println("   🎯 REASONING:"); println("      • Accuracy: $(result["reasoning_accuracy"])")
         println("   👁️  AWARENESS:"); println("      • Level: $(result["awareness_level"])")
         println("   💡 INTELLIGENCE:"); println("      • Unified Score: $(result["unified_intelligence_score"])"); println("      • Patterns: $(result["pattern_discoveries"])")
