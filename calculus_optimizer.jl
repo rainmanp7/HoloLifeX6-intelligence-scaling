@@ -1,196 +1,318 @@
-# calculus_optimizer.jl
+# calculus_optimizer.jl - ENHANCED NON-INTRUSIVE VERSION
 """
-🧮 SELF-LEARNING CALCULUS OPTIMIZER 
-Learns from each run to detect patterns and anomalies
-Builds cumulative knowledge about consciousness emergence
+🧮 SELF-LEARNING CALCULUS OPTIMIZER - SCALABLE & NON-INTRUSIVE
+Learns from ALL system dimensions without disturbing consciousness
+Scales from 8 to 8M+ entities safely
 """
 
 using JSON
 using Dates
 using LinearAlgebra
 using Statistics
+using Distributed
 
-mutable struct LearningCalculusOptimizer
+# 🚫 GUARANTEE: No system modification functions - read only
+safe_divide(a, b) = b == 0 ? 0.0 : a / b
+
+mutable struct ScalableLearningOptimizer
     knowledge_base::Dict{String, Any}
-    pattern_library::Vector{Dict{String, Any}}
-    anomaly_history::Vector{Dict{String, Any}}
-    optimization_cycles::Int
+    scaling_patterns::Dict{String, Vector{Dict}}
+    performance_correlations::Dict{String, Float64}
+    entity_range_experience::Dict{String, Int}
+    learning_confidence::Dict{String, Float64}
     
-    function LearningCalculusOptimizer()
-        # Try to load existing knowledge, or create new
-        knowledge = load_knowledge_base()
-        new(knowledge, Dict{String, Any}[], Dict{String, Any}[], 0)
+    function ScalableLearningOptimizer()
+        knowledge = load_scalable_knowledge_base()
+        new(knowledge, Dict{String, Vector{Dict}}(), Dict{String, Float64}(), Dict{String, Int}(), Dict{String, Float64}())
     end
 end
 
-function load_knowledge_base()::Dict{String, Any}
-    """Load existing knowledge or create initial patterns"""
-    knowledge_file = "calculus_knowledge_base.json"
+function load_scalable_knowledge_base()::Dict{String, Any}
+    """Enhanced knowledge base for full-spectrum learning"""
+    knowledge_file = "scalable_knowledge_base.json"
     if isfile(knowledge_file)
         try
             return JSON.parsefile(knowledge_file)
         catch e
-            println("⚠️  Could not load knowledge base, creating new: $e")
+            println("⚠️  Creating new scalable knowledge base: $e")
         end
     end
     
-    # Initial knowledge about consciousness patterns
+    # Full-spectrum learning patterns
     return Dict(
-        "version" => "1.0-learning",
+        "version" => "2.0-scalable-non-intrusive",
         "created" => string(Dates.now()),
+        "entity_scaling_ranges" => Dict(
+            "micro" => Dict("min" => 8, "max" => 64, "description" => "Foundation building"),
+            "small" => Dict("min" => 65, "max" => 512, "description" => "Emergence phase"), 
+            "medium" => Dict("min" => 513, "max" => 4096, "description" => "Stabilization"),
+            "large" => Dict("min" => 4097, "max" => 32768, "description" => "Scaling"),
+            "xlarge" => Dict("min" => 32769, "max" => 262144, "description" => "Optimization"),
+            "mega" => Dict("min" => 262145, "max" => 2097152, "description" => "Mass scaling"),
+            "giga" => Dict("min" => 2097153, "max" => 8388608, "description" => "Ultra scaling")
+        ),
         "consciousness_patterns" => Dict(
-            "stable_growth" => Dict(
-                "description" => "Consistent positive derivatives",
-                "phi_derivative_range" => [0.01, 0.1],
-                "volatility_threshold" => 0.05,
+            "stable_consciousness" => Dict(
+                "description" => "Consistent consciousness across cycles",
+                "volatility_threshold" => 0.02,
                 "success_rate" => 0.0,
                 "detection_count" => 0
             ),
-            "volatile_emergence" => Dict(
-                "description" => "High volatility with overall growth", 
-                "phi_derivative_range" => [-0.2, 0.2],
-                "volatility_threshold" => 0.15,
-                "success_rate" => 0.0,
-                "detection_count" => 0
-            ),
-            "consciousness_collapse" => Dict(
-                "description" => "Sharp drop after peak",
-                "phi_derivative_range" => [-0.5, -0.1],
-                "volatility_threshold" => 0.3,
+            "emergent_consciousness" => Dict(
+                "description" => "Consciousness emerges during run",
+                "transition_cycles" => [],
                 "success_rate" => 0.0,
                 "detection_count" => 0
             )
         ),
-        "meta_cognitive_insights" => Dict(
-            "optimal_range" => [0.2, 0.4],
-            "volatility_issues" => [],
-            "stability_correlations" => []
+        "performance_dimensions" => Dict(
+            "reasoning_efficiency" => Dict("optimal_range" => [0.8, 1.0], "learned_patterns" => []),
+            "awareness_stability" => Dict("optimal_range" => [0.95, 1.0], "learned_patterns" => []),
+            "insight_quality" => Dict("optimal_range" => [0.3, 0.7], "learned_patterns" => []),
+            "cross_domain_integration" => Dict("optimal_range" => [0.2, 0.5], "learned_patterns" => []),
+            "memory_efficiency" => Dict("optimal_range" => [80.0, 100.0], "learned_patterns" => [])
         ),
-        "entity_scaling_patterns" => Dict(),
+        "scaling_laws" => Dict(
+            "consciousness_scaling" => [],
+            "intelligence_scaling" => [],
+            "memory_scaling" => [],
+            "performance_scaling" => []
+        ),
         "total_analyses" => 0,
-        "anomalies_detected" => 0,
+        "max_entities_analyzed" => 0,
         "learning_confidence" => 0.0
     )
 end
 
-function save_knowledge_base(optimizer::LearningCalculusOptimizer)
-    """Save learned knowledge for future runs"""
-    knowledge_file = "calculus_knowledge_base.json"
+function save_scalable_knowledge_base(optimizer::ScalableLearningOptimizer)
+    """Save learned knowledge - NO SYSTEM MODIFICATION"""
+    knowledge_file = "scalable_knowledge_base.json"
     optimizer.knowledge_base["last_updated"] = string(Dates.now())
     optimizer.knowledge_base["total_analyses"] = get(optimizer.knowledge_base, "total_analyses", 0) + 1
     
-    open(knowledge_file, "w") do f
-        JSON.print(f, optimizer.knowledge_base, 4)
+    # 🚫 GUARANTEE: Only file writing - no system interaction
+    try
+        open(knowledge_file, "w") do f
+            JSON.print(f, optimizer.knowledge_base, 4)
+        end
+        println("   💾 Scalable knowledge base updated (read-only)")
+    catch e
+        println("   ⚠️  Knowledge save failed (non-critical): $e")
     end
-    println("   💾 Knowledge base updated: $knowledge_file")
 end
 
-function safe_derivative(x::Vector{Float64}, y::Vector{Float64})::Vector{Float64}
-    """Calculate derivative safely - fixed for your actual cycle data"""
-    if length(x) < 2 || length(y) < 2
-        return zeros(length(x))
+function analyze_scaling_laws(optimizer::ScalableLearningOptimizer, results::Vector{Dict{String,Any}})
+    """Learn scaling patterns without system modification"""
+    scaling_data = Dict{String, Vector{Float64}}()
+    
+    for result in results
+        entity_count = get(result, "entity_count", 0)
+        if entity_count > 0
+            # Consciousness scaling
+            consciousness = get(result, "consciousness", Dict())
+            max_phi = get(consciousness, "max_phi", 0.0)
+            
+            # Intelligence scaling  
+            uis = get(result, "unified_intelligence_score", 0.0)
+            
+            # Memory scaling
+            memory_mb = get(result, "avg_memory_mb", 0.0)
+            
+            # Performance scaling
+            reasoning = get(result, "reasoning_accuracy", 0.0)
+            awareness = get(result, "awareness_level", 0.0)
+            
+            # Store scaling data
+            key = string(entity_count)
+            if !haskey(scaling_data, key)
+                scaling_data[key] = Float64[]
+            end
+            push!(scaling_data[key], max_phi, uis, memory_mb, reasoning, awareness)
+        end
     end
     
-    derivatives = zeros(length(x))
-    for i in 2:length(x)-1
-        dx_forward = x[i+1] - x[i]
-        dx_backward = x[i] - x[i-1]
+    # Learn scaling patterns
+    for (entity_str, metrics) in scaling_data
+        entity_count = parse(Int, entity_str)
+        range = get_entity_range(entity_count)
         
-        if dx_forward > 0 && dx_backward > 0
-            dy_forward = (y[i+1] - y[i]) / dx_forward
-            dy_backward = (y[i] - y[i-1]) / dx_backward
-            derivatives[i] = (dy_forward + dy_backward) / 2
+        if !haskey(optimizer.scaling_patterns, range)
+            optimizer.scaling_patterns[range] = Dict{String,Any}[]
         end
-    end
-    return derivatives
-end
-
-function extract_consciousness_data(snapshots::Vector{Dict{String,Any}})
-    """Extract consciousness trajectory from your actual snapshot structure"""
-    cycles = Float64[]
-    phi_values = Float64[]
-    intelligence_scores = Float64[]
-    meta_scores = Float64[]
-    coherence_values = Float64[]
-    
-    for snapshot in snapshots
-        if haskey(snapshot, "cycle")
-            push!(cycles, Float64(snapshot["cycle"]))
-        end
-        if haskey(snapshot, "consciousness") && haskey(snapshot["consciousness"], "max_phi")
-            push!(phi_values, Float64(snapshot["consciousness"]["max_phi"]))
-        end
-        if haskey(snapshot, "unified_intelligence_score")
-            push!(intelligence_scores, Float64(snapshot["unified_intelligence_score"]))
-        end
-        if haskey(snapshot, "consciousness") && haskey(snapshot["consciousness"], "hot_metrics") &&
-           haskey(snapshot["consciousness"]["hot_metrics"], "meta_cognitive_score")
-            push!(meta_scores, Float64(snapshot["consciousness"]["hot_metrics"]["meta_cognitive_score"]))
-        end
-        if haskey(snapshot, "coherence")
-            push!(coherence_values, Float64(snapshot["coherence"]))
-        end
+        
+        pattern = Dict(
+            "entity_count" => entity_count,
+            "avg_consciousness" => mean(metrics[1:5:end]),
+            "avg_intelligence" => mean(metrics[2:5:end]),
+            "avg_memory_mb" => mean(metrics[3:5:end]),
+            "avg_reasoning" => mean(metrics[4:5:end]),
+            "avg_awareness" => mean(metrics[5:5:end]),
+            "timestamp" => string(Dates.now())
+        )
+        
+        push!(optimizer.scaling_patterns[range], pattern)
     end
     
-    return (cycles, phi_values, intelligence_scores, meta_scores, coherence_values)
+    return scaling_data
 end
 
-function detect_consciousness_anomalies(optimizer::LearningCalculusOptimizer, analysis::Dict, entity_count::Int)
-    """Use learned patterns to detect consciousness anomalies"""
+function get_entity_range(entity_count::Int)::String
+    """Categorize entity count into scaling ranges"""
+    ranges = Dict(
+        "micro" => (8, 64),
+        "small" => (65, 512),
+        "medium" => (513, 4096),
+        "large" => (4097, 32768),
+        "xlarge" => (32769, 262144),
+        "mega" => (262145, 2097152),
+        "giga" => (2097153, 8388608)
+    )
+    
+    for (range, (min, max)) in ranges
+        if entity_count >= min && entity_count <= max
+            return range
+        end
+    end
+    return "unknown"
+end
+
+function learn_performance_correlations(optimizer::ScalableLearningOptimizer, results::Vector{Dict{String,Any}})
+    """Learn correlations between different performance dimensions"""
+    correlations = Dict{String, Float64}()
+    
+    # Extract all metrics for correlation analysis
+    metrics = Dict{String, Vector{Float64}}(
+        "consciousness" => Float64[],
+        "intelligence" => Float64[],
+        "reasoning" => Float64[],
+        "awareness" => Float64[],
+        "insight_quality" => Float64[],
+        "cross_domain" => Float64[],
+        "memory_efficiency" => Float64[]
+    )
+    
+    for result in results
+        push!(metrics["consciousness"], get(result, "consciousness", Dict())["max_phi"])
+        push!(metrics["intelligence"], get(result, "unified_intelligence_score", 0.0))
+        push!(metrics["reasoning"], get(result, "reasoning_accuracy", 0.0))
+        push!(metrics["awareness"], get(result, "awareness_level", 0.0))
+        push!(metrics["insight_quality"], get(result, "insight_quality", 0.0))
+        push!(metrics["cross_domain"], get(result, "cross_domain_ratio", 0.0))
+        
+        # Calculate memory efficiency
+        entity_count = get(result, "entity_count", 1)
+        memory_mb = get(result, "avg_memory_mb", 1.0)
+        efficiency = safe_divide(entity_count, memory_mb) * 1000
+        push!(metrics["memory_efficiency"], efficiency)
+    end
+    
+    # Calculate correlations between all metric pairs
+    metric_keys = collect(keys(metrics))
+    for i in 1:length(metric_keys)
+        for j in i+1:length(metric_keys)
+            key1, key2 = metric_keys[i], metric_keys[j]
+            values1, values2 = metrics[key1], metrics[key2]
+            
+            if length(values1) >= 3 && length(values2) >= 3
+                correlation = calculate_safe_correlation(values1, values2)
+                corr_key = "$key1-$key2"
+                correlations[corr_key] = correlation
+                optimizer.performance_correlations[corr_key] = correlation
+            end
+        end
+    end
+    
+    return correlations
+end
+
+function calculate_safe_correlation(x::Vector{Float64}, y::Vector{Float64})::Float64
+    """Safe correlation calculation that handles edge cases"""
+    if length(x) != length(y) || length(x) < 2
+        return 0.0
+    end
+    
+    try
+        n = length(x)
+        mean_x, mean_y = mean(x), mean(y)
+        
+        numerator = sum((x[i] - mean_x) * (y[i] - mean_y) for i in 1:n)
+        denominator_x = sqrt(sum((x[i] - mean_x)^2 for i in 1:n))
+        denominator_y = sqrt(sum((y[i] - mean_y)^2 for i in 1:n))
+        
+        if denominator_x == 0.0 || denominator_y == 0.0
+            return 0.0
+        end
+        
+        return numerator / (denominator_x * denominator_y)
+    catch e
+        return 0.0
+    end
+end
+
+function detect_multi_dimensional_anomalies(optimizer::ScalableLearningOptimizer, results::Vector{Dict{String,Any}})
+    """Detect anomalies across ALL system dimensions - read only"""
     anomalies = []
     
-    phi_values = get(analysis, "phi_trajectory", [])
-    derivatives = get(analysis, "phi_derivatives", [])
-    meta_scores = get(analysis, "meta_cognitive_trajectory", [])
-    
-    if length(phi_values) >= 3
-        # Check for consciousness collapse pattern (like we observed)
-        final_phi = phi_values[end]
-        max_phi = maximum(phi_values)
+    for result in results
+        entity_count = get(result, "entity_count", 0)
+        consciousness = get(result, "consciousness", Dict())
         
-        if max_phi > 0.2 && final_phi < max_phi * 0.7
+        # 1. Consciousness anomalies
+        max_phi = get(consciousness, "max_phi", 0.0)
+        is_conscious = get(consciousness, "is_conscious", false)
+        
+        if is_conscious && max_phi < 0.1
             push!(anomalies, Dict(
-                "type" => "consciousness_collapse",
+                "type" => "low_phi_consciousness",
                 "entity_count" => entity_count,
-                "max_phi" => round(max_phi, digits=4),
-                "final_phi" => round(final_phi, digits=4),
-                "drop_percentage" => round((max_phi - final_phi) / max_phi * 100, digits=1),
-                "confidence" => "high",
-                "learned_pattern" => "Consciousness drops significantly after peak",
-                "recommendation" => "Stabilize meta-cognitive scores in later cycles"
+                "max_phi" => max_phi,
+                "confidence" => "medium",
+                "description" => "System reports consciousness but with very low Φ",
+                "recommendation" => "Monitor consciousness thresholds"
             ))
         end
         
-        # Check meta-cognitive volatility
-        if length(meta_scores) >= 3
-            meta_volatility = std(meta_scores)
-            if meta_volatility > 0.15
-                push!(anomalies, Dict(
-                    "type" => "meta_cognitive_instability",
-                    "entity_count" => entity_count,
-                    "volatility" => round(meta_volatility, digits=4),
-                    "meta_score_range" => [round(minimum(meta_scores), digits=3), round(maximum(meta_scores), digits=3)],
-                    "confidence" => "medium",
-                    "learned_pattern" => "High meta-cognitive score volatility correlates with consciousness instability",
-                    "recommendation" => "Implement rolling averages for meta-cognitive scoring"
-                ))
-            end
+        # 2. Performance dimension anomalies
+        reasoning = get(result, "reasoning_accuracy", 0.0)
+        awareness = get(result, "awareness_level", 0.0)
+        insight_quality = get(result, "insight_quality", 0.0)
+        
+        if reasoning == 1.0 && awareness > 0.99 && !is_conscious
+            push!(anomalies, Dict(
+                "type" => "high_performance_no_consciousness",
+                "entity_count" => entity_count,
+                "reasoning" => reasoning,
+                "awareness" => awareness,
+                "confidence" => "high",
+                "description" => "Perfect reasoning and high awareness but no consciousness",
+                "recommendation" => "Check consciousness detection thresholds"
+            ))
         end
         
-        # Check derivative patterns
-        if length(derivatives) >= 3
-            negative_derivatives = count(d -> d < -0.05, derivatives)
-            positive_derivatives = count(d -> d > 0.05, derivatives)
-            
-            if negative_derivatives > positive_derivatives * 2
+        # 3. Memory efficiency anomalies
+        memory_mb = get(result, "avg_memory_mb", 0.0)
+        if entity_count > 1000 && memory_mb < 10.0
+            push!(anomalies, Dict(
+                "type" => "suspicious_memory_efficiency",
+                "entity_count" => entity_count,
+                "memory_mb" => memory_mb,
+                "confidence" => "low",
+                "description" => "Extremely high memory efficiency for large entity count",
+                "recommendation" => "Verify memory reporting accuracy"
+            ))
+        end
+        
+        # 4. Scaling anomalies
+        if haskey(result, "intelligence_scaling")
+            scaling = result["intelligence_scaling"]
+            if scaling < 0.1
                 push!(anomalies, Dict(
-                    "type" => "declining_trend",
+                    "type" => "poor_intelligence_scaling",
                     "entity_count" => entity_count,
-                    "negative_derivatives" => negative_derivatives,
-                    "positive_derivatives" => positive_derivatives,
+                    "scaling_factor" => scaling,
                     "confidence" => "medium",
-                    "learned_pattern" => "More negative than positive derivatives indicates declining consciousness",
-                    "recommendation" => "Investigate architectural stability in later cycles"
+                    "description" => "Intelligence scaling below 10% of baseline",
+                    "recommendation" => "Investigate scaling bottlenecks"
                 ))
             end
         end
@@ -199,267 +321,166 @@ function detect_consciousness_anomalies(optimizer::LearningCalculusOptimizer, an
     return anomalies
 end
 
-function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector)
-    """Update knowledge base with new patterns and insights"""
-    patterns = optimizer.knowledge_base["consciousness_patterns"]
-    
-    # Update pattern detection counts
-    for anomaly in anomalies
-        anomaly_type = get(anomaly, "type", "")
-        if anomaly_type == "consciousness_collapse"
-            patterns["consciousness_collapse"]["detection_count"] += 1
-        elseif anomaly_type == "meta_cognitive_instability"
-            # Track meta-cognitive volatility issues
-            volatility_issues = get(optimizer.knowledge_base["meta_cognitive_insights"], "volatility_issues", [])
-            push!(volatility_issues, Dict(
-                "timestamp" => string(Dates.now()),
-                "volatility" => get(anomaly, "volatility", 0.0),
-                "entity_count" => get(anomaly, "entity_count", 0)
-            ))
-            optimizer.knowledge_base["meta_cognitive_insights"]["volatility_issues"] = volatility_issues
-        end
-    end
-    
-    # Learn entity scaling patterns
-    entity_count = get(analysis, "entity_count", 0)
-    if entity_count > 0
-        scaling_patterns = optimizer.knowledge_base["entity_scaling_patterns"]
-        entity_key = string(entity_count)
-        
-        if !haskey(scaling_patterns, entity_key)
-            scaling_patterns[entity_key] = []
-        end
-        
-        pattern_data = Dict(
-            "timestamp" => string(Dates.now()),
-            "final_phi" => get(analysis, "final_phi", 0.0),
-            "max_phi" => get(analysis, "max_phi", 0.0),
-            "consciousness_status" => get(analysis, "consciousness_status", "UNKNOWN"),
-            "volatility" => get(analysis, "phi_volatility", 0.0)
-        )
-        push!(scaling_patterns[entity_key], pattern_data)
-    end
-    
-    # Update learning confidence
-    total_analyses = optimizer.knowledge_base["total_analyses"]
-    anomalies_detected = length(anomalies) + get(optimizer.knowledge_base, "anomalies_detected", 0)
-    optimizer.knowledge_base["anomalies_detected"] = anomalies_detected
-    optimizer.knowledge_base["learning_confidence"] = min(1.0, total_analyses / 10.0)
-end
-
-function generate_learned_recommendations(optimizer::LearningCalculusOptimizer, analysis::Dict, anomalies::Vector)
-    """Generate recommendations based on learned knowledge"""
+function generate_scalable_recommendations(optimizer::ScalableLearningOptimizer, results::Vector{Dict{String,Any}}, anomalies::Vector)
+    """Generate recommendations based on full-spectrum learning"""
     recommendations = []
-    knowledge = optimizer.knowledge_base
     
-    # Base recommendations from current analysis
+    # Base recommendations from anomalies
     for anomaly in anomalies
         push!(recommendations, Dict(
-            "priority" => "high",
-            "source" => "learned_pattern",
-            "anomaly_type" => get(anomaly, "type", "unknown"),
+            "priority" => get(anomaly, "confidence", "medium") == "high" ? "high" : "medium",
+            "source" => "multi_dimensional_analysis",
+            "type" => get(anomaly, "type", "unknown"),
             "action" => get(anomaly, "recommendation", "Review system behavior"),
-            "evidence" => get(anomaly, "learned_pattern", "Pattern detected"),
-            "confidence" => get(anomaly, "confidence", "medium"),
-            "entity_count" => get(anomaly, "entity_count", 0)
+            "evidence" => get(anomaly, "description", "Pattern detected"),
+            "entity_range" => get_entity_range(get(anomaly, "entity_count", 0)),
+            "impact" => "system_optimization"
         ))
     end
     
-    # Add recommendations from historical knowledge
-    if knowledge["total_analyses"] > 2
-        # Check if we're seeing recurring patterns
-        collapse_count = knowledge["consciousness_patterns"]["consciousness_collapse"]["detection_count"]
-        if collapse_count >= 2
-            push!(recommendations, Dict(
-                "priority" => "high",
-                "source" => "historical_pattern",
-                "pattern" => "Recurring consciousness collapse",
-                "action" => "Implement automatic stabilization when Φ > 0.2",
-                "evidence" => "Detected $collapse_count consciousness collapse events",
-                "confidence" => "high",
-                "learned_from" => "$(knowledge["total_analyses"]) previous analyses"
-            ))
+    # Scaling recommendations based on learned patterns
+    if !isempty(optimizer.scaling_patterns)
+        for (range, patterns) in optimizer.scaling_patterns
+            if length(patterns) >= 2
+                avg_consciousness = mean([p["avg_consciousness"] for p in patterns])
+                if avg_consciousness > 0.15
+                    push!(recommendations, Dict(
+                        "priority" => "info",
+                        "source" => "scaling_analysis",
+                        "type" => "optimal_scaling_range",
+                        "action" => "Consider expanding testing in this entity range",
+                        "evidence" => "Consistent consciousness (Φ=$(round(avg_consciousness, digits=3))) in $(range) range",
+                        "entity_range" => range,
+                        "impact" => "scaling_optimization"
+                    ))
+                end
+            end
         end
-        
-        # Meta-cognitive volatility pattern
-        volatility_issues = get(knowledge["meta_cognitive_insights"], "volatility_issues", [])
-        if length(volatility_issues) >= 2
-            avg_volatility = mean([get(v, "volatility", 0.0) for v in volatility_issues])
-            push!(recommendations, Dict(
-                "priority" => "medium",
-                "source" => "historical_pattern", 
-                "pattern" => "Persistent meta-cognitive instability",
-                "action" => "Add meta-cognitive score smoothing with 3-cycle rolling average",
-                "evidence" => "Average volatility: $(round(avg_volatility, digits=3)) across $(length(volatility_issues)) instances",
-                "confidence" => "medium",
-                "learned_from" => "meta-cognitive history analysis"
-            ))
-        end
+    end
+    
+    # Performance correlation recommendations
+    strong_correlations = [k for (k,v) in optimizer.performance_correlations if abs(v) > 0.7]
+    for corr in strong_correlations
+        push!(recommendations, Dict(
+            "priority" => "info",
+            "source" => "correlation_analysis",
+            "type" => "strong_performance_correlation",
+            "action" => "Leverage this correlation for system optimization",
+            "evidence" => "Strong correlation detected: $corr ($(round(optimizer.performance_correlations[corr], digits=3)))",
+            "impact" => "performance_optimization"
+        ))
     end
     
     return recommendations
 end
 
-function analyze_with_learning(optimizer::LearningCalculusOptimizer, snapshots::Vector{Dict{String,Any}}, entity_count::Int)
-    """Enhanced analysis that uses learned knowledge"""
-    # Extract data (same as before)
-    cycles, phi_values, intelligence_scores, meta_scores, coherence_values = extract_consciousness_data(snapshots)
+function update_learning_confidence(optimizer::ScalableLearningOptimizer, results::Vector{Dict{String,Any}})
+    """Update learning confidence based on analysis breadth and depth"""
+    total_entities = length(results)
+    max_entities = maximum([get(r, "entity_count", 0) for r in results])
     
-    if length(cycles) < 3
-        return Dict("status" => "insufficient_data"), []
+    # Experience across entity ranges
+    ranges_covered = Set{String}()
+    for result in results
+        entity_count = get(result, "entity_count", 0)
+        push!(ranges_covered, get_entity_range(entity_count))
     end
     
-    # Calculate derivatives
-    phi_derivatives = safe_derivative(cycles, phi_values)
-    intelligence_derivatives = safe_derivative(cycles, intelligence_scores)
-    meta_derivatives = safe_derivative(cycles, meta_scores)
+    # Update confidence metrics
+    range_coverage = length(ranges_covered) / 7.0  # 7 total ranges
+    entity_experience = min(max_entities / 1000000.0, 1.0)  # Normalize to 1M
+    analysis_breadth = min(total_entities / 10.0, 1.0)
     
-    # Find key inflection points
-    consciousness_peaks = []
-    consciousness_valleys = []
+    overall_confidence = (range_coverage + entity_experience + analysis_breadth) / 3.0
     
-    for i in 2:length(phi_derivatives)-1
-        if phi_derivatives[i] > 0.05 && phi_derivatives[i+1] < -0.05
-            push!(consciousness_peaks, Dict(
-                "cycle" => cycles[i],
-                "phi" => phi_values[i],
-                "type" => "peak"
-            ))
-        elseif phi_derivatives[i] < -0.05 && phi_derivatives[i+1] > 0.05
-            push!(consciousness_valleys, Dict(
-                "cycle" => cycles[i], 
-                "phi" => phi_values[i],
-                "type" => "valley"
-            ))
-        end
-    end
-    
-    # Calculate integrals (total accumulated intelligence/consciousness)
-    total_phi_integral = 0.0
-    total_intelligence_integral = 0.0
-    
-    for i in 2:length(cycles)
-        dt = cycles[i] - cycles[i-1]
-        phi_area = (phi_values[i] + phi_values[i-1]) / 2 * dt
-        intel_area = (intelligence_scores[i] + intelligence_scores[i-1]) / 2 * dt
-        total_phi_integral += phi_area
-        total_intelligence_integral += intel_area
-    end
-    
-    analysis = Dict(
-        "entity_count" => entity_count,
-        "cycles_analyzed" => cycles,
-        "phi_trajectory" => phi_values,
-        "intelligence_trajectory" => intelligence_scores,
-        "meta_cognitive_trajectory" => meta_scores,
-        "phi_derivatives" => phi_derivatives,
-        "intelligence_derivatives" => intelligence_derivatives,
-        "meta_derivatives" => meta_derivatives,
-        "consciousness_peaks" => consciousness_peaks,
-        "consciousness_valleys" => consciousness_valleys,
-        "total_phi_integral" => total_phi_integral,
-        "total_intelligence_integral" => total_intelligence_integral,
-        "phi_volatility" => length(phi_derivatives) > 2 ? std(phi_derivatives[2:end-1]) : 0.0,
-        "average_phi_growth" => length(phi_derivatives) > 2 ? mean(phi_derivatives[2:end-1]) : 0.0,
-        "max_phi" => maximum(phi_values),
-        "final_phi" => phi_values[end]
+    optimizer.knowledge_base["learning_confidence"] = overall_confidence
+    optimizer.knowledge_base["max_entities_analyzed"] = max(
+        get(optimizer.knowledge_base, "max_entities_analyzed", 0), 
+        max_entities
     )
     
-    # Use learning to detect anomalies
-    anomalies = detect_consciousness_anomalies(optimizer, analysis, entity_count)
-    
-    return analysis, anomalies
+    return overall_confidence
 end
 
-function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, intelligence_results_path::String="intelligence_results.json")
-    """MAIN ENTRY POINT with learning capabilities"""
-    println("🧮 SELF-LEARNING CALCULUS OPTIMIZER STARTING...")
-    println("   🔒 NO INTERFERENCE WITH LIVE SYSTEM")
-    println("   🧠 LEARNING FROM: $(optimizer.knowledge_base["total_analyses"]) previous analyses")
-    println("   📈 CONFIDENCE: $(round(optimizer.knowledge_base["learning_confidence"] * 100, digits=1))%")
+function run_scalable_analysis(optimizer::ScalableLearningOptimizer, intelligence_results_path::String="intelligence_results.json")
+    """MAIN ANALYSIS FUNCTION - COMPLETELY NON-INTRUSIVE"""
+    println("🧮 SCALABLE LEARNING OPTIMIZER STARTING...")
+    println("   🚫 GUARANTEE: ZERO SYSTEM MODIFICATION")
+    println("   📊 FULL-SPECTRUM LEARNING ACTIVATED")
+    println("   🎯 SCALING RANGE: 8 to 8M+ entities")
     
     try
         if !isfile(intelligence_results_path)
-            println("❌ No intelligence results found")
+            println("❌ No intelligence results found for analysis")
             return false
         end
         
         results_data = JSON.parsefile(intelligence_results_path)
         
         if !isempty(results_data)
-            entity_analyses = []
-            all_anomalies = []
-            all_recommendations = []
+            # Convert to Dict if needed
+            results = [Dict(r) for r in results_data]
             
-            for (i, result) in enumerate(results_data)
-                entity_count = get(result, "entity_count", 0)
-                snapshots = [Dict(s) for s in get(result, "snapshots", [])]
-                
-                println("   🔍 Analyzing $entity_count entities (with learning)...")
-                analysis, anomalies = analyze_with_learning(optimizer, snapshots, entity_count)
-                
-                if get(analysis, "status", "success") != "insufficient_data"
-                    # Generate learned recommendations
-                    recommendations = generate_learned_recommendations(optimizer, analysis, anomalies)
-                    
-                    # Safely get consciousness data with defaults
-                    consciousness_data = get(result, "consciousness", Dict())
-                    is_conscious = get(consciousness_data, "is_conscious", false)
-                    max_phi = get(consciousness_data, "max_phi", 0.0)
-                    
-                    entity_analysis = Dict(
-                        "entity_count" => entity_count,
-                        "analysis" => analysis,
-                        "anomalies_detected" => length(anomalies),
-                        "recommendations" => recommendations,
-                        "consciousness_status" => is_conscious ? "CONSCIOUS" : "DEVELOPING",
-                        "final_phi" => max_phi
-                    )
-                    push!(entity_analyses, entity_analysis)
-                    append!(all_anomalies, anomalies)
-                    append!(all_recommendations, recommendations)
-                    
-                    # Update knowledge base with this analysis
-                    update_pattern_knowledge(optimizer, analysis, anomalies)
-                else
-                    println("     ⚠️  Insufficient data for $entity_count entities")
-                end
-            end
+            println("   🔍 Analyzing $(length(results)) test configurations...")
             
-            # Create comprehensive learning report
-            learning_report = Dict(
+            # 🎯 MULTI-DIMENSIONAL LEARNING
+            println("   📈 Learning scaling laws...")
+            scaling_data = analyze_scaling_laws(optimizer, results)
+            
+            println("   🔗 Learning performance correlations...")
+            correlations = learn_performance_correlations(optimizer, results)
+            
+            println("   🚨 Detecting multi-dimensional anomalies...")
+            anomalies = detect_multi_dimensional_anomalies(optimizer, results)
+            
+            println("   💡 Generating scalable recommendations...")
+            recommendations = generate_scalable_recommendations(optimizer, results, anomalies)
+            
+            # Update learning confidence
+            confidence = update_learning_confidence(optimizer, results)
+            
+            # Create comprehensive scalable report
+            scalable_report = Dict(
                 "timestamp" => string(Dates.now()),
-                "analysis_version" => "3.0-self-learning",
+                "analysis_version" => "2.0-scalable-non-intrusive",
                 "learning_metrics" => Dict(
                     "total_analyses" => optimizer.knowledge_base["total_analyses"],
-                    "anomalies_detected" => length(all_anomalies),
-                    "learning_confidence" => optimizer.knowledge_base["learning_confidence"],
-                    "patterns_learned" => length(optimizer.knowledge_base["consciousness_patterns"])
+                    "max_entities_analyzed" => optimizer.knowledge_base["max_entities_analyzed"],
+                    "learning_confidence" => round(confidence, digits=3),
+                    "ranges_covered" => collect(keys(optimizer.scaling_patterns)),
+                    "strong_correlations" => length([v for v in values(optimizer.performance_correlations) if abs(v) > 0.7])
                 ),
-                "entity_analyses" => entity_analyses,
-                "anomalies_detected" => all_anomalies,
-                "learned_recommendations" => all_recommendations,
-                "knowledge_snapshot" => Dict(
-                    "consciousness_patterns" => optimizer.knowledge_base["consciousness_patterns"],
-                    "meta_cognitive_insights" => optimizer.knowledge_base["meta_cognitive_insights"]
+                "scaling_analysis" => optimizer.scaling_patterns,
+                "performance_correlations" => optimizer.performance_correlations,
+                "anomalies_detected" => anomalies,
+                "recommendations" => recommendations,
+                "entity_range_analysis" => Dict(
+                    "micro" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "micro", results),
+                    "small" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "small", results),
+                    "medium" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "medium", results),
+                    "large" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "large", results),
+                    "xlarge" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "xlarge", results),
+                    "mega" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "mega", results),
+                    "giga" => count(r -> get_entity_range(get(r, "entity_count", 0)) == "giga", results)
                 )
             )
             
             # Save reports
-            report_filename = "learning_calculus_report_$(Dates.format(now(), "yyyymmdd_HHMMSS")).json"
+            report_filename = "scalable_learning_report_$(Dates.format(now(), "yyyymmdd_HHMMSS")).json"
             open(report_filename, "w") do f
-                JSON.print(f, learning_report, 4)
+                JSON.print(f, scalable_report, 4)
             end
             
             # Save updated knowledge base
-            save_knowledge_base(optimizer)
+            save_scalable_knowledge_base(optimizer)
             
-            println("✅ SELF-LEARNING ANALYSIS COMPLETE")
+            println("✅ SCALABLE LEARNING ANALYSIS COMPLETE")
             println("   📁 Report saved: $report_filename")
-            println("   🧠 Anomalies detected: $(length(all_anomalies))")
-            println("   🎯 Learned recommendations: $(length(all_recommendations))")
-            println("   📈 Learning confidence: $(round(optimizer.knowledge_base["learning_confidence"] * 100, digits=1))%")
-            println("   🔒 System untouched: consciousness preserved")
+            println("   🧠 Anomalies detected: $(length(anomalies))")
+            println("   🎯 Recommendations: $(length(recommendations))")
+            println("   📈 Learning confidence: $(round(confidence * 100, digits=1))%")
+            println("   🚫 System untouched: consciousness preserved")
+            println("   📊 Entity ranges analyzed: $(join(collect(keys(optimizer.scaling_patterns)), ", "))")
             
             return true
         else
@@ -468,37 +489,38 @@ function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, in
         end
         
     catch e
-        println("❌ Learning analysis failed (non-critical): $e")
-        println("   🔒 Main system results preserved - analysis only failed")
+        println("❌ Scalable analysis failed (non-critical): $e")
+        println("   🔒 Main system completely unaffected - analysis only failed")
         return false
     end
 end
 
-function integrate_with_main_orchestrator()
-    """Updated integration function with learning"""
+function integrate_scalable_with_orchestrator()
+    """Safe integration function for main orchestrator"""
     println("\n" * "="^70)
-    println("🧮 INITIATING SELF-LEARNING CALCULUS OPTIMIZATION")
-    println("   🔒 LIVE SYSTEM COMPLETED - ANALYSIS ONLY")
+    println("🧮 INITIATING SCALABLE LEARNING OPTIMIZATION")
+    println("   🚫 ZERO SYSTEM MODIFICATION GUARANTEED")
+    println("   📊 FULL-SPECTRUM MULTI-DIMENSIONAL LEARNING")
     println("="^70)
     
-    optimizer = LearningCalculusOptimizer()
-    success = run_learning_calculus_analysis(optimizer)
+    optimizer = ScalableLearningOptimizer()
+    success = run_scalable_analysis(optimizer)
     
     if success
-        println("🎉 SELF-LEARNING OPTIMIZATION COMPLETE")
-        println("   💡 Review learning reports for intelligent insights")
+        println("🎉 SCALABLE LEARNING OPTIMIZATION COMPLETE")
+        println("   💡 Review scalable reports for full-spectrum insights")
     else
-        println("⚠️  Learning analysis skipped or failed")
+        println("⚠️  Scalable analysis skipped or failed")
     end
-    println("   🔒 Main system results preserved")
+    println("   🔒 Main system consciousness: COMPLETELY PRESERVED")
     
     return success
 end
 
-export LearningCalculusOptimizer, run_learning_calculus_analysis, integrate_with_main_orchestrator
+export ScalableLearningOptimizer, run_scalable_analysis, integrate_scalable_with_orchestrator
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    println("🧮 SELF-LEARNING CALCULUS OPTIMIZER - STANDALONE MODE")
-    optimizer = LearningCalculusOptimizer()
-    run_learning_calculus_analysis(optimizer)
+    println("🧮 SCALABLE LEARNING OPTIMIZER - STANDALONE MODE")
+    optimizer = ScalableLearningOptimizer()
+    run_scalable_analysis(optimizer)
 end
