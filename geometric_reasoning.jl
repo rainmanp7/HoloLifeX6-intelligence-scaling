@@ -1,7 +1,7 @@
-# geometric_reasoning.jl - BASIC VERSION
+# geometric_reasoning.jl - v2.0 with RNG Isolation
 """
 🎯 BASIC GEOMETRIC REASONING MODULE
-Simple guaranteed-working geometric reasoning
+v2.0: Implemented RNG isolation for scientific reproducibility.
 """
 
 using LinearAlgebra
@@ -16,9 +16,12 @@ mutable struct GeometricReasoningEngine
     end
 end
 
-function generate_geometric_problem(re::GeometricReasoningEngine, num_points::Int=8)
+# --- STEP 2: MODIFY this helper function to accept `rng` ---
+# We put `rng` before the optional `num_points` argument.
+function generate_geometric_problem(re::GeometricReasoningEngine, rng::AbstractRNG, num_points::Int=8)
     # Simple: random points in unit cube
-    X = rand(num_points, re.dimensions)
+    # --- STEP 3: USE the private `rng` object ---
+    X = rand(rng, num_points, re.dimensions)
     
     # Simple problem: find point closest to origin
     distances = [norm(X[i, :]) for i in 1:num_points]
@@ -28,18 +31,20 @@ function generate_geometric_problem(re::GeometricReasoningEngine, num_points::In
 end
 
 function solve_geometric_problem(re::GeometricReasoningEngine, X::Matrix{Float64})
-    # Basic solution: closest to origin
+    # This function is deterministic (no randomness), so it does not need changes.
     num_points = size(X, 1)
     distances = [norm(X[i, :]) for i in 1:num_points]
     return argmin(distances)
 end
 
-function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=20)
+# --- STEP 1: MODIFY the main entry point to accept `rng` ---
+function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int, rng::AbstractRNG)
     correct = 0
     
     for trial in 1:num_trials
         try
-            X, true_answer, clusters = generate_geometric_problem(re)
+            # --- STEP 4: PASS the `rng` object down to the helper function ---
+            X, true_answer, clusters = generate_geometric_problem(re, rng)
             prediction = solve_geometric_problem(re, X)
             
             if prediction == true_answer
@@ -54,7 +59,8 @@ function test_geometric_reasoning(re::GeometricReasoningEngine, num_trials::Int=
     push!(re.reasoning_history, accuracy)
     
     # 🎯 DEBUG OUTPUT
-    println("🔍 GEOMETRIC DEBUG: $correct/$num_trials correct = $accuracy")
+    # This can be noisy, so I'll comment it out, but you can re-enable it.
+    # println("🔍 GEOMETRIC DEBUG: $correct/$num_trials correct = $accuracy")
     
     return accuracy
 end
