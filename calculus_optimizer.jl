@@ -129,7 +129,6 @@ function safe_derivative(x::Vector{Float64}, y::Vector{Float64})::Vector{Float64
     return derivatives
 end
 
-# This function was already well-written and robust. No changes needed.
 function extract_consciousness_data(snapshots::Vector{Dict{String,Any}})
     cycles, phi_values, intelligence_scores, meta_scores, coherence_values = Float64[], Float64[], Float64[], Float64[], Float64[]
     for snapshot in snapshots
@@ -138,7 +137,8 @@ function extract_consciousness_data(snapshots::Vector{Dict{String,Any}})
             push!(phi_values, Float64(snapshot["consciousness"]["max_phi"]))
         end
         haskey(snapshot, "unified_intelligence_score") && push!(intelligence_scores, Float64(snapshot["unified_intelligence_score"]))
-        if haskey(snapshot, "consciousness") && haskey(snapshot["consciousness"]["hot_metrics"], "meta_cognitive_score")
+        # Corrected nested key check
+        if haskey(snapshot, "consciousness") && haskey(snapshot["consciousness"], "hot_metrics") && haskey(snapshot["consciousness"]["hot_metrics"], "meta_cognitive_score")
             push!(meta_scores, Float64(snapshot["consciousness"]["hot_metrics"]["meta_cognitive_score"]))
         end
         haskey(snapshot, "coherence") && push!(coherence_values, Float64(snapshot["coherence"]))
@@ -216,8 +216,6 @@ function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis
     end
     
     # --- Active Learning Example: Log data for future tuning ---
-    # For any detected collapse, log the specific drop ratio. Over time, we could
-    # use the average/median of these to refine the `drop_ratio_threshold`.
     if any(a -> a["type"] == "consciousness_collapse", anomalies)
         max_phi = get(analysis, "max_phi", 0.0)
         final_phi = get(analysis, "final_phi", 0.0)
@@ -231,7 +229,7 @@ function update_pattern_knowledge(optimizer::LearningCalculusOptimizer, analysis
         end
     end
     
-    # Learn entity scaling patterns (this was already well-implemented)
+    # Learn entity scaling patterns
     entity_count = get(analysis, "entity_count", 0)
     if entity_count > 0
         scaling_patterns = kb["entity_scaling_patterns"]
@@ -305,7 +303,7 @@ function analyze_with_learning(optimizer::LearningCalculusOptimizer, snapshots::
     
     # Calculate derivatives and integrals
     phi_derivatives = safe_derivative(cycles, phi_values)
-    total_phi_integral = sum((phi_values[i] + phi_values[i-1]) / 2 * (cycles[i] - cycles[i-1]) for i in 2:length(cycles))
+    total_phi_integral = isempty(cycles) ? 0.0 : sum((phi_values[i] + phi_values[i-1]) / 2 * (cycles[i] - cycles[i-1]) for i in 2:length(cycles))
     
     analysis = Dict(
         "entity_count" => entity_count,
@@ -314,8 +312,8 @@ function analyze_with_learning(optimizer::LearningCalculusOptimizer, snapshots::
         "meta_cognitive_trajectory" => meta_scores,
         "phi_derivatives" => phi_derivatives,
         "total_phi_integral" => total_phi_integral,
-        "phi_volatility" => std(phi_derivatives),
-        "average_phi_growth" => mean(phi_derivatives),
+        "phi_volatility" => isempty(phi_derivatives) ? 0.0 : std(phi_derivatives),
+        "average_phi_growth" => isempty(phi_derivatives) ? 0.0 : mean(phi_derivatives),
         "max_phi" => isempty(phi_values) ? 0.0 : maximum(phi_values),
         "final_phi" => isempty(phi_values) ? 0.0 : phi_values[end]
     )
@@ -347,7 +345,13 @@ function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, in
         
         for result in results_data
             entity_count = get(result, "entity_count", 0)
-            snapshots = get(result, "snapshots", [])
+            
+            # --- FIX: START ---
+            # Explicitly convert the Vector{Any} from the JSON parser into the
+            # Vector{Dict{String, Any}} that our functions expect. This corrects the MethodError.
+            # The inner comprehension also ensures all keys are strings.
+            snapshots = [Dict(string(k) => v for (k,v) in s) for s in get(result, "snapshots", [])]
+            # --- FIX: END ---
             
             println("   🔍 Analyzing run for $entity_count entities...")
             analysis, anomalies, recommendations = analyze_with_learning(optimizer, snapshots, entity_count)
@@ -369,7 +373,7 @@ function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, in
         open(report_filename, "w") do f
             JSON.print(f, Dict(
                 "timestamp" => string(Dates.now()),
-                "analysis_version" => "4.0-self-learning-tunable",
+                "analysis_version" => "4.1-hotfix", # Track the version with the fix
                 "learning_summary" => Dict(
                     "knowledge_maturity" => optimizer.knowledge_base["knowledge_maturity"],
                     "total_anomalies_this_run" => length(all_anomalies),
@@ -400,7 +404,6 @@ function run_learning_calculus_analysis(optimizer::LearningCalculusOptimizer, in
     end
 end
 
-# Keep this for integration
 function integrate_with_main_orchestrator()
     println("\n" * "="^70)
     println("🧮 INITIATING SELF-LEARNING CALCULUS OPTIMIZATION (v2.0)")
@@ -419,9 +422,12 @@ function integrate_with_main_orchestrator()
     return success
 end
 
-# Keep this for standalone execution
+# Standalone execution mode
 if abspath(PROGRAM_FILE) == @__FILE__
     println("🧮 SELF-LEARNING CALCULUS OPTIMIZER - STANDALONE MODE")
     optimizer = LearningCalculusOptimizer()
     run_learning_calculus_analysis(optimizer)
 end
+
+# Export the necessary functions for the orchestrator
+export LearningCalculusOptimizer, run_learning_calculus_analysis, integrate_with_main_orchestrator
