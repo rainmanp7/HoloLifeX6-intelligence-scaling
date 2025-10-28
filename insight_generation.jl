@@ -1,7 +1,8 @@
-# insight_generation.jl
+# insight_generation.jl - v2.0 with RNG Isolation
 """
 💡 INSIGHT GENERATION MODULE
 Real combinatorial creativity and insight generation
+v2.0: Implemented RNG isolation for scientific reproducibility.
 """
 
 using Random
@@ -30,14 +31,16 @@ function calculate_action_complexity(action::String)::Int
     return 1
 end
 
-function generate_insight(entity::EfficientEntity, network_context::Vector{Float64})::Dict{String,Any}
+# --- STEP 1: MODIFY the function signature to accept `rng` ---
+function generate_insight(entity::EfficientEntity, network_context::Vector{Float64}, rng::AbstractRNG)::Dict{String,Any}
     # Real insight generation based on phase coherence and network state
     phase_coherence = calculate_phase_coherence(network_context)
     
     # Insight probability increases with coherence and individual phase alignment
     insight_probability = phase_coherence * (0.3 + 0.7 * entity.phase)
     
-    if rand() < insight_probability
+    # --- STEP 2: USE the private `rng` object ---
+    if rand(rng) < insight_probability
         # Real combinatorial creativity based on domain and context
         base_actions = Dict(
             "physical" => ["analyze", "optimize", "stabilize", "energize"],
@@ -54,9 +57,11 @@ function generate_insight(entity::EfficientEntity, network_context::Vector{Float
         targets = ["patterns", "systems", "flows", "structures", "dynamics"]
         
         base_list = get(base_actions, entity.domain, ["analyze"])
-        base = rand(base_list)
-        modifier = rand(modifiers)
-        target = rand(targets)
+        
+        # --- STEP 2: USE the private `rng` object for all random selections ---
+        base = rand(rng, base_list)
+        modifier = rand(rng, modifiers)
+        target = rand(rng, targets)
         
         action = "$(base)_$(target)_$(modifier)"
         
@@ -69,7 +74,7 @@ function generate_insight(entity::EfficientEntity, network_context::Vector{Float
         complexity = calculate_action_complexity(action)
         
         return Dict(
-            "entity" => entity.entity_id,
+            "entity" => entity.id, # Using `id` to match potential struct definition
             "domain" => entity.domain,
             "action" => action,
             "confidence" => round(confidence, digits=4),
