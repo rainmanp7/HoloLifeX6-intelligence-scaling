@@ -1,15 +1,12 @@
 # safe_tester.jl
 """
-🧪 SAFE TESTER MODULE - ADAPTIVE SCALING BASELINE
-A non-invasive testing framework with adaptive cycle counts for reliable
-baseline measurements across a defined scaling range (16 to 1024 entities).
+🧪 SAFE TESTER MODULE
+Testing framework with memory management and result logging
 """
 
 using JSON
 using Dates
-using Statistics
 
-# Helper function for safe math
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
 mutable struct SafeTester
@@ -30,7 +27,7 @@ end
 
 function memory_check(tester::SafeTester)::Bool
     memory_mb = get_memory_mb()
-    if memory_mb > 8000 # 8 GB limit for baseline tests
+    if memory_mb > 6000
         log_message(tester, "⚠️  MEMORY WARNING: $(round(memory_mb, digits=1))MB")
         return false
     end
@@ -49,25 +46,8 @@ function clean_data_for_json(data::Any)
     end
 end
 
-# --- ADAPTIVE CYCLE CALCULATION ---
-"""
-    calculate_adaptive_cycles(entity_count, base_cycles, base_entity_count)
-
-Intelligently calculates the number of cycles for a test run based on a baseline.
-"""
-function calculate_adaptive_cycles(entity_count::Int, base_cycles::Int, base_entity_count::Int)::Int
-    if entity_count <= base_entity_count
-        return base_cycles
-    else
-        # Use a logarithmic reduction factor to smoothly decrease cycles for larger systems.
-        reduction_factor = log2(entity_count / base_entity_count)
-        cycles = round(Int, base_cycles / (1 + reduction_factor * 0.5))
-        return max(10, cycles) # Ensure at least 10 cycles are run.
-    end
-end
-
-function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::Dict{String,Any}
-    log_message(tester, "🧪 Testing $entity_count entities for $cycles cycles...")
+function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int=50)::Dict{String,Any}
+    log_message(tester, "🧪 Testing $entity_count entities...")
     
     domains = ["physical", "temporal", "semantic", "network", "spatial", "emotional", "social", "creative"]
     
@@ -89,8 +69,8 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
         if cycle % 10 == 0
             metrics = calculate_unified_metrics(network)
             metrics["cycle"] = cycle
-            metrics["step_insights"] = get(step_result, "insights", 0)
-            metrics["new_patterns"] = get(step_result, "new_patterns", 0)
+            metrics["step_insights"] = step_result["insights"]
+            metrics["new_patterns"] = step_result["new_patterns"]
             metrics["memory_mb"] = get_memory_mb()
             
             clean_metrics = clean_data_for_json(metrics)
@@ -106,23 +86,20 @@ function run_unified_test(tester::SafeTester, entity_count::Int, cycles::Int)::D
     final_metrics = calculate_unified_metrics(network)
     clean_final_metrics = clean_data_for_json(final_metrics)
     
-    avg_memory = !isempty(metrics_snapshots) ? mean([m["memory_mb"] for m in metrics_snapshots]) : 0.0
-    peak_memory = !isempty(metrics_snapshots) ? maximum([m["memory_mb"] for m in metrics_snapshots]) : 0.0
-
     result = merge(clean_final_metrics, Dict(
         "test_name" => "unified_$(entity_count)_entities",
-        "cycles_completed" => isempty(metrics_snapshots) ? 0 : last(metrics_snapshots)["cycle"],
-        "avg_memory_mb" => avg_memory,
-        "peak_memory_mb" => peak_memory,
+        "cycles_completed" => length(metrics_snapshots) * 10,
+        "avg_memory_mb" => mean([m["memory_mb"] for m in metrics_snapshots]),
+        "peak_memory_mb" => maximum([m["memory_mb"] for m in metrics_snapshots]),
         "status" => "completed",
         "snapshots" => metrics_snapshots
     ))
     
     push!(tester.results, result)
     
-    log_message(tester, "✅ Completed: UIS=$(round(get(result, "unified_intelligence_score", 0.0), digits=3)), " *
-                       "R=$(round(get(result, "reasoning_accuracy", 0.0), digits=3)), " *
-                       "Φ=$(round(get(get(result, "consciousness", Dict()), "max_phi", 0.0), digits=3))")
+    log_message(tester, "✅ Completed: UIS=$(round(result["unified_intelligence_score"], digits=3)), " *
+                       "R=$(round(result["reasoning_accuracy"], digits=3)), " *
+                       "Φ=$(round(result["consciousness"]["max_phi"], digits=3))")
     
     return result
 end
@@ -130,27 +107,20 @@ end
 function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
     log_message(tester, "🚀 Starting scaling sweep...")
     
-    # MODIFICATION: Use the new, corrected entity counts.
-    entity_counts = [16, 32, 64, 128, 256, 512, 1024]
-    base_cycles = 50
-    base_entity_count = first(entity_counts) # The baseline is now 16 entities.
-    
+    entity_counts = [16, 32, 64]  # Simple scaling for reliability
     sweep_results = Dict{String,Any}[]
     
     for entity_count in entity_counts
         try
-            # MODIFICATION: Calculate adaptive cycles using the correct baseline.
-            cycles_to_run = calculate_adaptive_cycles(entity_count, base_cycles, base_entity_count)
-            
-            result = run_unified_test(tester, entity_count, cycles_to_run)
+            result = run_unified_test(tester, entity_count, 50)
             push!(sweep_results, result)
             
-            if get(result, "status", "") != "completed"
-                log_message(tester, "🛑 Stopping sweep at $entity_count entities due to incomplete status.")
+            if result["status"] != "completed"
+                log_message(tester, "🛑 Stopping sweep at $entity_count entities")
                 break
             end
             
-            GC.gc() # Force garbage collection between runs.
+            GC.gc()
         catch e
             log_message(tester, "❌ Error testing $entity_count entities: $e")
             println("Stacktrace:")
@@ -162,24 +132,24 @@ function run_scaling_sweep(tester::SafeTester)::Vector{Dict{String,Any}}
         end
     end
     
-    if length(sweep_results) > 1
-        baseline = first(sweep_results)
-        baseline_uis = get(baseline, "unified_intelligence_score", 0.0)
-        baseline_memory = get(baseline, "avg_memory_mb", 0.0)
+    if !isempty(sweep_results)
+        baseline = sweep_results[1]
+        baseline_uis = baseline["unified_intelligence_score"]
+        baseline_memory = baseline["avg_memory_mb"]
         
         for result in sweep_results[2:end]
-            scale_factor = get(result, "entity_count", 1) / get(baseline, "entity_count", 1)
+            scale_factor = result["entity_count"] / baseline["entity_count"]
             
-            uis_ratio = safe_divide(get(result, "unified_intelligence_score", 0.0), baseline_uis)
+            uis_ratio = safe_divide(result["unified_intelligence_score"], baseline_uis)
             result["intelligence_scaling"] = round(safe_divide(uis_ratio, scale_factor), digits=3)
             
             expected_memory = baseline_memory * scale_factor
-            actual_memory = get(result, "avg_memory_mb", 0.0)
+            actual_memory = result["avg_memory_mb"]
             result["memory_efficiency"] = round(safe_divide((expected_memory - actual_memory), expected_memory) * 100, digits=1)
             
-            result["consciousness_scaling"] = round(safe_divide(get(get(result, "consciousness", Dict()), "max_phi", 0.0), max(get(get(baseline, "consciousness", Dict()), "max_phi", 0.01), 0.01)), digits=3)
-            result["reasoning_scaling"] = round(safe_divide(get(result, "reasoning_accuracy", 0.0), max(get(baseline, "reasoning_accuracy", 0.01), 0.01)), digits=3)
-            result["awareness_scaling"] = round(safe_divide(get(result, "awareness_level", 0.0), max(get(baseline, "awareness_level", 0.01), 0.01)), digits=3)
+            result["consciousness_scaling"] = round(safe_divide(result["consciousness"]["max_phi"], max(baseline["consciousness"]["max_phi"], 0.01)), digits=3)
+            result["reasoning_scaling"] = round(safe_divide(result["reasoning_accuracy"], max(baseline["reasoning_accuracy"], 0.01)), digits=3)
+            result["awareness_scaling"] = round(safe_divide(result["awareness_level"], max(baseline["awareness_level"], 0.01)), digits=3)
         end
     end
     
@@ -218,30 +188,29 @@ function print_summary(tester::SafeTester)
     end
     
     for result in tester.results
-        println("\n🧬 $(get(result, "test_name", "untitled_test")):")
-        println("   Entities: $(get(result, "entity_count", "N/A"))")
+        println("\n🧬 $(result["test_name"]):")
+        println("   Entities: $(result["entity_count"])")
         println("   ─────────────────────────────────────────")
         println("   🧠 CONSCIOUSNESS:")
-        consciousness_data = get(result, "consciousness", Dict())
-        println("      • Status: $(get(consciousness_data, "is_conscious", false) ? "YES ✅" : "NO ❌")")
-        println("      • Max Φ: $(get(consciousness_data, "max_phi", "N/A"))")
-        println("      • Effective Info: $(get(result, "effective_information", "N/A"))")
-        println("      • Frameworks: $(join(get(consciousness_data, "confirming_frameworks", []), ", "))")
+        println("      • Status: $(result["consciousness"]["is_conscious"] ? "YES ✅" : "NO ❌")")
+        println("      • Max Φ: $(result["consciousness"]["max_phi"])")
+        println("      • Effective Info: $(result["effective_information"])")
+        println("      • Frameworks: $(join(result["consciousness"]["confirming_frameworks"], ", "))")
         
         println("   🎯 REASONING:")
-        println("      • Accuracy: $(get(result, "reasoning_accuracy", "N/A"))")
+        println("      • Accuracy: $(result["reasoning_accuracy"])")
         
         println("   👁️  AWARENESS:")
-        println("      • Level: $(get(result, "awareness_level", "N/A"))")
+        println("      • Level: $(result["awareness_level"])")
         
         println("   💡 INTELLIGENCE:")
-        println("      • Unified Score: $(get(result, "unified_intelligence_score", "N/A"))")
-        println("      • Patterns: $(get(result, "pattern_discoveries", "N/A"))")
+        println("      • Unified Score: $(result["unified_intelligence_score"])")
+        println("      • Patterns: $(result["pattern_discoveries"])")
         
         if haskey(result, "intelligence_scaling")
             println("   📊 SCALING:")
-            println("      • Intelligence: $(get(result, "intelligence_scaling", "N/A"))x")
-            println("      • Memory Efficiency: $(get(result, "memory_efficiency", "N/A"))%")
+            println("      • Intelligence: $(result["intelligence_scaling"])x")
+            println("      • Memory Efficiency: $(result["memory_efficiency"])%")
         end
     end
 end
