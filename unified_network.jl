@@ -2,10 +2,12 @@
 """
 🌐 UNIFIED NETWORK MODULE
 Orchestrates all intelligence components into unified system
+v2.0: Implemented RNG isolation for scientific reproducibility.
 """
 
 using Statistics
 using LinearAlgebra
+using Random # <-- STEP 1: IMPORT RANDOM
 
 safe_divide(a, b) = b == 0 ? 0.0 : a / b
 
@@ -35,7 +37,6 @@ mutable struct UnifiedNetwork
         awareness_monitor = AwarenessMonitor()
         proto_intelligence = ProtoIntelligence()
         
-        # Initialize with empty coupling matrix (will be resized)
         coupling_matrix = zeros(0, 0)
         effective_information = Float64[]
         
@@ -47,21 +48,17 @@ end
 
 function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
     push!(network.entities, entity)
-    # Update coupling matrix with new entity
     n = length(network.entities)
     new_coupling_matrix = zeros(n, n)
     
     if n > 1
-        # Copy old matrix and add new row/column
         old_size = size(network.coupling_matrix, 1)
         if old_size > 0
             new_coupling_matrix[1:old_size, 1:old_size] = network.coupling_matrix
         end
         
-        # Initialize new couplings based on domain similarity
         for i in 1:n
             if i != n
-                # Coupling strength based on domain compatibility
                 strength = network.entities[i].domain == entity.domain ? 0.08 : 0.04
                 new_coupling_matrix[i, n] = strength
                 new_coupling_matrix[n, i] = strength
@@ -72,38 +69,39 @@ function add_entity!(network::UnifiedNetwork, entity::EfficientEntity)
     network.coupling_matrix = new_coupling_matrix
 end
 
-# 🎯 CRITICAL FIX: Add reasoning capacity update function
 function update_reasoning_capacity!(network::UnifiedNetwork)
-    # Only update if we have recent reasoning results
     if !isempty(network.reasoning_engine.reasoning_history)
         recent_reasoning = network.reasoning_engine.reasoning_history[end]
         
-        # Only update if we have meaningful reasoning scores
         if recent_reasoning > 0.0
             for entity in network.entities
-                # Real learning: entities improve reasoning based on network performance
                 entity.reasoning_capacity = 0.7 * entity.reasoning_capacity + 0.3 * recent_reasoning
-                # Ensure it stays in valid range
                 entity.reasoning_capacity = max(0.0, min(1.0, entity.reasoning_capacity))
             end
         end
     end
 end
 
-function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
+# --- STEP 2: MODIFY THE FUNCTION SIGNATURE ---
+function evolve_step!(network::UnifiedNetwork, rng::AbstractRNG)::Dict{String,Any}
     insights = Dict{String,Any}[]
     entity_phases = [e.phase for e in network.entities]
     
     # Real phase evolution with Kuramoto coupling
+    # Assuming `evolve_phase!` and `kuramoto_coupling!` are deterministic.
+    # If they use `rand()`, they must also be modified to accept `rng`.
     for entity in network.entities
         evolve_phase!(entity)
         kuramoto_coupling!(entity, entity_phases, network.coupling_matrix)
     end
     
-    # 🎯 CRITICAL FIX: Update reasoning capacity with REAL geometric reasoning
+    # Update reasoning capacity with REAL geometric reasoning
     if length(network.coherence_history) % 8 == 0
-        reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12)
-        update_reasoning_capacity!(network)  # Call the new function
+        # --- STEP 3: PASS `rng` DOWN THE CHAIN ---
+        # IMPORTANT: You must now go to the file for `GeometricReasoningEngine` and
+        # modify `test_geometric_reasoning` to accept `rng` as its last argument.
+        reasoning_score = test_geometric_reasoning(network.reasoning_engine, 12, rng)
+        update_reasoning_capacity!(network)
     end
     
     # Update awareness with real phase coherence
@@ -117,7 +115,10 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     
     # Generate insights with real network context
     for entity in network.entities
-        insight = generate_insight(entity, current_phases)
+        # --- STEP 3: PASS `rng` DOWN THE CHAIN ---
+        # IMPORTANT: You must now go to the file for `EfficientEntity` and modify
+        # `generate_insight` to accept `rng` as its last argument.
+        insight = generate_insight(entity, current_phases, rng)
         if !isempty(insight)
             push!(insights, insight)
             push!(network.insight_history, insight)
@@ -132,6 +133,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
     push!(network.coherence_history, coherence)
     
     # Calculate real effective information
+    # Assuming this is a deterministic calculation based on network structure.
+    # If it uses randomness, it also needs the `rng` object.
     ei = calculate_effective_information(network)
     push!(network.effective_information, ei)
     
@@ -149,6 +152,8 @@ function evolve_step!(network::UnifiedNetwork)::Dict{String,Any}
 end
 
 function calculate_unified_metrics(network::UnifiedNetwork)::Dict{String,Any}
+    # This function is a pure calculation and does not need the RNG object.
+    # It remains unchanged.
     entity_count = length(network.entities)
     total_insights = length(network.insight_history)
     coherence = isempty(network.coherence_history) ? 0.5 : network.coherence_history[end]
