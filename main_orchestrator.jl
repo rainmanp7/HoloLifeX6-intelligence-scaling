@@ -218,7 +218,7 @@ function strict_phase_execution()
     println("   🔒 LIVE SYSTEM COMPLETED - ANALYSIS ONLY")
     println("="^70)
     
-    calculus_success = integrate_with_main_orchestrator()
+    ##calculus_success = integrate_with_main_orchestrator()
     
     println()
     println("="^70)
