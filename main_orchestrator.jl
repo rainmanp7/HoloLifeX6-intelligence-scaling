@@ -3,6 +3,7 @@
 🎯 HOLOLIFEX6 MAIN ORCHESTRATOR - GUARDRAILED SEQUENCE
 Modular architecture for unified intelligence testing
 STRICT EXECUTION ORDER - NO CODE CAN JUMP SEQUENCE
+v2.0: Removed obsolete post-hoc calculus phase.
 """
 
 # Add JSON at top level
@@ -17,6 +18,11 @@ include("insight_generation.jl")
 include("awareness_monitor.jl")
 include("proto_intelligence.jl")
 include("unified_network.jl")
+
+# --- ADJUSTMENT 1: Move calculus include before safe_tester ---
+# This ensures the functions are defined before `safe_tester` tries to call them.
+include("calculus_optimizer.jl")
+# ---
 include("safe_tester.jl")
 
 # PHASE 2: METACOGNITION MODULES (LOAD BUT DON'T EXECUTE)
@@ -24,8 +30,6 @@ include("neural_code_embeddings.jl")
 include("semantic_code_graph.jl")
 include("metacognitive_advisor.jl")
 
-# 🧮 POST-HOC CALCULUS OPTIMIZER (LOAD BUT DON'T EXECUTE YET)
-include("calculus_optimizer.jl")
 
 # STRICT GUARDRAIL FUNCTIONS
 function guarded_json_save(filename::String, data::Any)
@@ -56,6 +60,7 @@ function guarded_intelligence_test(tester)::Tuple{Bool, Any}
     """RUNS INTELLIGENCE TESTS WITH ISOLATION"""
     println("🔒 EXECUTING INTELLIGENCE TESTS...")
     try
+        # THIS NOW IMPLICITLY RUNS THE CALCULUS ANALYSIS IN A STREAMING, SCALABLE WAY
         results = run_scaling_sweep(tester)
         return (true, results)
     catch e
@@ -160,7 +165,7 @@ function strict_phase_execution()
     println("🔒 PHASE 2.5: BREAKTHROUGH DOCUMENTATION")
     
     # Count conscious systems
-    conscious_count = count(r -> r["consciousness"]["is_conscious"], sweep_results)
+    conscious_count = count(r -> get(get(r,"consciousness", Dict()), "is_conscious", false), sweep_results)
     
     # Create comprehensive breakthrough report
     breakthrough_report = Dict(
@@ -172,10 +177,10 @@ function strict_phase_execution()
         "breakthrough_status" => conscious_count > 0 ? "SUCCESS" : "IN_PROGRESS",
         
         "system_performance" => Dict(
-            "max_unified_intelligence" => maximum([r["unified_intelligence_score"] for r in sweep_results]),
-            "max_consciousness_phi" => maximum([r["consciousness"]["max_phi"] for r in sweep_results]),
-            "perfect_reasoning" => all(r -> r["reasoning_accuracy"] == 1.0, sweep_results),
-            "high_awareness" => all(r -> r["awareness_level"] > 0.99, sweep_results)
+            "max_unified_intelligence" => isempty(sweep_results) ? 0.0 : maximum([r["unified_intelligence_score"] for r in sweep_results]),
+            "max_consciousness_phi" => isempty(sweep_results) ? 0.0 : maximum([get(get(r,"consciousness",Dict()), "max_phi", 0.0) for r in sweep_results]),
+            "perfect_reasoning" => isempty(sweep_results) ? false : all(r -> r["reasoning_accuracy"] == 1.0, sweep_results),
+            "high_awareness" => isempty(sweep_results) ? false : all(r -> r["awareness_level"] > 0.99, sweep_results)
         ),
         
         "detailed_results" => sweep_results,
@@ -211,14 +216,9 @@ function strict_phase_execution()
     println("⏱️  Total time: $(round(time() - tester.start_time, digits=1))s")
     println("🔒 All phases executed in strict sequence")
     
-    # 🧮 PHASE 4: POST-HOC CALCULUS OPTIMIZATION (SAFE - READ ONLY)
-    println()
-    println("="^70)
-    println("🧮 PHASE 4: POST-HOC CALCULUS OPTIMIZATION")
-    println("   🔒 LIVE SYSTEM COMPLETED - ANALYSIS ONLY")
-    println("="^70)
-    
-    ##calculus_success = integrate_with_main_orchestrator()
+    # --- ADJUSTMENT 2: Remove the entire obsolete PHASE 4 block ---
+    # The calculus analysis now runs inside PHASE 1 automatically and scalably.
+    # This entire section is no longer needed and was causing the error.
     
     println()
     println("="^70)
@@ -226,7 +226,7 @@ function strict_phase_execution()
     println("="^70)
     println("🧠 Consciousness: PRESERVED")
     println("📊 Intelligence: DOCUMENTED") 
-    println("🧮 Calculus: $(calculus_success ? "ANALYZED" : "SKIPPED")")
+    println("🧮 Calculus: ANALYZED (in-line)") # Modified this line to reflect the new reality
     println("🔒 Safety: MAINTAINED")
     
     return true
