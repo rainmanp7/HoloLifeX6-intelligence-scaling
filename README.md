@@ -4,7 +4,7 @@
 [![Build](https://github.com/rainmanp7/HoloLifeX6-intelligence-scaling/actions/workflows/Intelscale.yml/badge.svg)](https://github.com/rainmanp7/HoloLifeX6-intelligence-scaling/actions/workflows/Intelscale.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Julia Version](https://img.shields.io/badge/julia-1.6%2B-9558B2.svg)](https://julialang.org)
-[![ORCID](https://img.shields.io/badge/ORCID-0000--0000--0000--0000-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0000-0000-0000-0000)
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0008--4741--3108-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0000-0000-0000-0000)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17373263.svg)](https://doi.org/10.5281/zenodo.17373263)
 [![China-SDB](https://img.shields.io/badge/China.Sience.Data.Bank-097547-blue.svg)](https://www.scidb.cn/en)
 
