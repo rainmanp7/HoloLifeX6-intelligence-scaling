@@ -1,0 +1,63 @@
+{
+    "entity_scaling_patterns": {
+        "32": [
+            {
+                "max_phi": 0.3145,
+                "volatility": 0.0058049999999999985,
+                "final_phi": 0.3145,
+                "timestamp": "2025-10-28T10:31:47.877"
+            }
+        ],
+        "64": [
+            {
+                "max_phi": 0.263,
+                "volatility": 0.0008600000000000023,
+                "final_phi": 0.263,
+                "timestamp": "2025-10-28T10:31:47.982"
+            }
+        ],
+        "128": [
+            {
+                "max_phi": 0.2438,
+                "volatility": 0.007579999999999999,
+                "final_phi": 0.2438,
+                "timestamp": "2025-10-28T10:31:48.072"
+            }
+        ]
+    },
+    "anomalies_detected_total": 0,
+    "total_analyses": 1,
+    "consciousness_patterns": {
+        "meta_cognitive_instability": {
+            "detection_count": 0,
+            "volatility_threshold": 0.15,
+            "description": "High volatility in meta-cognitive scores..."
+        },
+        "persistent_decline": {
+            "detection_count": 0,
+            "positive_derivative_threshold": 0.05,
+            "neg_to_pos_ratio_threshold": 2.0,
+            "negative_derivative_threshold": -0.05,
+            "description": "More negative than positive derivatives..."
+        },
+        "consciousness_collapse": {
+            "detection_count": 0,
+            "peak_phi_threshold": 0.2,
+            "historical_drops": [],
+            "description": "Sharp drop after peak...",
+            "drop_ratio_threshold": 0.7
+        }
+    },
+    "meta_cognitive_insights": {
+        "optimal_range": [
+            0.2,
+            0.4
+        ],
+        "stability_correlations": [],
+        "volatility_issues": []
+    },
+    "created": "2025-10-28T10:31:46.912",
+    "knowledge_maturity": 0.04,
+    "last_updated": "2025-10-28T10:31:50.418",
+    "version": "2.0-tunable"
+}
