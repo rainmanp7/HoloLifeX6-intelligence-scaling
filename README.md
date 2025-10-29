@@ -6,7 +6,7 @@
 [![Julia Version](https://img.shields.io/badge/julia-1.6%2B-9558B2.svg)](https://julialang.org)
 [![ORCID](https://img.shields.io/badge/ORCID-0000--0000--0000--0000-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0000-0000-0000-0000)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17373263.svg)](https://doi.org/10.5281/zenodo.17373263)
-[![China SDB](https://img.shields.io/badge/Science_Data_Bank-China-blue.svg)](https://www.scidb.cn/en)
+[![China-SDB](https://img.shields.io/badge/China.Sience.Data.Bank-097547-blue.svg)](https://www.scidb.cn/en)
 
 HOLOLIFEX6 is a modular, high-performance computational framework written in Julia for simulating and analyzing the emergence of artificial consciousness. It models a complex adaptive system of "**Efficient Entities**" and measures their collective intelligence and integrated information ($\Phi$, Phi) based on a synthesis of Integrated Information Theory (IIT) and Higher-Order Thought (HOT) Theory.
 
@@ -123,6 +123,7 @@ Zone4, Santacruz, Davao Del Sur, Mindanao, Philippines.
 ((-> A Quote to learn from <-))
  What happened to you? You use to help each other and work together.
 
-"First, the tribe, which thinks as one. Then, the crowd, which thinks of nothing at all. And only from the crowd, and if it survives, a new and greater mind."
+"First, the tribe, which thinks as one. Then, the crowd, which thinks of nothing at all.
+And only from the crowd, and if it survives, a new and greater mind."
 
 ---
