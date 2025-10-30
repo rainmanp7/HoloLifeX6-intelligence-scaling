@@ -79,6 +79,10 @@ This demonstrates that the system autonomously evolves more advanced organizatio
 
 ## 🚀 Getting Started
 
+### Program documentation = Folder 
+ ARTIFICIAL_CONSCIOUSNESS_BREAKTHROUGH
+
+
 ### Prerequisites
 
 * Julia v1.6 or later
