@@ -1,0 +1,168 @@
+{
+    "all_entity_analyses": [
+        {
+            "entity_count": 32,
+            "recommendations": [],
+            "consciousness_status": "CONSCIOUS",
+            "anomalies_detected": 0,
+            "analysis": {
+                "entity_count": 32,
+                "total_phi_integral": 4.1925,
+                "max_phi": 0.3145,
+                "meta_cognitive_trajectory": [
+                    0.27,
+                    0.2,
+                    0.4
+                ],
+                "phi_trajectory": [
+                    0.1628,
+                    0.1806,
+                    0.3145
+                ],
+                "cycles_analyzed": 3,
+                "phi_volatility": 0.0058049999999999985,
+                "final_phi": 0.3145,
+                "average_phi_growth": 0.007584999999999999,
+                "phi_derivatives": [
+                    0.001780000000000001,
+                    0.007585,
+                    0.013389999999999999
+                ]
+            },
+            "final_phi": 0.3145
+        },
+        {
+            "entity_count": 64,
+            "recommendations": [],
+            "consciousness_status": "CONSCIOUS",
+            "anomalies_detected": 0,
+            "analysis": {
+                "entity_count": 64,
+                "total_phi_integral": 2.906,
+                "max_phi": 0.263,
+                "meta_cognitive_trajectory": [
+                    0.14,
+                    0.17,
+                    0.31
+                ],
+                "phi_trajectory": [
+                    0.0362,
+                    0.141,
+                    0.263
+                ],
+                "cycles_analyzed": 3,
+                "phi_volatility": 0.0008600000000000023,
+                "final_phi": 0.263,
+                "average_phi_growth": 0.011340000000000001,
+                "phi_derivatives": [
+                    0.010479999999999998,
+                    0.01134,
+                    0.012200000000000003
+                ]
+            },
+            "final_phi": 0.263
+        },
+        {
+            "entity_count": 128,
+            "recommendations": [],
+            "consciousness_status": "CONSCIOUS",
+            "anomalies_detected": 0,
+            "analysis": {
+                "entity_count": 128,
+                "total_phi_integral": 2.648,
+                "max_phi": 0.2438,
+                "meta_cognitive_trajectory": [
+                    0.2,
+                    0.1,
+                    0.27
+                ],
+                "phi_trajectory": [
+                    0.0968,
+                    0.0945,
+                    0.2438
+                ],
+                "cycles_analyzed": 3,
+                "phi_volatility": 0.007579999999999999,
+                "final_phi": 0.2438,
+                "average_phi_growth": 0.00735,
+                "phi_derivatives": [
+                    -0.00022999999999999965,
+                    0.00735,
+                    0.014929999999999999
+                ]
+            },
+            "final_phi": 0.2438
+        }
+    ],
+    "knowledge_base_snapshot": {
+        "entity_scaling_patterns": {
+            "32": [
+                {
+                    "max_phi": 0.3145,
+                    "volatility": 0.0058049999999999985,
+                    "final_phi": 0.3145,
+                    "timestamp": "2025-10-28T10:31:47.877"
+                }
+            ],
+            "64": [
+                {
+                    "max_phi": 0.263,
+                    "volatility": 0.0008600000000000023,
+                    "final_phi": 0.263,
+                    "timestamp": "2025-10-28T10:31:47.982"
+                }
+            ],
+            "128": [
+                {
+                    "max_phi": 0.2438,
+                    "volatility": 0.007579999999999999,
+                    "final_phi": 0.2438,
+                    "timestamp": "2025-10-28T10:31:48.072"
+                }
+            ]
+        },
+        "anomalies_detected_total": 0,
+        "total_analyses": 0,
+        "consciousness_patterns": {
+            "meta_cognitive_instability": {
+                "detection_count": 0,
+                "volatility_threshold": 0.15,
+                "description": "High volatility in meta-cognitive scores..."
+            },
+            "persistent_decline": {
+                "detection_count": 0,
+                "positive_derivative_threshold": 0.05,
+                "neg_to_pos_ratio_threshold": 2.0,
+                "negative_derivative_threshold": -0.05,
+                "description": "More negative than positive derivatives..."
+            },
+            "consciousness_collapse": {
+                "detection_count": 0,
+                "peak_phi_threshold": 0.2,
+                "historical_drops": [],
+                "description": "Sharp drop after peak...",
+                "drop_ratio_threshold": 0.7
+            }
+        },
+        "meta_cognitive_insights": {
+            "optimal_range": [
+                0.2,
+                0.4
+            ],
+            "stability_correlations": [],
+            "volatility_issues": []
+        },
+        "created": "2025-10-28T10:31:46.912",
+        "knowledge_maturity": 0.0,
+        "version": "2.0-tunable"
+    },
+    "detected_anomalies_summary": [],
+    "timestamp": "2025-10-28T10:31:48.767",
+    "analysis_version": "4.0-streaming",
+    "learning_summary": {
+        "total_recommendations": 0,
+        "knowledge_maturity": 0.0,
+        "total_anomalies_this_run": 0
+    },
+    "final_recommendations": []
+}
