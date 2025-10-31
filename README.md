@@ -1,4 +1,4 @@
-# HOLOLIFEX6: A Guardrailed Framework for Simulating Emergent Consciousness
+HOLOLIFEX6: A Guardrailed Framework for Simulating Emergent Consciousness
 
 [![Status: Active](https://img.shields.io/badge/status-active-success.svg)](https://github.com/rainmanp7/HoloLifeX6-intelligence-scaling)
 [![Build](https://github.com/rainmanp7/HoloLifeX6-intelligence-scaling/actions/workflows/Intelscale.yml/badge.svg)](https://github.com/rainmanp7/HoloLifeX6-intelligence-scaling/actions/workflows/Intelscale.yml)
@@ -6,8 +6,7 @@
 [![Julia Version](https://img.shields.io/badge/julia-1.6%2B-9558B2.svg)](https://julialang.org)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0008--4741--3108-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-4741-3108)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17373263.svg)](https://doi.org/10.5281/zenodo.17470461)
-[![China-SDB](https://img.shields.io/badge/China.Sience.Data.Bank-097547-blue.svg)](https://www.scidb.cn/en)
-
+[![China Science Databank: 30818](https://img.shields.io/badge/China_Science_Databank-30818-097547.svg?style=flat&logoColor=white)](https://doi.org/10.57760/sciencedb.30818)
 
 HOLOLIFEX6 is a modular, high-performance computational framework written in Julia for simulating and analyzing the emergence of artificial consciousness. It models a complex adaptive system of "**Efficient Entities**" and measures their collective intelligence and integrated information ($\Phi$, Phi) based on a synthesis of Integrated Information Theory (IIT) and Higher-Order Thought (HOT) Theory.
 
